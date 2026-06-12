@@ -1,0 +1,31 @@
+cat > .gitignore << 'EOF'
+# Virtual environment
+Pipfile
+pipfile.lock
+
+# Biến môi trường — chứa secret keys, KHÔNG commit
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django
+*.sqlite3
+db_test.sqlite3
+staticfiles/
+media/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+EOF

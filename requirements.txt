@@ -1,0 +1,24 @@
+# Database
+psycopg2-binary==2.9.9
+
+# Environment variables
+python-decouple==3.8
+
+# CORS
+django-cors-headers==4.4.0
+
+# Cloudinary — lưu trữ audio, ảnh bìa, avatar
+cloudinary==1.40.0
+django-cloudinary-storage==0.3.0
+
+# Input sanitization — chống XSS (Fix R12)
+bleach==6.1.0
+
+# Rate limiting — chống brute force (Fix R6, bật ở Tuần 8)
+django-ratelimit==4.1.0
+
+# Testing utilities
+factory-boy==3.3.0
+
+# Image processing (dùng khi validate ảnh upload)
+Pillow==10.4.0
