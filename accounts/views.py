@@ -480,7 +480,7 @@ class AdminVerificationApproveView(View):
             return _handle_exception(e)
 
 @method_decorator([csrf_protect, require_admin], name='dispatch')
-class AdminVerificationrejectView(View):
+class AdminVerificationRejectView(View):
     """POST /api/v1/accounts/admin/verifications/<id>/reject/"""
 
     def post(self, request, verification_id):

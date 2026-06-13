@@ -212,7 +212,7 @@ def change_password(request, user: User, data: dict) -> None:
     logger.info('Password changed: %s', user.username)
 
 # Block management
-def toggel_block(blocker: User, blocked_id) -> dict:
+def toggle_block(blocker: User, blocked_id) -> dict:
     """
     Toggle block/unblock một user.
 

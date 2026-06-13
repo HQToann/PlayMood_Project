@@ -19,7 +19,7 @@ def get_user_by_email(email: str) -> User | None:
         return None
 
 
-def get_puclic_profile(user_id, viewer=None) -> User:
+def get_public_profile(user_id, viewer=None) -> User:
     try:
         target = User.objects.get(id=user_id, is_active=True)
     except User.DoesNotExist:
