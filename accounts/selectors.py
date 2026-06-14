@@ -22,13 +22,15 @@ def get_user_by_email(email: str) -> User | None:
 def get_public_profile(user_id, viewer=None) -> User:
     try:
         target = User.objects.get(id=user_id, is_active=True)
-        return target
+
     except User.DoesNotExist:
         raise NotFound('Người dùng không tồn tại')
     
 
     if viewer and viewer.is_authenticated and is_blocked(viewer.id, target.id):
-        return NotFound('Người dùng không tồn tại')
+        raise NotFound('Người dùng không tồn tại')
+    
+    return target
     
 def check_email_exists(email: str) -> bool:
     #kiểm tra xem email đã được đăng ký hay chưa

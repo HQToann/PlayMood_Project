@@ -60,7 +60,7 @@ from accounts.exceptions import (
 
 logger = logging.getLogger(__name__)
 
-def __json_body(request) -> dict:
+def parse_json_body(request) -> dict:
     """Parse JSON body an toàn - trả {} nếu body rỗng hoặc lỗi parse."""
     try:
         return json.loads(request.body or '{}')
@@ -94,7 +94,7 @@ def _handle_exception(e: Exception) -> JsonResponse:
                     'message': e.message
                 }
             },
-            status=403,
+            status=401,
         )
     if isinstance(e, (PermissionDenied, AccountInactive)):
         return JsonResponse(
@@ -102,7 +102,7 @@ def _handle_exception(e: Exception) -> JsonResponse:
                 'success': False,
                 'error': {
                     'code': e.error_code,
-                    'messagr': e.message
+                    'message': e.message
                 }
             },
             status=403,
@@ -131,7 +131,7 @@ def _handle_exception(e: Exception) -> JsonResponse:
         )
     
     # Lỗi không mong đợi
-    logger.exception('Unhandled exception: %e', e)
+    logger.exception('Unhandled exception: %s', e)
     return JsonResponse(
         {
             'success': False,
@@ -165,7 +165,7 @@ class RegisterView(View):
 
     def post(self, request):
         try:
-            data = __json_body(request)
+            data = parse_json_body(request)
             validated = validate_register(data)
             user = register_user(validated)
             return JsonResponse (
@@ -184,7 +184,7 @@ class LoginView(View):
 
     def post(self, request):
         try:
-            data = __json_body(request)
+            data = parse_json_body(request)
             validated = validate_login(data)
             user = login_user(request, validated)
             return JsonResponse (
@@ -226,7 +226,7 @@ class ChangePasswordView(View):
 
     def post(self, request):
         try:
-            data = __json_body(request)
+            data = parse_json_body(request)
             validated = validate_change_password(data)
             change_password(
                 request,
@@ -260,7 +260,7 @@ class MyProfileView(View):
     @method_decorator(require_auth)
     def patch(self, request):
         try:
-            data = __json_body(request)
+            data = parse_json_body(request)
             validated = validate_update_profile(data)
             if not validated:
                 return JsonResponse(
@@ -345,7 +345,7 @@ class PrivacyView(View):
 
     def patch(self, request):
         try:
-            data = __json_body(request)
+            data = parse_json_body(request)
             is_private = data.get('is_private')
             if is_private is None or not isinstance(is_private, bool):
                 return JsonResponse(
@@ -483,7 +483,7 @@ class AdminVerificationRejectView(View):
 
     def post(self, request, verification_id):
         try:
-            data = __json_body(request)
+            data = parse_json_body(request)
             reason = data.get('reason', '').strip()
             verification = reject_verification(verification_id, admin=request.user, reason=reason)
             return JsonResponse({

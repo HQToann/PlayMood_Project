@@ -67,7 +67,7 @@ def register_user(data: dict) -> User:
     logger.info('New user registered: %s (%s)', user.username, user.email)
     return user
 
-def login_user(request, dât: dict) -> User:
+def login_user(request, data: dict) -> User:
     """
     Xác thực và đăng nhập người dùng.
 
@@ -87,7 +87,6 @@ def login_user(request, dât: dict) -> User:
 
     # Lấy user theo email
     user = get_user_by_email(data['email'])
-
     if user is None:
         # Vẫn chạy authenticate() để tránh timing attack
         raise AuthenticationError('Email hoặc mật khẩu không dúng')
