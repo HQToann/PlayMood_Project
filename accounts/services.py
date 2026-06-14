@@ -244,7 +244,7 @@ def toggle_block(blocker: User, blocked_id) -> dict:
     if not created:
         # Đã block -> unblock
         block_record.delete()
-        return {'action': 'unlocked', 'blocked_user_id': str(blocked_id)}
+        return {'action': 'unblocked', 'blocked_user_id': str(blocked_id)}
     
     return {'action': 'blocked', 'blocked_user_id': str(blocked_id)}
 

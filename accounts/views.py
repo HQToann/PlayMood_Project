@@ -39,13 +39,13 @@ from accounts.services import (
     update_avatar,
     update_privacy,
     change_password,
-    toggel_block,
+    toggle_block,
     submit_verification,
     approve_verification,
     reject_verification,
 )
 from accounts.selectors import (
-    get_puclic_profile,
+    get_public_profile,
     get_my_verification,
     list_pending_verifications,
 )
@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 def __json_body(request) -> dict:
     """Parse JSON body an toàn - trả {} nếu body rỗng hoặc lỗi parse."""
     try:
-        return json.loads(request.boy or '{}')
+        return json.loads(request.body or '{}')
     except (json.JSONDecodeError, ValueError):
         return {}
     
@@ -197,7 +197,7 @@ class LoginView(View):
         except Exception as e:
             return _handle_exception(e)
         
-@method_decorator([csrf_protect, require_auth], name='dispath')
+@method_decorator([csrf_protect, require_auth], name='dispatch')
 class LogoutView(View):
     """POST /api/v1/auth/logout/ - Đăng xuất."""
 
@@ -292,12 +292,10 @@ class AvatarUploadView(View):
             if 'avatar' not in request.FILES:
                 return JsonResponse(
                     {
-                        {
-                            'success': False,
-                            'error': {
-                                'code': 'VALIDATION_ERROR',
-                                'fields': {'avatar': ['File ảnh là bắt buộc']},
-                            }
+                        'success': False,
+                        'error': {
+                            'code': 'VALIDATION_ERROR',
+                            'fields': {'avatar': ['File ảnh là bắt buộc']},
                         }
                     },
                     status=400,
@@ -391,7 +389,7 @@ class BlockView(View):
 
     def post(self, request, user_id):
         try:
-            request = toggel_block(request.user, user_id)
+            result = toggle_block(request.user, user_id)
             return JsonResponse({
                 'success': True,
                 'data': result

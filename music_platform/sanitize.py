@@ -37,7 +37,12 @@ def sanitize_text(value: str) -> str:
 
 
 def sanitize_url(value: str) -> str:
-    
+    """
+    Validate và sanitize URL — chỉ cho phép http/https.
+
+    Raises:
+        ValueError: nếu URL không bắt đầu bằng http:// hoặc https://
+    """
     if not value:
         return ''
     value = value.strip()

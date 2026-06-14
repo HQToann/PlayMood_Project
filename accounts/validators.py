@@ -90,7 +90,7 @@ def validate_login(data: dict) -> dict:
 
     errors = {}
 
-    email = data.get('email', '').strip().lơer()
+    email = data.get('email', '').strip().lower()
     if not email:
         errors['email'] = ['Email là bắt buộc']
 
