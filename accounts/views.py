@@ -303,7 +303,7 @@ class AvatarUploadView(View):
             avatar_file = request.FILES['avatar']
 
             # Validate MIME type ảnh
-            allowed_types = {'image/jpeg', 'image/pnj', 'image/webp', 'image/gif'}
+            allowed_types = {'image/jpg', 'image/jpeg', 'image/pnj', 'image/webp', 'image/gif'}
             if avatar_file.content_type not in allowed_types:
                 return JsonResponse(
                     {
