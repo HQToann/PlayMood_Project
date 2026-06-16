@@ -139,7 +139,7 @@ CLOUDINARY_STORAGE = {
     'PREFIX': config('CLOUDINARY_PREFIX', default='music_platform'),
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinary_Storage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Session
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
