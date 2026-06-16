@@ -230,7 +230,7 @@ class ArtistVerification(models.Model):
             'note': self.note,
             'status': self.status,
             'reviewed_by': str(self.reviewed_by_id) if self.reviewed_by_id else None,
-            'reviewed_at': self.reviewed_by.isoformat() if self.reviewed_at else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
             'created_at': self.created_at.isoformat(),
         }
 

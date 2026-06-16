@@ -244,7 +244,7 @@ def validate_id_card_upload(files: dict) -> None:
             errors['id_card_image'] = ['File tối đa 10MB']
 
     if errors:
-        raise ValidationError('File không hợp lệ', files=errors)
+        raise ValidationError('File không hợp lệ', fields=errors)
     
 
 # Helpers nội bộ

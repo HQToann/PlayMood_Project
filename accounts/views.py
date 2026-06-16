@@ -310,7 +310,7 @@ class AvatarUploadView(View):
                         'success': False,
                         'error': {
                             'code': 'VALIDATION_ERROR',
-                            'fields': {'avatar': ['Chỉ nhấp nhận JPG, PNG, WEBP, GIF']},
+                            'fields': {'avatar': ['Chỉ nhấp nhận JPEG, PNG, WEBP, GIF']},
                         }
                     },
                     status=400,

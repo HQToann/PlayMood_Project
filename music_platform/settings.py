@@ -62,7 +62,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'djnago.template.context_processors.debug',
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -231,13 +231,13 @@ LOGGING = {
 
 # SQLite override cho môi trường không có PostgreSQL
 # Block này tự detect: nếu không có DB_NAME trong .env thì dùng SQLite
-import os as _os
-if not _os.environ.get('DB_NAME'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db_test.sqlite3',
-        }
-    }
-    # Dùng filesystem storage khi Cloudinary chưa cấu hình
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# import os as _os
+# if not _os.environ.get('DB_NAME'):
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db_test.sqlite3',
+#         }
+#     }
+#     # Dùng filesystem storage khi Cloudinary chưa cấu hình
+#     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
