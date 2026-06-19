@@ -14,29 +14,32 @@ def get_user_by_id(user_id) -> User:
 
 def get_user_by_email(email: str) -> User | None:
     try:
-        return User.objects.get(email_iexact=email)
+        return User.objects.get(email__iexact=email)
     except User.DoesNotExist:
         return None
 
 
-def get_puclic_profile(user_id, viewer=None) -> User:
+def get_public_profile(user_id, viewer=None) -> User:
     try:
         target = User.objects.get(id=user_id, is_active=True)
+
     except User.DoesNotExist:
         raise NotFound('Người dùng không tồn tại')
     
 
     if viewer and viewer.is_authenticated and is_blocked(viewer.id, target.id):
-        return NotFound('Người dùng không tồn tại')
+        raise NotFound('Người dùng không tồn tại')
+    
+    return target
     
 def check_email_exists(email: str) -> bool:
     #kiểm tra xem email đã được đăng ký hay chưa
-    return User.objects.filter(email_iexact=email).exists()
+    return User.objects.filter(email__iexact=email).exists()
 
 
 def check_username_exists(username: str) -> bool:
     #kiểm tra username đã tồn tại hay chưa
-    return User.objects.filter(username_iexact=username).exists()
+    return User.objects.filter(username__iexact=username).exists()
 
 
 #truy vấn block

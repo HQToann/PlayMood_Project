@@ -90,7 +90,7 @@ def validate_login(data: dict) -> dict:
 
     errors = {}
 
-    email = data.get('email', '').strip().lơer()
+    email = data.get('email', '').strip().lower()
     if not email:
         errors['email'] = ['Email là bắt buộc']
 
@@ -244,7 +244,7 @@ def validate_id_card_upload(files: dict) -> None:
             errors['id_card_image'] = ['File tối đa 10MB']
 
     if errors:
-        raise ValidationError('File không hợp lệ', files=errors)
+        raise ValidationError('File không hợp lệ', fields=errors)
     
 
 # Helpers nội bộ

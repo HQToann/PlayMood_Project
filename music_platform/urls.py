@@ -12,6 +12,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 # Handler tuỳ chỉnh
 from django.http import JsonResponse
 
@@ -61,7 +62,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API v1 - toàn bộ logic backend
-    path('api/v1/auth', include('accounts.auth_urls')),
+    path('api/v1/auth/', include('accounts.auth_urls')),
     path('api/v1/accounts/', include('accounts.urls')),
     # path("api/v1/music/", include('music.urls')),
     # path('api/v1/artists/', include('artists.urls')),

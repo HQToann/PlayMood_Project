@@ -24,7 +24,7 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(ArtistVerification)
 class ArtistVerificationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'read_name', 'status', 'reviewed_by', 'created_at')
+    list_display = ('user', 'real_name', 'status', 'reviewed_by', 'created_at')
     list_filter = ('status',)
     search_fields = ('user__username', 'real_name')
     readonly_fields = ('created_at',)
