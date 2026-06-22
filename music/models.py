@@ -58,7 +58,7 @@ class Genre(models.Model):
         verbose_name = 'Thể loại nhạc'
         verbose_name_plural = 'Thể loại nhạc'
 
-    def save(self, **args, **kwargs):
+    def save(self, *args, **kwargs):
         # tự động tạo slug từ name nếu chưa có
         if not self.slug:
             self.slug = slugify(self.name)
@@ -138,6 +138,7 @@ class Song(models.Model):
         upload_to='audio/',
         verbose_name='File audio',
     )
+
 
     cover_image = models.ImageField(
         upload_to='covers/songs/',
