@@ -266,7 +266,7 @@ def upsert_rating(user, song: Song, score: int) -> dict:
         defaults={'score': score},
     )
 
-    stats = Rating.objects.filter(song=song).aaggregate(avg=Avg('score'), count=Count('id'))
+    stats = Rating.objects.filter(song=song).aggregate(avg=Avg('score'), count=Count('id'))
 
     return {
         'score': score,
