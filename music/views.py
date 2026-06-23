@@ -228,7 +228,7 @@ class SongListView(View):
     POST /api/v1/music/songs/ - Artist
     """
     def get(self, request):
-        try:
+        #try:
             filters = validate_list_songs_params(request.GET)
             result = list_songs(filters, viewer=request.user)
             return JsonResponse(
@@ -237,8 +237,8 @@ class SongListView(View):
                     'data': result,
                 }
             )
-        except Exception as e:
-            return handle_exception(e)
+        #except Exception as e:
+            #return handle_exception(e)
     
     @method_decorator(csrf_protect)
     @method_decorator(require_artist)
@@ -291,31 +291,27 @@ class SongDetailView(View):
         
     @method_decorator(csrf_protect)
     @method_decorator(require_artist)
+
     def patch(self, request, song_id):
         try:
             song = get_song_by_id(song_id)
-            validated = validate_song_update(request.POST, request.FILES)
+            # Hỗ trợ cả JSON (chỉ update text) và multipart/form-data (có file)
+            if request.content_type and 'multipart/form-data' in request.content_type:
+                data = request.POST
+            else:
+                data = parse_json_body(request)
+            validated = validate_song_update(data, request.FILES)
             if not validated:
                 return JsonResponse(
-                    {
-                        'success': False,
-                        'error': {
-                            'code': 'VALIDATION_ERROR',
-                            'message': 'Không có dữ liệu cập nhật',
-                        }
-                    },
+                    {'success': False, 'error': {'code': 'VALIDATION_ERROR',
+                                                'message': 'Không có dữ liệu để cập nhật'}},
                     status=400,
                 )
             song = update_song(song, request.user, validated, request.FILES)
-            return JsonResponse(
-                {
-                    'success': True,
-                    'data': song.to_dict(viewer=request.user)
-                }
-            )
+            return JsonResponse({'success': True, 'data': song.to_dict(viewer=request.user)})
         except Exception as e:
             return handle_exception(e)
-        
+
     @method_decorator(csrf_protect)
     @method_decorator(require_artist)
     def delete(self, request, song_id):
@@ -511,7 +507,7 @@ class SongCommentListView(View):
             return JsonResponse(
                 {
 
-                    'succes': True,
+                    'success': True,
                     'data': result
                 }
             )
@@ -522,38 +518,37 @@ class SongCommentListView(View):
     @method_decorator(require_auth)
     def post(self, request, song_id):
         try:
-            song = get_song_detail(song_id, viewer=request.user)
-            data = parse_json_body(request)
+            # Dùng get_song_by_id (không check block) để service create_comment
+            # tự raise BlockedByArtist -> 403, thay vì get_song_detail trả 404
+            # giấu thông tin (chỉ dùng cho việc xem bài hát, không phải comment).
+            song      = get_song_by_id(song_id)
+            data      = parse_json_body(request)
             validated = validate_comment(data)
-            comment = create_comment(request.user, song, validated)
+            comment   = create_comment(request.user, song, validated)
             return JsonResponse(
-                {
-                    'success': True,
-                    'data': comment.to_dict(viewer=request.user)
-                },
+                {'success': True, 'data': comment.to_dict(viewer=request.user)},
                 status=201,
             )
         except Exception as e:
             return handle_exception(e)
         
 class CommentDetailView(View):
-    """POST /api/v1/music/comments/<id>/like/ - Auth+CSRF."""
+    """DELETE /api/v1/music/comments/<id>/ — Auth+Owner+CSRF"""
 
     @method_decorator(csrf_protect)
     @method_decorator(require_auth)
-    def post(self, request, comment_id):
+    def delete(self, request, comment_id):
         try:
             comment = get_comment_by_id(comment_id)
-            result = toggle_comment_like(request.user, comment)
+            delete_comment(comment, request.user)
             return JsonResponse(
                 {
-                    'success': True,
-                    'data': result
-                }
-            )
+                    'success': True
+                }, 
+                status=204)
         except Exception as e:
-            handle_exception(e)
-
+            return handle_exception(e)
+        
 class CommentLikeView(View):
     """POST /api/v1/music/comments/<id>/like/ — Auth+CSRF"""
 

@@ -23,7 +23,7 @@ urlpatterns = [
 
     # Song list + create
     path('songs/', SongListView.as_view(), name='music-song-list'),
-    path('songs/trendings/', SongTrendingView.as_view(), name='music-song-trending'),
+    path('songs/trending/', SongTrendingView.as_view(), name='music-song-trending'),
 
     # Song detail
     path('songs/<uuid:song_id>/', SongDetailView.as_view(), name='music-song-detail'),
@@ -54,5 +54,5 @@ urlpatterns = [
     path('admin/reports/<uuid:report_id>/resolve/', AdminReportResolveView.as_view(), name='music-admin-report-resolve'),
     path('admin/songs/<uuid:song_id>/trending/', AdminSongTrendingView.as_view(), name='music-admin-song-trending'),
     path('admin/songs/<uuid:song_id>/hide/', AdminSongHideView.as_view(), name='music-admin-song-hide'),
-    path('admin/comments/<uuid:comment_id>/hide', AdminCommentHideView.as_view(), name='music-admin-comment-hide'),
+    path('admin/comments/<uuid:comment_id>/hide/', AdminCommentHideView.as_view(), name='music-admin-comment-hide'),
 ]

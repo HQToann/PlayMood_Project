@@ -220,7 +220,7 @@ class Song(models.Model):
         """
         data = {
             'id': str(self.id),
-            'title': str.title,
+            'title': self.title,
             'artist': {
                 'id': str(self.artist_id),
                 'username': self.artist.username,
@@ -250,7 +250,7 @@ class Song(models.Model):
                 if ratings.count() > 0 else None
             )
         if viewer and hasattr(viewer, 'id') and viewer.is_authenticated:
-            data['is_like'] = self.likes.filter(user=viewer).exists()
+            data['is_liked'] = self.likes.filter(user=viewer).exists()
             my_rating = self.ratings.filter(user=viewer).first()
             data['my_rating'] = my_rating.score if my_rating else None
         return data

@@ -70,7 +70,7 @@ def list_songs(filters: dict, viewer=None) -> dict:
         from accounts.models import BlockList
         blocked_artist_ids = BlockList.objects.filter(
             blocked_id=viewer_id
-        ).values_list('blocked_id', flat=True)
+        ).values_list('blocker_id', flat=True)
         qs = qs.exclude(artist_id__in=blocked_artist_ids)
 
     #filters
@@ -97,7 +97,7 @@ def list_songs(filters: dict, viewer=None) -> dict:
     end = start + page_size
 
     items = [
-        song.to_dict(viewer=viewer, include_start=True)
+        song.to_dict(viewer=viewer, include_stats=True)
         for song in qs[start:end]
     ]
 
@@ -177,7 +177,7 @@ def get_song_like_count(song_id, viewer=None) -> dict:
 
 #lấy avg_rating, rating_count, my_rating
 def get_song_rating_stats(song_id, viewer=None) -> dict:
-    stats = Rating.objects.filter(song_id=song_id).aaggregate(
+    stats = Rating.objects.filter(song_id=song_id).aggregate(
         avg=Avg('score'),
         count=Count('id'),
     )
