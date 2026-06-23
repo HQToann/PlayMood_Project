@@ -201,4 +201,105 @@ def list_comments(song_id, viewer=None, page=1, page_size=20) -> dict:
     qs = {
         Comment.objects
         .filter(song_id=song_id, parent__isnull=True, is_hidden=False)
+        .select_related('user')
+        .prefetch_related('replies__user', 'replies__comment_like', 'comment_like')
+        .order_by('created_at')
     }
+
+    total = qs.count()
+    start = (page - 1) * page_size
+    items = [
+        c.to_dict(viewer=viewer, include_replies=True)
+        for c in qs[start:start + page_size]
+    ]
+
+    return {
+        'items': items,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'total_pages': math.ceil(total / page_size) if total > 0 else 1,
+        },
+    }
+
+
+
+#lấy comment theo UUID
+def get_comment_by_id(comment_id) -> Comment:
+    try:
+        return Comment.objects.select_related('user', 'song').get(id=comment_id, is_hidden=False)
+    except Comment.DoesNotExist:
+        raise CommentNotFound()
+    
+
+
+#lịch sử nghe của user, kèm thông tin bài hát
+def list_listen_history(user, page=1, page_size=20) -> dict:
+    qs = (
+        ListenHistory.objects
+        .filter(user=user)
+        .select_related('song__artist', 'song__genre')
+        .order_by('-listened_at')
+    )
+
+    total = qs.count()
+    start = (page - 1) * page_size
+    items = []
+    for h in qs[start:start + page_size]:
+        items.append({
+            'song': {
+                'id': str(h.song_id),
+                'title': h.song.title,
+                'artist': {'display_name': h.song.artist.get_display_name()},
+                'cover_image': h.song.cover_image.url if h.song.cover_image else None,
+                'duration': h.song.duration,
+            },
+            'listened_at': h.listened_at.isoformat(),
+        })
+
+    
+    return {
+        'items': items,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'total_pages': math.ceil(total/page_size) if total > 0 else 1,
+        },
+    }
+
+
+
+#report danh sách báo cáo của admin
+def list_reports(filters: dict) -> dict:
+    qs  = Report.objects.select_related('reporter', 'resolved_by')
+
+    if filters.get('status'):
+        qs = qs.filter(status=filters['status'])
+
+    if filters.get('target_type'):
+        qs = qs.filter(target_type=filters['target_type'])
+
+    page = int(filters.get('page', 1))
+    page_size = int(filters.get('page_size', 20))
+    total = qs.count()
+    start = (page - 1) * page_size
+
+
+    return {
+        'items': [r.to_dict() for r in qs[start:start + page_size]],
+        'pagination': {
+            'page': page, 'page_size': page_size, 'total': total,
+            'total_pages': math.ceil(total/page_size) if total > 0 else 1,
+        },
+    }
+
+
+
+#lấy Report theo UUID
+def get_report_by_id(report_id) -> Report:
+    try:
+        return Report.objects.get(id=report_id)
+    except Report.DoesNotExist:
+        raise ReportNotFound()
