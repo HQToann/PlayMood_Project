@@ -22,3 +22,6 @@ factory-boy==3.3.0
 
 # Image processing (dùng khi validate ảnh upload)
 Pillow==10.4.0
+
+# Read metadata audio
+mutagen==1.47.0

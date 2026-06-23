@@ -64,9 +64,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API v1 - toàn bộ logic backend
+
+    # Tuần 1 - Account
     path('api/v1/auth/', include('accounts.auth_urls')),
     path('api/v1/accounts/', include('accounts.urls')),
-    # path("api/v1/music/", include('music.urls')),
+
+    # Tuần 2 - music
+    path("api/v1/music/", include('music.urls')),
+    
     # path('api/v1/artists/', include('artists.urls')),
     # path('api/v1/playlists/', include('playlists.urls')),
     # path('api/v1/social/', include('social.urls')),
