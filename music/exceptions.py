@@ -25,7 +25,7 @@ class NotSongOwner(AppException):
     def __init__(self, message='Bạn không có quyền thực hiện hành động này với bài hát này'):
         super().__init__(message, error_code='PREMISSION_DENIED')
 
-class SongAlreadyPulished(AppException):
+class SongAlreadyPublished(AppException):
     """Bài hát đã published, không thể publish lại - HTTP 400."""
     def __intt__(self, message='Bài hát đã được phát hành'):
         super().__init__(message, error_code='ALREADY_PUBLISHED')

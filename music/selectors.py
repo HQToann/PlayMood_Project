@@ -198,13 +198,13 @@ def get_song_rating_stats(song_id, viewer=None) -> dict:
 #chỉ trả is_hidden=False
 #replies được load cùng (prefecth)
 def list_comments(song_id, viewer=None, page=1, page_size=20) -> dict:
-    qs = {
+    qs = (
         Comment.objects
         .filter(song_id=song_id, parent__isnull=True, is_hidden=False)
         .select_related('user')
-        .prefetch_related('replies__user', 'replies__comment_like', 'comment_like')
+        .prefetch_related('replies__user', 'replies__comment_likes', 'comment_likes')
         .order_by('created_at')
-    }
+    )
 
     total = qs.count()
     start = (page - 1) * page_size

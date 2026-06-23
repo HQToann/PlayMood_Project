@@ -34,7 +34,7 @@ from music.exceptions import (
     DownloadNotAllowed,
     BlockedByArtist,
     GenreHasSongs,
-    SongAlreadyPulished,
+    SongAlreadyPublished,
     InvalidParentComment,
     ReportNotFound,
 )
@@ -45,7 +45,7 @@ from music.validators import (
     validate_rating,
     validate_comment,
     validate_report,
-    validate_list_song_params,
+    validate_list_songs_params,
 )
 from music.selectors import (
     list_genres,
@@ -98,7 +98,7 @@ def handle_exception(e: Exception) -> JsonResponse:
             },
             status=400,
         )
-    if isinstance(e, (GenreHasSongs, SongAlreadyPulished, InvalidParentComment)):
+    if isinstance(e, (GenreHasSongs, SongAlreadyPublished, InvalidParentComment)):
         return JsonResponse(
             {
                 'success': False,
@@ -202,6 +202,12 @@ class GenreDetailView(View):
             validated = validate_genre(data)
             genre = get_genre_by_id(genre_id)
             genre = update_genre(genre, validated)
+            return JsonResponse(
+                {
+                    'success': True,
+                    'data': genre.to_dict(),
+                }
+            )
         except Exception as e:
             return handle_exception(e)
         
@@ -223,8 +229,8 @@ class SongListView(View):
     """
     def get(self, request):
         try:
-            filter = validate_list_song_params(request.GET)
-            result = list_songs(filter, viewr=request.user)
+            filters = validate_list_songs_params(request.GET)
+            result = list_songs(filters, viewer=request.user)
             return JsonResponse(
                 {
                     'success': True,
@@ -406,7 +412,7 @@ class SongDownloadView(View):
             audio_url = song.audio_file.url if song.audio_file else None
             if not audio_url:
                 raise SongNotFound('File audio không tồn tại')
-            ext = song.audio_file.name.slit('')[-1] if '.' in song.audio_file.name else 'mp3'
+            ext = song.audio_file.name.split('.')[-1] if '.' in song.audio_file.name else 'mp3'
             filename = f"{song.title}.{ext}"
 
             return JsonResponse(

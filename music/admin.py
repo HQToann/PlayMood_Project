@@ -10,7 +10,7 @@ class GenreAdmin(admin.ModelAdmin):
 
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
-    list_display = ('title', 'artist', 'genre', 'status', 'is_trending', 'playcount', 'created_at')
+    list_display = ('title', 'artist', 'genre', 'status', 'is_trending', 'play_count', 'created_at')
     list_filter = ('status', 'is_trending', 'genre')
     search_fields = ('title', 'artist__username')
     readonly_fields = ('play_count', 'created_at', 'updated_at')
@@ -18,11 +18,9 @@ class SongAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'artist', 'genre', 'status', 'is_trending', 'play_count', 'created_at')
-    list_filter = ('status', 'is_trending', 'genre')
-    search_fields = ('title', 'artist__username')
-    readonly_fields = ('play_count', 'created_at', 'update_at')
-    ordering = ('-created_at',)
+    list_display  = ('user', 'song', 'is_hidden', 'created_at')
+    list_filter   = ('is_hidden',)
+    search_fields = ('content', 'user__username')
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):

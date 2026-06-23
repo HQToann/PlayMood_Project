@@ -404,6 +404,11 @@ class CommentLike(models.Model):
         on_delete=models.CASCADE,
         related_name='comment_likes',
     )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name='comment_likes',
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -498,6 +503,10 @@ class Report(models.Model):
     target_id = models.UUIDField(
         verbose_name='ID đối tượng',
         db_index=True,
+    )
+    reason = models.CharField(
+        max_length=20,
+        choices=REASON_CHOICES
     )
     description = models.TextField(
         blank=True,
