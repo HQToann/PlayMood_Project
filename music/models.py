@@ -139,6 +139,7 @@ class Song(models.Model):
         verbose_name='File audio',
     )
 
+
     cover_image = models.ImageField(
         upload_to='covers/songs/',
         blank=True,
@@ -219,7 +220,7 @@ class Song(models.Model):
         """
         data = {
             'id': str(self.id),
-            'title': str.title,
+            'title': self.title,
             'artist': {
                 'id': str(self.artist_id),
                 'username': self.artist.username,
@@ -249,7 +250,7 @@ class Song(models.Model):
                 if ratings.count() > 0 else None
             )
         if viewer and hasattr(viewer, 'id') and viewer.is_authenticated:
-            data['is_like'] = self.likes.filter(user=viewer).exists()
+            data['is_liked'] = self.likes.filter(user=viewer).exists()
             my_rating = self.ratings.filter(user=viewer).first()
             data['my_rating'] = my_rating.score if my_rating else None
         return data
@@ -403,6 +404,11 @@ class CommentLike(models.Model):
         on_delete=models.CASCADE,
         related_name='comment_likes',
     )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name='comment_likes',
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -497,6 +503,10 @@ class Report(models.Model):
     target_id = models.UUIDField(
         verbose_name='ID đối tượng',
         db_index=True,
+    )
+    reason = models.CharField(
+        max_length=20,
+        choices=REASON_CHOICES
     )
     description = models.TextField(
         blank=True,
