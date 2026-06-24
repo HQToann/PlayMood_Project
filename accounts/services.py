@@ -67,7 +67,7 @@ def register_user(data: dict) -> User:
     logger.info('New user registered: %s (%s)', user.username, user.email)
     return user
 
-def login_user(request, dât: dict) -> User:
+def login_user(request, data: dict) -> User:
     """
     Xác thực và đăng nhập người dùng.
 
@@ -87,7 +87,6 @@ def login_user(request, dât: dict) -> User:
 
     # Lấy user theo email
     user = get_user_by_email(data['email'])
-
     if user is None:
         # Vẫn chạy authenticate() để tránh timing attack
         raise AuthenticationError('Email hoặc mật khẩu không dúng')
@@ -212,7 +211,7 @@ def change_password(request, user: User, data: dict) -> None:
     logger.info('Password changed: %s', user.username)
 
 # Block management
-def toggel_block(blocker: User, blocked_id) -> dict:
+def toggle_block(blocker: User, blocked_id) -> dict:
     """
     Toggle block/unblock một user.
 
@@ -244,7 +243,7 @@ def toggel_block(blocker: User, blocked_id) -> dict:
     if not created:
         # Đã block -> unblock
         block_record.delete()
-        return {'action': 'unlocked', 'blocked_user_id': str(blocked_id)}
+        return {'action': 'unblocked', 'blocked_user_id': str(blocked_id)}
     
     return {'action': 'blocked', 'blocked_user_id': str(blocked_id)}
 

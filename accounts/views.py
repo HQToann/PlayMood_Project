@@ -39,13 +39,13 @@ from accounts.services import (
     update_avatar,
     update_privacy,
     change_password,
-    toggel_block,
+    toggle_block,
     submit_verification,
     approve_verification,
     reject_verification,
 )
 from accounts.selectors import (
-    get_puclic_profile,
+    get_public_profile,
     get_my_verification,
     list_pending_verifications,
 )
@@ -60,10 +60,10 @@ from accounts.exceptions import (
 
 logger = logging.getLogger(__name__)
 
-def __json_body(request) -> dict:
+def _json_body(request) -> dict:
     """Parse JSON body an toàn - trả {} nếu body rỗng hoặc lỗi parse."""
     try:
-        return json.loads(request.boy or '{}')
+        return json.loads(request.body or '{}')
     except (json.JSONDecodeError, ValueError):
         return {}
     
@@ -94,7 +94,7 @@ def _handle_exception(e: Exception) -> JsonResponse:
                     'message': e.message
                 }
             },
-            status=403,
+            status=401,
         )
     if isinstance(e, (PermissionDenied, AccountInactive)):
         return JsonResponse(
@@ -102,7 +102,7 @@ def _handle_exception(e: Exception) -> JsonResponse:
                 'success': False,
                 'error': {
                     'code': e.error_code,
-                    'messagr': e.message
+                    'message': e.message
                 }
             },
             status=403,
@@ -131,7 +131,7 @@ def _handle_exception(e: Exception) -> JsonResponse:
         )
     
     # Lỗi không mong đợi
-    logger.exception('Unhandled exception: %e', e)
+    logger.exception('Unhandled exception: %s', e)
     return JsonResponse(
         {
             'success': False,
@@ -165,7 +165,7 @@ class RegisterView(View):
 
     def post(self, request):
         try:
-            data = __json_body(request)
+            data = _json_body(request)
             validated = validate_register(data)
             user = register_user(validated)
             return JsonResponse (
@@ -184,7 +184,7 @@ class LoginView(View):
 
     def post(self, request):
         try:
-            data = __json_body(request)
+            data = _json_body(request)
             validated = validate_login(data)
             user = login_user(request, validated)
             return JsonResponse (
@@ -197,7 +197,7 @@ class LoginView(View):
         except Exception as e:
             return _handle_exception(e)
         
-@method_decorator([csrf_protect, require_auth], name='dispath')
+@method_decorator([csrf_protect, require_auth], name='dispatch')
 class LogoutView(View):
     """POST /api/v1/auth/logout/ - Đăng xuất."""
 
@@ -226,7 +226,7 @@ class ChangePasswordView(View):
 
     def post(self, request):
         try:
-            data = __json_body(request)
+            data = _json_body(request)
             validated = validate_change_password(data)
             change_password(
                 request,
@@ -260,7 +260,7 @@ class MyProfileView(View):
     @method_decorator(require_auth)
     def patch(self, request):
         try:
-            data = __json_body(request)
+            data = _json_body(request)
             validated = validate_update_profile(data)
             if not validated:
                 return JsonResponse(
@@ -292,12 +292,10 @@ class AvatarUploadView(View):
             if 'avatar' not in request.FILES:
                 return JsonResponse(
                     {
-                        {
-                            'success': False,
-                            'error': {
-                                'code': 'VALIDATION_ERROR',
-                                'fields': {'avatar': ['File ảnh là bắt buộc']},
-                            }
+                        'success': False,
+                        'error': {
+                            'code': 'VALIDATION_ERROR',
+                            'fields': {'avatar': ['File ảnh là bắt buộc']},
                         }
                     },
                     status=400,
@@ -305,7 +303,7 @@ class AvatarUploadView(View):
             avatar_file = request.FILES['avatar']
 
             # Validate MIME type ảnh
-            allowed_types = {'image/jpeg', 'image/pnj', 'image/webp', 'image/gif'}
+            allowed_types = {'image/jpg', 'image/jpeg', 'image/pnj', 'image/webp', 'image/gif'}
             if avatar_file.content_type not in allowed_types:
                 return JsonResponse(
                     {
@@ -347,7 +345,7 @@ class PrivacyView(View):
 
     def patch(self, request):
         try:
-            data = __json_body(request)
+            data = _json_body(request)
             is_private = data.get('is_private')
             if is_private is None or not isinstance(is_private, bool):
                 return JsonResponse(
@@ -391,7 +389,7 @@ class BlockView(View):
 
     def post(self, request, user_id):
         try:
-            request = toggel_block(request.user, user_id)
+            result = toggle_block(request.user, user_id)
             return JsonResponse({
                 'success': True,
                 'data': result
@@ -480,12 +478,12 @@ class AdminVerificationApproveView(View):
             return _handle_exception(e)
 
 @method_decorator([csrf_protect, require_admin], name='dispatch')
-class AdminVerificationrejectView(View):
+class AdminVerificationRejectView(View):
     """POST /api/v1/accounts/admin/verifications/<id>/reject/"""
 
     def post(self, request, verification_id):
         try:
-            data = __json_body(request)
+            data = _json_body(request)
             reason = data.get('reason', '').strip()
             verification = reject_verification(verification_id, admin=request.user, reason=reason)
             return JsonResponse({

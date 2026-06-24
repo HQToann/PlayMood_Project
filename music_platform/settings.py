@@ -13,14 +13,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Bảo mật cốt lõi
-
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+if 'testserver' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS = list(ALLOWED_HOSTS) + ['testserver']
+    
+AUTH_USER_MODEL = 'accounts.User'
 
 
 # Ứng dụng đã cài đặc
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
 
     # Ứng dụng nội bộ
     'accounts',
+    'music'
 ]
 
 MIDDLEWARE = [
@@ -66,12 +69,10 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'music_platform.wsgi.application'
 
 
 # Database
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -85,7 +86,6 @@ DATABASES = {
 
 
 # Password validation
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -103,13 +103,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-
 LANGUAGE_CODE = 'vi'
-
 TIME_ZONE = 'Asia/Ho_Chi_Minh'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -123,7 +119,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Default primary key field type
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
@@ -134,8 +129,7 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
     'PREFIX': config('CLOUDINARY_PREFIX', default='music_platform'),
 }
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinary_Storage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Session
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
@@ -224,16 +218,3 @@ LOGGING = {
         },
     },
 }
-
-# SQLite override cho môi trường không có PostgreSQL
-# Block này tự detect: nếu không có DB_NAME trong .env thì dùng SQLite
-import os as _os
-if not _os.environ.get('DB_NAME'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db_test.sqlite3',
-        }
-    }
-    # Dùng filesystem storage khi Cloudinary chưa cấu hình
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

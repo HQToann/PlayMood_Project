@@ -96,11 +96,11 @@ class User(AbstractUser):
     )
 
     # Timestamps
-    creates_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
     updated_at = models.DateTimeField(auto_now= True, verbose_name='Cập nhật lần cuối')
 
     # Dùng email làm field đăng nhập chính
-    USERNAME_FIELD = 'email',
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username'] # Bắt buộc khi dùng createsuperuser
 
     class Meta:
@@ -133,7 +133,7 @@ class User(AbstractUser):
             'bio': self.bio,
             'role': self.role,
             'is_private': self.is_private,
-            'created_at': self.creates_at.isoformat(),
+            'created_at': self.created_at.isoformat(),
         }
         if include_private:
             data['email'] = self.email
@@ -230,7 +230,7 @@ class ArtistVerification(models.Model):
             'note': self.note,
             'status': self.status,
             'reviewed_by': str(self.reviewed_by_id) if self.reviewed_by_id else None,
-            'reviewed_at': self.reviewed_by.isoformat() if self.reviewed_at else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
             'created_at': self.created_at.isoformat(),
         }
 
