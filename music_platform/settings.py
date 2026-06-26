@@ -38,7 +38,8 @@ INSTALLED_APPS = [
 
     # Ứng dụng nội bộ
     'accounts',
-    'music'
+    'music',
+    'playlists',
 ]
 
 MIDDLEWARE = [
