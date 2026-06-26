@@ -27,7 +27,7 @@ class NotSongOwner(AppException):
 
 class SongAlreadyPublished(AppException):
     """Bài hát đã published, không thể publish lại - HTTP 400."""
-    def __intt__(self, message='Bài hát đã được phát hành'):
+    def __init__(self, message='Bài hát đã được phát hành'):
         super().__init__(message, error_code='ALREADY_PUBLISHED')
 
 class CommentNotFound(AppException):
@@ -53,7 +53,7 @@ class GenreHasSongs(AppException):
 class BlockedByArtist(AppException):
     """Bị nghệ sĩ block, không thể bình luận - HTTP 403."""
     def __init__(self, message='Bạn không thể thực hiện hành động này'):
-        super().__init__(message, error_code='NOT_FOUND')
+        super().__init__(message, error_code='BLOCKED')
 
 class ReportNotFound(AppException):
     """Báo cáo không tồn tại - HTTP 404."""

@@ -108,7 +108,7 @@ def create_song(artist, data: dict, files: dict) -> Song:
     song.save()
     logger.info('Song created: %s (artist=%s)', song.title, artist.username)
 
-    return
+    return song
 
 #cập nhật thông tin bào hát
 def update_song(song: Song, artist, data: dict, files: dict) -> Song:
@@ -153,7 +153,7 @@ def delete_song(song: Song, artist) -> None:
         logger.warning('Failed to delete Cloudinary files for song %s: %s', song.id, e)
 
     song.delete()
-    logger.info('Song deleted: s%', song.id)
+    logger.info('Song deleted: %s', song.id)
 
 
 #phát hành bài hát draft -> published
@@ -167,7 +167,7 @@ def publish_song(song: Song, artist) -> Song:
     song.status = Song.STATUS_PUBLISHED
     if not song.released_at:
         song.released_at = timezone.now()
-    song.save(update_fields=['status', 'released_at', 'update_at'])
+    song.save(update_fields=['status', 'released_at', 'updated_at'])
 
     logger.info('Song published: %s', song.title)
     return song
@@ -186,7 +186,7 @@ def hide_song(song: Song, artist) -> Song:
 #admin ẩn bài hát vi phạm
 def admin_hide_song(song: Song) -> Song:
     song.status = Song.STATUS_HIDDEN
-    song.save(update_fields=['status', 'updated_ad'])
+    song.save(update_fields=['status', 'updated_at'])
     return song
 
 
@@ -242,9 +242,10 @@ def toggle_like(user, song: Song) -> dict:
     like, created = Like.objects.get_or_create(user=user, song=song)
     if not created:
         #đã like -> unlike
+        like.delete()
         action = 'unliked'
     else:
-        action = 'like'
+        action = 'liked'
     
     like_count = Like.objects.filter(song=song).count()
     return {
@@ -329,7 +330,7 @@ def toggle_comment_like(user, comment: Comment) -> dict:
     like, created = CommentLike.objects.get_or_create(user=user, comment=comment)
     if not created:
         like.delete()
-        action = 'unlike'
+        action = 'unliked'
     else:
         action = 'liked'
     like_count = CommentLike.objects.filter(comment=comment).count()

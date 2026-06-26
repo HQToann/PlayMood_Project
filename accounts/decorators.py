@@ -86,6 +86,17 @@ def require_artist(view_func):
                 }, status=403,
             )
         
+        if request.user.role != 'artist':
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': {
+                        'code':    'ARTIST_ONLY',
+                        'message': 'Chỉ nghệ sĩ mới được thực hiện hành động này',
+                    },
+                },
+                status=403,
+            )
 
         return view_func(request, *args, **kwargs)
     
