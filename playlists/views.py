@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 #trả {} nếu body rỗng hoặc lỗi
 def parse_json_body(request) -> dict:
     try:
-        return json.load(request.body or '{}')
+        return json.loads(request.body or '{}')
     except (json.JSONDecodeError, ValueError):
         return {}
     
@@ -210,7 +210,7 @@ class PlaylistDetailView(View):
     @method_decorator(require_auth)
     def delete(self, request, playlist_id):
         try:
-            playlist = get_playlist_by_id(playlist)
+            playlist = get_playlist_by_id(playlist_id)
             delete_playlist(playlist, request.user)
             return JsonResponse(
                 {

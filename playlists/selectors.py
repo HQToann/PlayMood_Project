@@ -44,7 +44,7 @@ def get_playlist_detail(playlist_id, viewer=None) -> Playlist:
     """
 
     try:
-        playlist = Playlist.objects.select_related('owner').get(iđ=playlist_id)
+        playlist = Playlist.objects.select_related('owner').get(id=playlist_id)
     except Playlist.DoesNotExist:
         raise PlaylistNotFound()
     
@@ -68,7 +68,7 @@ def list_my_playlists(owner, filters: dict) -> dict:
     qs = Playlist.objects.filter(owner=owner).select_related('owner')
 
     if filters.get('q'):
-        qs = qs.filter(title_icontains=filters['q'])
+        qs = qs.filter(title__icontains=filters['q'])
     
     qs = qs.order_by('-created_at')
 
@@ -96,13 +96,13 @@ def list_public_playlists(filters: dict, viewer=None) -> dict:
 
     qs = Playlist.objects.filter(is_public = True).select_related('owner')
 
-    if filter.get('q'):
-        qs = qs.filter(title_icontains=filters['q'])
+    if filters.get('q'):
+        qs = qs.filter(title__icontains=filters['q'])
     
     qs = qs.order_by('-created_at')
 
     page = filters.get('page', 1)
-    page_size = filter.get('page_size', 20)
+    page_size = filters.get('page_size', 20)
     total = qs.count()
     start = (page - 1) * page_size
     end = start + page_size
@@ -157,7 +157,7 @@ def get_playlist_song(playlist_id, song_id) -> PlaylistSong:
     """
     
     try:
-        return PlaylistSong.object.select_related('song').get(
+        return PlaylistSong.objects.select_related('song').get(
             playlist_id=playlist_id, song_id=song_id
         )
     except PlaylistSong.DoesNotExist:
@@ -169,7 +169,7 @@ def check_song_in_playlist(playlist_id, song_id) -> bool:
 
 def get_max_order(playlist_id) -> int:
     """Lấy order lớn nhất hiện tại trong playlist - dùng để thêm bài mới vào cuối."""
-    last = PlaylistSong.object.filter(playlist_id=playlist_id).order_by('-order').first()
+    last = PlaylistSong.objects.filter(playlist_id=playlist_id).order_by('-order').first()
     return last.order if last else 0
 
 def list_playlist_song_ids(playlist_id) -> list:

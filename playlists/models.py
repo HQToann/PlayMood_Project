@@ -99,8 +99,8 @@ class PlaylistSong(models.Model):
     playlist = models.ForeignKey(
         Playlist,
         on_delete=models.CASCADE,
-        related_name='in_playlists',
-        verbose_name='Bài hát',
+        related_name='playlist_songs',
+        verbose_name='Playlist',
     )
 
     song = models.ForeignKey(
@@ -140,7 +140,7 @@ class PlaylistSong(models.Model):
                 'title': self.song.title,
                 'artist': {
                     'id': str(self.song.artist_id),
-                    'username': self.song.artist_id.username,
+                    'username': self.song.artist.username,
                     'display_name': self.song.artist.get_display_name(),
                 },
                 'cover_image': self.song.cover_image.url if self.song.cover_image else None,
