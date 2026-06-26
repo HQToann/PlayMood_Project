@@ -44,7 +44,7 @@ from playlists.services import (
     delete_playlist, 
     add_song_to_playlist, 
     remove_song_from_playlist,
-    reorder_playlist_song,
+    reorder_playlist_songs,
 )
 logger = logging.getLogger(__name__)
 
@@ -343,7 +343,7 @@ class PlaylistSongReorderView(View):
             data = parse_json_body(request)
             validated = validate_reorder(data)
             playlist = get_playlist_detail(playlist_id)
-            reorder_playlist_song(playlist, request.user, validated['song_ids'])
+            reorder_playlist_songs(playlist, request.user, validated['song_ids'])
             return JsonResponse(
                 {
                     'success': True,
