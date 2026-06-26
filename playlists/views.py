@@ -44,7 +44,7 @@ from playlists.services import (
     delete_playlist, 
     add_song_to_playlist, 
     remove_song_from_playlist,
-    reorder_playlist_song,
+    reorder_playlist_songs,
 )
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 #trả {} nếu body rỗng hoặc lỗi
 def parse_json_body(request) -> dict:
     try:
-        return json.load(request.body or '{}')
+        return json.loads(request.body or '{}')
     except (json.JSONDecodeError, ValueError):
         return {}
     
@@ -210,7 +210,7 @@ class PlaylistDetailView(View):
     @method_decorator(require_auth)
     def delete(self, request, playlist_id):
         try:
-            playlist = get_playlist_by_id(playlist)
+            playlist = get_playlist_by_id(playlist_id)
             delete_playlist(playlist, request.user)
             return JsonResponse(
                 {
@@ -326,7 +326,7 @@ class PlaylistSongReorderView(View):
             data = parse_json_body(request)
             validated = validate_reorder(data)
             playlist = get_playlist_detail(playlist_id)
-            reorder_playlist_song(playlist, request.user, validated['song_ids'])
+            reorder_playlist_songs(playlist, request.user, validated['song_ids'])
             return JsonResponse(
                 {
                     'success': True,

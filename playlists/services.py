@@ -169,7 +169,7 @@ def remove_song_from_playlist(playlist: Playlist, user, song_id) -> None:
     logger.info('Song removed from playlist: %s', playlist.title)
 
 @transaction.atomic
-def reorder_playlist_song(playlist: Playlist, user, song_ids: list) -> None:
+def reorder_playlist_songs(playlist: Playlist, user, song_ids: list) -> None:
     """
     Sắp xếp lại thứ tự bài hát trong playlist - owner.
     
