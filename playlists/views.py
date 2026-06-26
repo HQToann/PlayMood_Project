@@ -44,7 +44,7 @@ from playlists.services import (
     delete_playlist, 
     add_song_to_playlist, 
     remove_song_from_playlist,
-    reorder_playlist_songs,
+    reorder_playlist_song,
 )
 logger = logging.getLogger(__name__)
 
@@ -321,7 +321,18 @@ class PlaylistSongDetailView(View):
         except Exception as e:
             return handle_exception(e)
     
+class PlaylistSongDetailView(View):
+    """DELETE /api/v1/playlists/<id>/songs/<song_id>/ — Xóa bài hát (Auth+Owner+CSRF)"""
 
+    @method_decorator(csrf_protect)
+    @method_decorator(require_auth)
+    def delete(self, request, playlist_id, song_id):
+        try:
+            playlist = get_playlist_by_id(playlist_id)
+            remove_song_from_playlist(playlist, request.user, song_id)
+            return JsonResponse({'success': True}, status=204)
+        except Exception as e:
+            return handle_exception(e)
 
 #DELETE /api/v1/playlists/<id>/songs/<song_id>/ xoá bài hát (auth+owner+csrf)
 class PlaylistSongReorderView(View):
@@ -332,7 +343,7 @@ class PlaylistSongReorderView(View):
             data = parse_json_body(request)
             validated = validate_reorder(data)
             playlist = get_playlist_detail(playlist_id)
-            reorder_playlist_songs(playlist, request.user, validated['song_ids'])
+            reorder_playlist_song(playlist, request.user, validated['song_ids'])
             return JsonResponse(
                 {
                     'success': True,
