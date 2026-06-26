@@ -119,7 +119,7 @@ def list_public_playlists(filters: dict, viewer=None) -> dict:
         },
     }
 
-def list_playlist_song(playlist_id, viewer=None, page=1, page_size=50) -> dict:
+def list_playlist_songs(playlist_id, viewer=None, page=1, page_size=50) -> dict:
     """
     Danh sách bài hát trong playlist, sắp xếp theo order.
     

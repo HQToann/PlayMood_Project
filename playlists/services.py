@@ -29,7 +29,7 @@ from playlists.exceptions import (
 )
 from music.selectors import get_song_by_id
 
-logger - logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # Playlist CRUD
 def create_playlist(owner, data: dict) -> Playlist:
