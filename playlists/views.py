@@ -303,6 +303,23 @@ class PlaylistSongListView(View):
             )
         except Exception as e:
             return handle_exception(e)
+        
+
+#DELETE /api/v1/playlists/<id>/songs/<song_id>/ — Xóa bài hát (Auth+Owner+CSRF)
+class PlaylistSongDetailView(View):
+    @method_decorator(csrf_protect)
+    @method_decorator(require_auth)
+    def delete(self, request, playlist_id, song_id):
+        try:
+            playlist = get_playlist_by_id(playlist_id)
+            remove_song_from_playlist(playlist, request.user, song_id)
+            return JsonResponse(
+                {
+                    'success': True,
+                }, status=204
+                )
+        except Exception as e:
+            return handle_exception(e)
     
 class PlaylistSongDetailView(View):
     """DELETE /api/v1/playlists/<id>/songs/<song_id>/ — Xóa bài hát (Auth+Owner+CSRF)"""

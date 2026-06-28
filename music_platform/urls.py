@@ -16,6 +16,7 @@ from django.conf.urls.static import static
 # Handler tuỳ chỉnh
 from django.http import JsonResponse
 
+
 def handler404(request, exception):
     """Trả JSON thay vì HTML 404 mặc định."""
     return JsonResponse(
@@ -29,6 +30,7 @@ def handler404(request, exception):
         },
         status=404,
     )
+
 
 def handler500(request):
     """Trả JSON thay vì HTML 500 mặc định."""
