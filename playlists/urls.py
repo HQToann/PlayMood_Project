@@ -21,5 +21,5 @@ urlpatterns = [
     # Playlist Songs
     path("<uuid:playlist_id>/songs/", PlaylistSongListView.as_view(), name="playlist-song-list"),
     path("<uuid:playlist_id>/songs/reorder/", PlaylistSongReorderView.as_view(), name="playlist-song-reorder"),
-    path("<uuid:playlist_id/songs/<uuid:song_id>/", PlaylistSongDetailView.as_view(), name="playlist-song-detail"),
+    path("<uuid:playlist_id>/songs/<uuid:song_id>/", PlaylistSongDetailView.as_view(), name="playlist-song-detail"),
 ]

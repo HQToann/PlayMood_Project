@@ -63,7 +63,7 @@ def validate_playlist_update(data: dict) -> dict:
         else:
             result['title'] = sanitize_text(title)
     
-    if 'descrtption' in data:
+    if 'description' in data:
         description = data['description']
         if len(description) > DESCRIPTION_MAX_LENGHT:
             errors['description'] = [f'Mô tả tối đa {DESCRIPTION_MAX_LENGHT} ký tự']
@@ -174,10 +174,10 @@ def validate_cover_image(files: dict) -> None:
             },
         )
     
-    cover = files('cover_image')
+    cover = files['cover_image']
     errors = {}
     if cover.content_type not in ALLOWED_IMAGE_TYPE:
-        errors['cover_image'] = [f'Chỉ chấp nhận: {', '.join(ALLOWED_IMAGE_TYPE)}']
+        errors['cover_image'] = [f'Chỉ chấp nhận: {", ".join(ALLOWED_IMAGE_TYPE)}']
     elif cover.size > MAX_IMAGE_SIZE:
         errors['cover_image'] = ['File tối đa 5MB']
     

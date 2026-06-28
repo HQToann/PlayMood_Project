@@ -71,7 +71,7 @@ urlpatterns = [
     path("api/v1/music/", include('music.urls')),
 
     #week 2
-    path('api/v1/playlists/', include('playlists.url')),
+    path('api/v1/playlists/', include('playlists.urls')),
     
     # path('api/v1/artists/', include('artists.urls')),
     # path('api/v1/playlists/', include('playlists.urls')),
