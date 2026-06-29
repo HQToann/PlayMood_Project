@@ -1,3 +1,220 @@
-from django.db import models
+"""
+social/models.py
 
-# Create your models here.
+Models cho app social:
+    - Follow: Quan hệ theo dõi giữa 2 User
+    - Mood: Trạng thái tâm trạng hiện tại của User, có thể gắn kèm bài hát
+    - FriendActivity: Log hoạt động (nghe nhạc, like, mood..) để hiện thị Feed
+
+Tất cả PK là UUIDField theo quy ước chung của hệ thống.
+"""
+
+import uuid
+from django.db import models
+from django.utils import timezone
+
+class Follow(models.Model):
+    """
+    Quan hệ theo dõi - follower theo dõi following
+    """
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    follower = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='following', # user.following.all = những người user đang theo dõi
+        verbose_name='Người theo dõi',
+    )
+
+    following = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='followers', # user.followers.all() = những người đang theo dõi User
+        verbose_name='Người được theo dõi',
+    )
+
+    class Meta:
+        db_table = 'social_follow'
+        unique_together = [('follower', 'following')]
+        ordering = ['-created_at']
+        verbose_name = 'Theo dõi'
+        verbose_name_plural = 'Theo dõi'
+
+    def __str__(self):
+        return f'{self.follower.username} -> follow -> {self.following.username}'
+    
+class Mood(models.Model):
+    """
+    Trạng thái cảm xúc hiên tại của User - có thể gắn kèm bài hát
+    Business rule quan trọng:
+        - Mỗi User chỉ có 1 Mood tài 1 thời điểm
+        - Mood có thể hết hạn (Không còn hiển thị)
+        - Cập nhật Mood mới, không tạo nhiều bản ghi rác
+    """
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    user = models.OneToOneField(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='mood',
+        verbose_name='Người dùng',
+    )
+
+    status_text = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        verbose_name='Trạng thái'
+    )
+
+    # Bài hát gắn kèm Mood (tuỳ chọn)
+    song = models.ForeignKey(
+        'music.Song',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='moods',
+        verbose_name='Bài hát đính kèm',
+    )
+
+    expires_at = models.DateTimeField(verbose_name='Hết hạn lúc')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Cập nhật lần cuối')
+
+    class Meta:
+        db_table = 'social_mood'
+        ordering = ['-updated_at']
+        verbose_name = 'Tâm trạng'
+        verbose_name_plural = 'Tâm trạng'
+
+    def __str__(self):
+        return f'{self.user.username}: {self.status_text[:30]}'
+    
+    def is_expired(self) -> bool:
+        """Kiểm tra Mood đã hết hạn hay chưa"""
+        return timezone.now() >= self.expires_at
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'user': {
+                'id': str(self.user_id),
+                'username': self.user.username,
+                'display_name': self.user.get_display_name(),
+                'avatar': self.user.avatar.url if self.user.avatar else None,
+            },
+            'status_text': self.status_text,
+            'song': {
+                'id': str(self.song_id),
+                'title': self.song.title,
+                'artist_display_name': self.song.artist.get_display_name(),
+                'cover_image': self.song.cover_image.url if self.song.cover_image else None,
+            } if self.song_id else None,
+            'expires_at': self.expires_at.isoformat(),
+            'is_expires': self.is_expired(),
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+        }
+    
+class FriendActivity(models.Model):
+    """
+    Log hoạt động của User - dùng để hiển thị Feed cho nhưngz người follow họ
+    Xác định các loại hoạt động:
+        - playing: vừa nghe một bài
+        - liked: vừa thích một bài
+        - mood: vừa cập nhật tâm trạng mới
+    """
+
+    TYPE_PLAYING = 'playing'
+    TYPE_LIKED = 'liked'
+    TYPE_MOOD = 'mood'
+    TYPE_CHOICES = [
+        (TYPE_PLAYING, 'Đang nghe'),
+        (TYPE_LIKED, 'Đã thích'),
+        (TYPE_MOOD, 'Cập nhật tâm trạng'),
+    ]
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    user = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='friend_activities',
+        verbose_name='Người dùng',
+        db_index=True,
+    )
+
+    activity_type = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
+        db_index=True,
+    )
+
+    song = models.ForeignKey(
+        'music.Song',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='friend_activities',
+        verbose_name='Bài hát liên quan',
+    )
+
+    # Lưu lại status_text của Mood tại thời điểm tạo activity
+    extra_text = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        verbose_name='Nội dung bổ sung',
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Thời điểm')
+
+    class Meta:
+        db_table = 'social_friend_activity'
+        ordering = ['-created_at']
+        verbose_name = 'Hoạt động bạn bè'
+        verbose_name_plural = 'Hoạt động bạn bè'
+        indexes = [
+            # Composite index hỗ trợ query Feed: lấy hoạt động của nhiều user, sắp xếp theo thời gian
+            models.Index(fields=['user', 'created_at'], name='activity_user_time_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} - {self.activity_type} - {self.created_at}'
+    
+    def to_dict(self):
+        data = {
+            'id': str(self.id),
+            'user': {
+                'id': str(self.user_id),
+                'user_name': self.user.username,
+                'display_name': self.user.get_display_name(),
+                'avatar': self.user.avatar.url if self.user.avatar else None,
+            },
+            'activity_type': self.activity_type,
+            'extra_text': self.extra_text,
+            'created_at': self.created_at.isoformat(),
+        }
+        if self.song.id:
+            data['song'] = {
+                'id': str(self.song_id),
+                'title': self.song.title,
+                'artist_display_name': self.song.artist.get_display_name(),
+                'cover_image': self.song.cover_image.url if self.song.cover_image else None,
+            }
+        else:
+            data['song'] = None
+        return data
