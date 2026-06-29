@@ -20,9 +20,9 @@ from music.models import (
 )
 
 #lấy ArtistProfile theo user_id không kiểm tra quyền xem (chỉ dùng nội bộ trong service)
-def get_artist_profile_by_id(users_id) -> ArtistProfile:
+def get_artist_profile_by_user_id(user_id) -> ArtistProfile:
     try:
-        return ArtistProfile.objects.select_related('user').gett(users_id=users_id)
+        return ArtistProfile.objects.select_related('user').get(user_id=user_id)
     except ArtistProfile.DoesNotExist:
         raise ArtistProfileNotFound()
     
@@ -56,7 +56,7 @@ def check_profile_exists(user_id) -> bool:
 - danh sách nghệ sĩ (có ArtistProfile), tìm theo stage_name/username, phân trang
 - Block policy ẩn nghệ sĩ đã block viewer, tương tự list_song() trong music/selectors.py
 """
-def list_artist(filters: dict, viewer=None) -> dict:
+def list_artists(filters: dict, viewer=None) -> dict:
     qs = ArtistProfile.objects.select_related('user')
 
     viewer_id = getattr(viewer, 'id', None)
@@ -151,7 +151,8 @@ def list_artist_top_songs(artist_user_id, limit=10) -> list:
             'id': str(s.id),
             'title': s.title,
             'play_count': s.play_count,
-            'like_count': s.likes_count(),
-            'cover_image': s.cover_image.url if s.cover_iamge else None,
-        } for s in songs
+            'like_count': s.likes.count(),
+            'cover_image': s.cover_image.url if s.cover_image else None,
+        }
+        for s in songs
     ]

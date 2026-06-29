@@ -65,17 +65,18 @@ urlpatterns = [
 
     # API v1 - toàn bộ logic backend
 
-    # Tuần 1 - Account
+    # Tuần 1 - accounts
     path('api/v1/auth/', include('accounts.auth_urls')),
     path('api/v1/accounts/', include('accounts.urls')),
 
-    # Tuần 2 - music
+    # Tuần 2 - musics
     path("api/v1/music/", include('music.urls')),
 
-    #week 2
+    # Tuần 3 - playlists
     path('api/v1/playlists/', include('playlists.urls')),
     
-    # path('api/v1/artists/', include('artists.urls')),
+    # Tuần 3 - actists
+    path('api/v1/artists/', include('artists.urls')),
     # path('api/v1/playlists/', include('playlists.urls')),
     # path('api/v1/social/', include('social.urls')),
     # path('api/v1/notifications/', include('notifications.urls')),
