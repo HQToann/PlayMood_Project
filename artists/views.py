@@ -62,9 +62,10 @@ def handle_exception(e: Exception) -> JsonResponse:
                 'error': {
                     'code': 'VALIDATION_ERROR',
                     'message': e.message,
+                    'fields': e.fields,
                 }
             },
-            status=403,
+            status=400,
         )
     
     if isinstance(e, (NotArtistProfileOwner, PermissionDenied, UserNotArtist)):

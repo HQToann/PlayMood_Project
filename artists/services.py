@@ -58,6 +58,7 @@ def update_artist_profile(profile: ArtistProfile, user, data: dict) -> ArtistPro
 
     profile.save(update_fields=list(data.keys()) + ['updated_at'])
     logger.info('ArtistProfile updated: user=%s', profile.user.username)
+    return profile
 
 def update_cover_image(profile: ArtistProfile, user, cover_file) -> ArtistProfile:
     """
@@ -78,7 +79,7 @@ def update_cover_image(profile: ArtistProfile, user, cover_file) -> ArtistProfil
             logger.warning('Failed to delete old cover for artist %s: %s', profile.user_id, e)
     
     profile.cover_image = cover_file
-    profile.save(update_fields=['cover_image', 'updates_at'])
+    profile.save(update_fields=['cover_image', 'updated_at'])
     logger.info('ArtistProfile cover updates: user=%s', profile.user.username)
     return profile
 

@@ -1,3 +1,8 @@
 from django.contrib import admin
+from artists.models import ArtistProfile
 
-# Register your models here.
+@admin.register(ArtistProfile)
+class ArtistProfileAdmin(admin.ModelAdmin):
+    list_display = ('get_display_name', 'user', 'stage_name', 'created_at')
+    search_fields = ('stage_name', 'user__username')
+    readonly_fields = ('created_at', 'updated_at')
