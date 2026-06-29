@@ -16,7 +16,7 @@ from accounts.exceptions import ValidationError
 STAGE_NAME_MAX = 100
 BIO_MAX = 1000
 
-ALLOWED_IMAGE_TYPES = {'image/jpeg' 'image/png', 'image/webp'}
+ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
 MAX_IMAGE_SIZE = 5 * 1024 * 1024 # 5 MB
 
 def validate_artist_profile_create(data: dict) -> dict:
@@ -40,7 +40,7 @@ def validate_artist_profile_create(data: dict) -> dict:
     else:
         result['bio'] = sanitize_text(bio)
 
-    for field in ('website_url' 'facebook_url', 'youtube_url'):
+    for field in ('website_url', 'facebook_url', 'youtube_url'):
         url = data.get(field, '').strip()
         if url:
             try:
@@ -102,9 +102,7 @@ def validate_cover_image(files: dict) -> None:
     if 'cover_image' not in files:
         raise ValidationError(
             'Dữ liệu không hợp lệ',
-            fields={
-                'cover_image': ['File ảnh là bắt buộc']
-            },
+            fields={'cover_image': ['File ảnh là bắt buộc']},
         )
 
     cover = files['cover_image']
@@ -115,7 +113,7 @@ def validate_cover_image(files: dict) -> None:
         errors['cover_image'] = ['File tối đa 5 MB']
     
     if errors:
-        raise ValidationError('File không hợp lệ', files=errors)
+        raise ValidationError('File không hợp lệ', fields=errors)
     
 def validate_list_artists_params(params: dict) -> dict:
     """
