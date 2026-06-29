@@ -37,6 +37,11 @@ class Follow(models.Model):
         verbose_name='Người được theo dõi',
     )
 
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name='Ngày theo dõi',
+    )
+
     class Meta:
         db_table = 'social_follow'
         unique_together = [('follower', 'following')]
@@ -120,7 +125,7 @@ class Mood(models.Model):
                 'cover_image': self.song.cover_image.url if self.song.cover_image else None,
             } if self.song_id else None,
             'expires_at': self.expires_at.isoformat(),
-            'is_expires': self.is_expired(),
+            'is_expired': self.is_expired(),
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
         }
@@ -200,7 +205,7 @@ class FriendActivity(models.Model):
             'id': str(self.id),
             'user': {
                 'id': str(self.user_id),
-                'user_name': self.user.username,
+                'username': self.user.username,
                 'display_name': self.user.get_display_name(),
                 'avatar': self.user.avatar.url if self.user.avatar else None,
             },
@@ -208,7 +213,7 @@ class FriendActivity(models.Model):
             'extra_text': self.extra_text,
             'created_at': self.created_at.isoformat(),
         }
-        if self.song.id:
+        if self.song_id:
             data['song'] = {
                 'id': str(self.song_id),
                 'title': self.song.title,

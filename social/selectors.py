@@ -46,7 +46,7 @@ def list_followers(user_id, viewer=None, page=1, page_size=20) -> dict:
         blocked_ids = BlockList.objects.filter(blocked_id=viewer_id).values_list('blocker_id', flat=True)
         qs = qs.exclude(follower_id__in=blocked_ids)
 
-    qs = qs.order_by('-created-at')
+    qs = qs.order_by('-created_at')
     total = qs.count()
     start = (page - 1) * page_size
     items = []
@@ -132,7 +132,7 @@ def get_user_mood(user_id, viewer=None) -> Mood | None:
     if viewer_is_auth and is_blocked(viewer_id, user_id):
         return None
     
-    mood = Mood.objects.select_related('user', 'song', 'song__artists').filter(user_id=user_id).first()
+    mood = Mood.objects.select_related('user', 'song', 'song__artist').filter(user_id=user_id).first()
     if mood is None or mood.is_expired():
         return None
     return mood

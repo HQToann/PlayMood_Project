@@ -20,4 +20,4 @@ class MoodAdmin(admin.ModelAdmin):
 @admin.register(FriendActivity)
 class FriendActivityAdmin(admin.ModelAdmin):
     list_display = ('user', 'activity_type', 'song', 'created_at')
-    list_filter = ('activity_type')
+    list_filter = ('activity_type',)
