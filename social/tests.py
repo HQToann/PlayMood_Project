@@ -345,9 +345,16 @@ class FeedSelectorTest(TestCase):
         self.assertEqual(result['items'], [])
 
     def test_feed_sorted_newest_first(self):
+        from django.utils import timezone
+        from datetime import timedelta
+
         Follow.objects.create(follower=self.alice, following=self.bob)
         a1 = create_friend_activity(user=self.bob, activity_type=FriendActivity.TYPE_MOOD, extra_text='First')
         a2 = create_friend_activity(user=self.bob, activity_type=FriendActivity.TYPE_MOOD, extra_text='Second')
+
+        FriendActivity.objects.filter(id=a1.id).update(created_at=timezone.now() - timedelta(seconds=10))
+        FriendActivity.objects.filter(id=a2.id).update(created_at=timezone.now())
+
         result = list_feed(self.alice, page=1, page_size=20)
         self.assertEqual(result['items'][0]['extra_text'], 'Second')
         self.assertEqual(result['items'][1]['extra_text'], 'First')
