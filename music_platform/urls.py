@@ -77,6 +77,10 @@ urlpatterns = [
     
     # Tuần 3 - actists
     path('api/v1/artists/', include('artists.urls')),
+
+    #tuần 4 - notifications
+    path('')
+
     # path('api/v1/playlists/', include('playlists.urls')),
     # path('api/v1/social/', include('social.urls')),
     # path('api/v1/notifications/', include('notifications.urls')),
