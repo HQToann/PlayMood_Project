@@ -82,7 +82,7 @@ def list_following(user_id, viewer=None, page=1, page_size=20) -> dict:
     viewer_is_auth = bool(viewer_id and getattr(viewer, 'is_authenticated', False))
     if viewer_is_auth:
         from accounts.models import BlockList
-        blocked_ids = BlockList.objects.filter(blocked_id=viewer_id).values_list('blocked_id', flat=True)
+        blocked_ids = BlockList.objects.filter(blocked_id=viewer_id).values_list('blocker_id', flat=True)
         qs = qs.exclude(following_id__in=blocked_ids)
 
     qs = qs.order_by('-created_at')
