@@ -92,7 +92,7 @@ class ArtistProfile(models.Model):
             'user': {
                 'id': str(self.user_id),
                 'username': self.user.username,
-                'avatar': self.user.avartar.url if self.user.avatar else None,
+                'avatar': self.user.avatar.url if self.user.avatar else None,
             },
             'stage_name': self.stage_name,
             'display_name': self.get_display_name(),

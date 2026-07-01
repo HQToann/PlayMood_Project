@@ -54,7 +54,11 @@ def validate_set_mood(data: dict) -> dict:
     if errors:
         raise ValidationError('Dữ liệu tâm trạng không hợp lệ', fields=errors)
     
-
+    return {
+        'status_text': sanitize_text(status_text),
+        'song_id': song_id,
+        'expires_at': timezone.now() + timedelta(hours=duration_hours),
+    }
 
 #validate và làm sạch query params khi lấy feed
 def validate_list_feed_params(params: dict) -> dict:

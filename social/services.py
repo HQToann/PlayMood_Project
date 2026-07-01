@@ -35,7 +35,7 @@ def toggle_follow(follower: User, following_id) -> dict:
         raise CannotFollowSelf()
     try:
         following = User.objects.get(id=following_id, is_active=True)
-    except User.DoesNotExist():
+    except User.DoesNotExist:
         raise FollowTargetNotFound()
     
     if is_blocked(viewer_id=follower.id, target_id=following.id):
@@ -78,10 +78,10 @@ def set_mood(user: User, data: dict) -> Mood:
     if data.get('song_id'):
         try:
             song = Song.objects.get(id=data['song_id'])
-        except Song.DoesNotExist():
+        except Song.DoesNotExist:
             raise NotFound('Bài hát không tồn tại')
         
-    mood, _created = Mood.objects.update_or_craete(
+    mood, _created = Mood.objects.update_or_create(
         user=user,
         defaults={
             'status_text': data['status_text'],
@@ -104,7 +104,10 @@ def set_mood(user: User, data: dict) -> Mood:
 
     return mood
 
-
+def delete_mood(user: User) -> None:
+    """Xoa Mood hien tai cua user."""
+    Mood.objects.filter(user=user).delete()
+    logger.info('Mood deleted: user=%s', user.username)
 
 
 """

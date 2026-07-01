@@ -22,6 +22,4 @@ urlpatterns = [
 
     path('feed/', FeedView.as_view(), name='social-feel'),
     path('me/activities/', MyActivitiesView.as_view(), name='social-my-activities'),
-
-
 ]
