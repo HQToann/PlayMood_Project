@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'artists',
     'social',
     'notifications',
+    'search',
 
 ]
 

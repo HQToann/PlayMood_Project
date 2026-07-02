@@ -83,8 +83,10 @@ urlpatterns = [
 
     #tuần 5 - notification
     path('api/v1/notifications/', include('notifications.urls')),
-    # path('api/v1/notifications/', include('notifications.urls')),
-    # path('api/v1/search/', include('search.urls')),
+
+    # tuần 5 - search
+    path('api/v1/search/', include('search.urls')),
+
 ]
 
 # Phục vụ media files trong môi trường development

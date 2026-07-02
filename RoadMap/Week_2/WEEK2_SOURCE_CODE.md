@@ -195,7 +195,7 @@ class Song(models.Model):
     def __str__(self):
         return f'{self.title} — {self.artist.username}'
 
-    def to_dict(self, viewer=None, include_stats=True):
+    def to_dict(self, viewer=None, include_stats=True, include_viewer_state=True):
         """
         Serialize Song thành dict.
 
@@ -233,7 +233,7 @@ class Song(models.Model):
                 round(sum(r.score for r in ratings) / ratings.count(), 1)
                 if ratings.count() > 0 else None
             )
-        if viewer and hasattr(viewer, 'id') and viewer.is_authenticated:
+        if include_viewer_state and viewer and hasattr(viewer, 'id') and viewer.is_authenticated:
             data['is_liked']  = self.likes.filter(user=viewer).exists()
             my_rating         = self.ratings.filter(user=viewer).first()
             data['my_rating'] = my_rating.score if my_rating else None

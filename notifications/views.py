@@ -7,7 +7,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 
-from accounts.decorators import require_artist
+from accounts.decorators import require_auth
 from accounts.exceptions import (
     ValidationError,
     PermissionDenied,
@@ -79,7 +79,7 @@ def handle_exception(e: Exception) -> JsonResponse:
 
 #GET /api/v1/notifications/ danh sách thông báo của tôi
 class NotificationListView(View):
-    @method_decorator(require_artist)
+    @method_decorator(require_auth)
     def get(self, request):
         try:
             filters = validate_list_notifications_params(request.GET)
@@ -103,7 +103,7 @@ class NotificationListView(View):
 
 #GET /api/v1/notifications/unread-count/ số thông báo chưa đọc (auth)
 class UnreadCountView(View):
-    @method_decorator(require_artist)
+    @method_decorator(require_auth)
     def get(self, request):
         try:
             count = count_unread(request.user)
@@ -122,7 +122,7 @@ class UnreadCountView(View):
 #POST /api/v1/notifications/<id>/read/ đánh dấu 1 thông báo đã đọc
 class NotificationReadView(View):
     @method_decorator(csrf_protect)
-    @method_decorator(require_artist)
+    @method_decorator(require_auth)
     def post(self, request, notification_id):
         try:
             notification = get_notification_by_id(notification_id,request.user)
@@ -142,15 +142,15 @@ class NotificationReadView(View):
 #Post /api/v1/notification/read-all/ đánh dấu tất cả đã đọc (auth+csrf)
 class MarkAllReadView(View):
     @method_decorator(csrf_protect)
-    @method_decorator(require_artist)
-    def post(self, requset):
+    @method_decorator(require_auth)
+    def post(self, request):
         try:
-            updated = mark_all_read(self.request.user)
+            updated = mark_all_read(request.user)
             return JsonResponse(
                 {
                     'success': True,
                     'data': {
-                        'updated_count': updated,
+                        'updated_count': updated
                     },
                 },
             )
@@ -163,11 +163,11 @@ class MarkAllReadView(View):
 #delete /api/v1/notifications/<id>/ xoá 1 thông báo (auth+Owner+Csrf)
 class NotificationDetailView(View):
     @method_decorator(csrf_protect)
-    @method_decorator(require_artist)
+    @method_decorator(require_auth)
     def delete(self, request, notification_id):
         try:
             notification = get_notification_by_id(notification_id, request.user)
-            delete_notification(notification_id, request.user)
+            delete_notification(notification, request.user)
             return JsonResponse(
                 {
                     'success': True,
