@@ -112,12 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderFriends(friendsList) {
+    function renderFriends(friendsList, isSearch = false) {
         let html = '';
         let onlineCount = 0;
 
         if (friendsList.length === 0) {
-            html = '<div class="text-center text-muted-custom py-4 small">Bạn chưa theo dõi ai.</div>';
+            html = `<div class="text-center text-muted-custom py-4 small">${isSearch ? 'Không tìm thấy bạn bè nào.' : 'Bạn chưa theo dõi ai.'}</div>`;
         } else {
             friendsList.forEach(friend => {
                 if (friend.isOnline) onlineCount++;
@@ -156,7 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!input) return;
         input.addEventListener('input', e => {
             const keyword = e.target.value.toLowerCase().trim();
-            renderFriends(allFriends.filter(f => f.name.toLowerCase().includes(keyword)));
+            const isSearch = keyword.length > 0;
+            renderFriends(allFriends.filter(f => f.name.toLowerCase().includes(keyword)), isSearch);
         });
     });
 
