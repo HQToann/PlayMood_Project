@@ -96,38 +96,48 @@
 
                         <!-- Thông tin nghệ sĩ đè lên ảnh bìa -->
                         <div class="profile-info px-4 d-flex flex-column flex-md-row align-items-md-end gap-4"
-                            style="margin-top: -100px; position: relative; z-index: 2;">
+                            style="margin-top: -130px; position: relative; z-index: 2;">
                             <!-- Ảnh đại diện -->
                             <div class="flex-shrink-0 position-relative">
                                 <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80"
                                     alt="Avatar" class="rounded-circle object-fit-cover shadow-lg"
                                     style="width: 200px; height: 200px; border: 5px solid var(--bg-main);">
 
+                                {% if is_own_profile %}
+                                <div class="profile-avatar-edit" title="Đổi ảnh đại diện" style="position: absolute; bottom: 5px; right: 5px; width: 45px; height: 45px; border-radius: 50%; background: var(--bg-card); border: 4px solid var(--bg-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; z-index: 3;">
+                                    <i class="bi bi-camera-fill text-white" style="font-size: 1.3rem;"></i>
+                                </div>
+                                {% endif %}
+
                                 <!-- Mood Thought Bubble -->
                                 <style>
                                     .artist-mood-bubble::before { top: 29px !important; left: 20px !important; }
                                     .artist-mood-bubble::after { top: 41px !important; left: 10px !important; }
                                 </style>
-                                <div class="profile-mood-bubble artist-mood-bubble" title="Cảm xúc hiện tại" style="position: absolute; top: -38px; left: 110px; z-index: 3;">
-                                    <div class="badge d-inline-flex align-items-center gap-2 shadow-sm position-relative"
-                                        style="font-size: 0.85rem; padding: 6px 14px;">
-
-                                        <div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">
-                                            <i class="bi bi-suit-heart-fill text-danger"></i> <span class="fw-bold">Lãng
-                                                Mạn</span>
-                                        </div>
-                                        <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1"
-                                            style="flex-grow: 1; min-width: 0; max-width: 100px;">
-                                            <i class="bi bi-music-note-beamed flex-shrink-0 text-white"></i>
-                                            <div class="marquee-wrapper"
-                                                style="overflow: hidden; white-space: nowrap; flex-grow: 1; min-width: 0; height: 18px; display: flex; align-items: center;">
-                                                <span class="marquee-text fw-bold text-white"
-                                                    style="display: inline-block; font-size: 0.85rem;">Nơi Này Có
-                                                    Anh</span>
-                                            </div>
-                                        </div>
+                                {% if target_user.mood and not target_user.mood.is_expired and target_user.mood.mood_type %}
+                                {% with color_from=target_user.mood.theme.gradient_from|default:target_user.mood.mood_type.theme.gradient_from|default:'#ff758c' color_to=target_user.mood.theme.gradient_to|default:target_user.mood.mood_type.theme.gradient_to|default:'#ff7eb3' %}
+                                <style>
+                                    .artist-mood-bubble::before { background: {{ color_from }} !important; top: 29px !important; left: 20px !important; }
+                                    .artist-mood-bubble::after  { background: {{ color_from }} !important; top: 41px !important; left: 10px !important; }
+                                    .artist-mood-bubble .badge  { background: linear-gradient(135deg, {{ color_from }}, {{ color_to }}) !important; color: #fff !important; }
+                                </style>
+                                <div class="profile-mood-bubble artist-mood-bubble" title="{{ target_user.mood.status_text|default:'Cảm xúc hiện tại' }}" style="position: absolute; top: -38px; left: 110px; z-index: 3;">
+                                    <div class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-sm"
+                                        style="font-size: 0.85rem; padding: 8px 16px; font-weight: 600; color: #fff;">
+                                        <span>{{ target_user.mood.mood_type.emoji }}</span>
+                                        <span>{{ target_user.mood.mood_type.name }}</span>
+                                        {% if target_user.mood.song %}
+                                        <span class="border-start border-white border-opacity-50 ps-2 d-flex align-items-center gap-1" style="font-weight: 400;">
+                                            <i class="bi bi-music-note-beamed"></i>
+                                            <span style="max-width: 90px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: inline-block;">{{ target_user.mood.song.title }}</span>
+                                        </span>
+                                        {% endif %}
                                     </div>
                                 </div>
+                                {% endwith %}
+                                {% endif %}
+
+
 
                             </div>
                             <!-- Chi tiết -->
@@ -138,16 +148,40 @@
                                     <i class="bi bi-patch-check-fill" style="color: var(--accent-color); font-size: 1.2rem;"></i>
                                     <span class="text-white fw-medium" style="font-size: 0.95rem; letter-spacing: 0.5px;">Xác minh bởi PlayMood</span>
                                 </div>
-                                <h1 class="fw-bold mb-2 text-white"
-                                    style="font-size: 4rem; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); line-height: 1.1;">
-                                    Sơn Tùng M-TP</h1>
+                                <h1 class="fw-bold mb-0 text-white"
+                                    style="font-size: 4rem; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px; margin-top: -4px;">
+                                    {{ target_user.display_name|default:target_user.username }}</h1>
 
                                 <!-- Tiểu sử ngắn -->
+                                {% if is_own_profile %}
+                                <div id="bioWrapper" style="max-width: 560px; position: relative;">
+                                    <!-- Bio display box (click pencil to edit) -->
+                                    <div id="bioDisplay"
+                                        style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px 16px; cursor: pointer;"
+                                        onclick="startEditBio()" title="Click để chỉnh sửa tiểu sử">
+                                        <span id="bioText" class="text-light opacity-75" style="font-size: 0.95rem; line-height: 1.5; flex: 1;">{{ target_user.bio|default:'Thêm tiểu sử...' }}</span>
+                                        <i class="bi bi-pencil-fill text-secondary" style="font-size: 0.85rem; flex-shrink: 0;"></i>
+                                    </div>
+                                    <!-- Bio edit textarea -->
+                                    <div id="bioEditArea" style="display: none;">
+                                        <textarea id="bioInput" rows="2" maxlength="100"
+                                            style="width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.35); border-radius: 12px; color: #fff; font-size: 0.95rem; line-height: 1.5; padding: 10px 16px; resize: none; outline: none;"
+                                            placeholder="Nhập tiểu sử (tối đa 100 ký tự)...">{{ target_user.bio }}</textarea>
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button onclick="saveBio()" style="background: var(--accent-color); color: #121929; border: none; border-radius: 20px; padding: 5px 18px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">Lưu</button>
+                                            <button onclick="cancelEditBio()" style="background: rgba(255,255,255,0.08); color: #fff; border: none; border-radius: 20px; padding: 5px 18px; font-size: 0.82rem; cursor: pointer;">Huỷ</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                {% if target_user.bio %}
                                 <p class="text-light mb-0 opacity-75"
-                                    style="max-width: 600px; font-size: 1rem; line-height: 1.5; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-                                    Ca sĩ, nhạc sĩ kiêm nhà sản xuất âm nhạc. Mong muốn mang âm nhạc Việt Nam vươn tầm
-                                    thế giới. Âm nhạc là cảm xúc, là cuộc sống.
+                                    style="max-width: 560px; font-size: 0.95rem; line-height: 1.5; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                                    {{ target_user.bio }}
                                 </p>
+                                {% endif %}
+                                {% endif %}
+
                             </div>
                         </div>
 
@@ -219,7 +253,7 @@
                                         class="rounded" alt="cover">
                                     <div>
                                         <div class="fw-semibold">Chạy Ngay Đi</div>
-                                        <div class="small text-secondary">Sơn Tùng M-TP</div>
+                                        <div class="small text-secondary">{{ target_user.display_name|default:target_user.username }}</div>
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-4 text-secondary">
@@ -518,8 +552,46 @@
     
     <script src="{% static 'js/main.js' %}"></script>
     
-    
-    
+    <script>
+    function startEditBio() {
+        document.getElementById('bioDisplay').style.display = 'none';
+        document.getElementById('bioEditArea').style.display = 'block';
+        document.getElementById('bioInput').focus();
+    }
+
+    function cancelEditBio() {
+        document.getElementById('bioEditArea').style.display = 'none';
+        document.getElementById('bioDisplay').style.display = 'flex';
+    }
+
+    async function saveBio() {
+        const bio = document.getElementById('bioInput').value.trim();
+        try {
+            const res = await fetch('/api/v1/accounts/me/', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ bio })
+            });
+            const json = await res.json();
+            if (json.success) {
+                document.getElementById('bioText').textContent = bio || 'Thêm tiểu sử...';
+                cancelEditBio();
+                if (window.showToast) showToast('Đã cập nhật tiểu sử!', 'success');
+            } else {
+                if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật', 'error');
+            }
+        } catch(e) {
+            if (window.showToast) showToast('Lỗi kết nối', 'error');
+        }
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    </script>
+
 </body>
 
 </html>

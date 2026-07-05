@@ -100,49 +100,7 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        async function handleLogout(e) {
-            e.preventDefault();
-            
-            // Lấy CSRF token từ cookie
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
 
-            try {
-                // Gọi API Logout
-                const csrfToken = getCookie('csrftoken') || '{{ csrf_token }}';
-                
-                const response = await fetch('/api/v1/auth/logout/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    window.location.href = "{% url 'login_page' %}";
-                } else {
-                    alert('Đăng xuất thất bại. Vui lòng thử lại.');
-                }
-            } catch (error) {
-                console.error('Logout error:', error);
-                alert('Lỗi kết nối. Vui lòng thử lại.');
-            }
-        }
-    </script>
     
     <!-- Nhúng script Friend Activity -->
     <script>

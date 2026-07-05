@@ -88,6 +88,8 @@ function getCookie(name) {
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
+
+
             const cookie = cookies[i].trim();
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
@@ -97,3 +99,54 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+// Global Toggle Password Visibility
+window.togglePasswordVisibility = function(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    }
+};
+
+// Global Toast Notification
+window.showToast = function(msg, isSuccess = true) {
+    let toastContainer = document.getElementById('global-toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'global-toast-container';
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toastElem = document.createElement('div');
+    toastElem.className = `toast align-items-center border-0 text-white bg-${isSuccess ? 'success' : 'danger'}`;
+    toastElem.setAttribute('role', 'alert');
+    toastElem.setAttribute('aria-live', 'assertive');
+    toastElem.setAttribute('aria-atomic', 'true');
+    
+    toastElem.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body fw-bold">
+                ${msg}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toastElem);
+    const toast = new bootstrap.Toast(toastElem, { delay: 3000 });
+    
+    toastElem.addEventListener('hidden.bs.toast', () => {
+        toastElem.remove();
+    });
+    
+    toast.show();
+};

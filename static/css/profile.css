@@ -194,23 +194,30 @@
 .profile-mood-bubble {
     position: absolute;
     top: -25px;
-    left: 75px; /* Overlaps the right side of the avatar */
+    left: 75px;
     z-index: 10;
     white-space: nowrap;
     cursor: pointer;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    animation: cloud-float 3s ease-in-out infinite;
 }
 
 .profile-mood-bubble .badge {
     position: relative;
     z-index: 2;
     background: linear-gradient(135deg, #F8B4B4, #E99CBB) !important;
-    color: #121929 !important;
+    color: #fff !important;
     font-weight: 600 !important;
+    font-size: 0.85rem !important;
     padding: 8px 18px !important;
-    border-radius: 50px !important; /* Full pill shape */
+    border-radius: 50px !important;
     box-shadow: none !important;
-    border: none !important; 
+    border: none !important;
+}
+
+@keyframes cloud-float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-5px); }
 }
 
 /* Big Dot */

@@ -16,23 +16,42 @@ from django.views.generic import TemplateView
 
 # Handler tuỳ chỉnh
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+
+LOGIN_URL = '/auth/login/'
+
+def login_required_view(template_name):
+    """Wrapper tạo view yêu cầu đăng nhập, redirect về login nếu chưa đăng nhập."""
+    def view(request, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(LOGIN_URL)
+        return render(request, template_name, kwargs)
+    return view
+
+def home_view(request):
+    """Trang chủ - yêu cầu đăng nhập."""
+    if not request.user.is_authenticated:
+        return redirect(LOGIN_URL)
+    return render(request, 'home/index.html')
 
 def profile_routing_view(request):
     """
     Hiển thị trang profile dựa trên role của người dùng.
     Nếu là artist, trả về artist_profile.html, ngược lại trả về profile.html.
     """
-    if request.user.is_authenticated and getattr(request.user, 'role', '') == 'artist':
-        return render(request, 'profile/artist_profile.html')
-    return render(request, 'profile/profile.html')
+    if not request.user.is_authenticated:
+        return redirect(LOGIN_URL)
+    
+    context = {'target_user': request.user, 'is_own_profile': True}
+    
+    if getattr(request.user, 'role', '') == 'artist':
+        return render(request, 'profile/artist_profile.html', context)
+    return render(request, 'profile/profile.html', context)
 
 
 def user_profile_routing_view(request, user_id):
     """
     Hiển thị trang profile của người dùng khác dựa trên role của họ.
-    Nếu là artist, trả về artist_profile.html, ngược lại trả về profile.html.
-    Truyền target_user_id vào context để JS biết cần load profile của ai.
     """
     from accounts.models import User
     try:
@@ -40,9 +59,16 @@ def user_profile_routing_view(request, user_id):
     except User.DoesNotExist:
         from django.http import Http404
         raise Http404
+    
+    context = {
+        'target_user': target_user,
+        'target_user_id': str(user_id),
+        'is_own_profile': request.user.is_authenticated and str(request.user.id) == str(user_id)
+    }
+        
     if getattr(target_user, 'role', '') == 'artist':
-        return render(request, 'profile/artist_profile.html', {'target_user_id': str(user_id)})
-    return render(request, 'profile/profile.html', {'target_user_id': str(user_id)})
+        return render(request, 'profile/artist_profile.html', context)
+    return render(request, 'profile/profile.html', context)
 
 
 
@@ -90,16 +116,16 @@ def handler429(request):
 
 # URL Patterns
 urlpatterns = [
-    # Frontend Routes
-    path('', TemplateView.as_view(template_name='home/index.html'), name='home'),
+    # Frontend Routes - Yêu cầu đăng nhập
+    path('', home_view, name='home'),
     path('auth/login/', TemplateView.as_view(template_name='auth/login.html'), name='login_page'),
     path('profile/', profile_routing_view, name='profile_page'),
-    path('profile/upload/', TemplateView.as_view(template_name='profile/artist_upload.html'), name='artist_upload_page'),
-    path('profile/manage/', TemplateView.as_view(template_name='profile/artist_manage_songs.html'), name='artist_manage_page'),
+    path('profile/upload/', login_required_view('profile/artist_upload.html'), name='artist_upload_page'),
+    path('profile/manage/', login_required_view('profile/artist_manage_songs.html'), name='artist_manage_page'),
     path('profile/<uuid:user_id>/', user_profile_routing_view, name='user_profile_page'),
-    path('settings/', TemplateView.as_view(template_name='settings/settings.html'), name='settings_page'),
-    path('notifications/', TemplateView.as_view(template_name='notifications/notifications.html'), name='notifications_page'),
-    path('mood/', TemplateView.as_view(template_name='social/mood.html'), name='mood_page'),
+    path('settings/', login_required_view('settings/settings.html'), name='settings_page'),
+    path('notifications/', login_required_view('notifications/notifications.html'), name='notifications_page'),
+    path('mood/', login_required_view('social/mood.html'), name='mood_page'),
 
     # Admin & API Routes
     path('admin/', admin.site.urls),

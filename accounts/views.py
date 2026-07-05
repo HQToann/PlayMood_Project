@@ -19,7 +19,7 @@ import logging
 from django.http import JsonResponse
 from django.views import View
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie, csrf_exempt
 
 from accounts.decorators import require_auth, require_admin
 from accounts.validators import (
@@ -196,8 +196,7 @@ class LoginView(View):
             )
         except Exception as e:
             return _handle_exception(e)
-        
-@method_decorator([csrf_protect, require_auth], name='dispatch')
+@method_decorator([csrf_exempt, require_auth], name='dispatch')
 class LogoutView(View):
     """POST /api/v1/auth/logout/ - Đăng xuất."""
 

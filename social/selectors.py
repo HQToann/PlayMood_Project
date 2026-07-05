@@ -195,7 +195,7 @@ def list_my_activities(user, page=1, page_size=20) -> dict:
     }
 
 
-def list_friends(user, page=1, page_size=50) -> dict:
+def list_friends(user, page=1, page_size=50, search_query="") -> dict:
     """
     Danh sách bạn bè: những người mà user follow và họ cũng follow lại (mutual follow).
     """
@@ -211,7 +211,17 @@ def list_friends(user, page=1, page_size=50) -> dict:
     friend_ids = following_ids & follower_ids
 
     from accounts.models import User as UserModel
-    qs = UserModel.objects.filter(id__in=friend_ids, is_active=True).select_related('mood', 'mood__song', 'mood__song__artist').order_by('username')
+    qs = UserModel.objects.filter(id__in=friend_ids, is_active=True)
+    
+    if search_query:
+        from django.db.models import Q
+        qs = qs.filter(
+            Q(username__icontains=search_query) |
+            Q(display_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+        
+    qs = qs.select_related('mood', 'mood__song', 'mood__song__artist').order_by('username')
     total = qs.count()
     start = (page - 1) * page_size
     items = []

@@ -401,7 +401,11 @@ class FriendsListView(View):
     @method_decorator(require_auth)
     def get(self, request):
         try:
-            result = list_friends(request.user)
+            page = int(request.GET.get('page', 1))
+            page_size = int(request.GET.get('page_size', 50))
+            q = request.GET.get('q', '').strip()
+            
+            result = list_friends(request.user, page=page, page_size=page_size, search_query=q)
             return JsonResponse({'success': True, 'data': result})
         except Exception as e:
             return handle_exception(e)

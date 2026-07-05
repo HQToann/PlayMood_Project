@@ -19,8 +19,8 @@ from accounts.exceptions import ValidationError
 USERNAME_MIN = 3
 USERNAME_MAX = 50
 PASSWORD_MIN = 8
-DISPLAY_NAME_MAX = 100
-BIO_MAX = 500
+DISPLAY_NAME_MAX = 10
+BIO_MAX = 100
 
 # Pattern username: chỉ chữ cái, số, dấu gạch dưới, dấu chấm, gạch ngang
 USERNAME_PATTERN = re.compile(r'^[\w.\-]+$')

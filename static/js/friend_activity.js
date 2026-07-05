@@ -11,10 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let allFriends = [];
 
     // ─── Load Friend Activity ───────────────────────────────────────────────
-    async function loadFriendActivity() {
+    async function loadFriendActivity(keyword = '') {
         try {
             const [followingRes, feedRes] = await Promise.all([
-                fetch(`/api/v1/social/friends/?page_size=100`),
+                fetch(`/api/v1/social/friends/?page_size=100${keyword ? '&q=' + encodeURIComponent(keyword) : ''}`),
                 fetch(`/api/v1/social/feed/?page_size=100`)
             ]);
             const followingData = await followingRes.json();
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
             const THIRTY_MINUTES = 30 * 60 * 1000;
 
-            allFriends = followingData.data.items.map(friend => {
+            const friendsData = followingData.data.items.map(friend => {
                 const activity = latestActivities[friend.id];
                 let isOnline = false;
                 let activityText = '';
@@ -55,7 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     else timeText = `${diffDays} ngày trước`;
 
                     if (friend.mood) {
-                        activityText = `<i class="bi bi-emoji-smile text-warning"></i> ${friend.mood.status_text}`;
+                        const moodIcon = friend.mood.mood_type?.emoji ? `<span>${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
+                        activityText = `${moodIcon} ${friend.mood.status_text}`;
                         if (activity && activity.activity_type === 'playing' && activity.song) {
                             activityText += `<br><i class="bi bi-music-note text-info"></i> ${activity.song.title}`;
                         } else if (friend.mood.song) {
@@ -68,7 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             activityText = `<i class="bi bi-emoji-smile text-warning"></i> ${activity.extra_text}`;
                     }
                 } else if (friend.mood) {
-                    activityText = `<i class="bi bi-emoji-smile text-warning"></i> ${friend.mood.status_text}`;
+                    const moodIcon = friend.mood.mood_type?.emoji ? `<span>${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
+                    activityText = `${moodIcon} ${friend.mood.status_text}`;
                     if (friend.mood.song) {
                         activityText += `<br><i class="bi bi-music-note text-info"></i> ${friend.mood.song.title}`;
                     }
@@ -84,12 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             });
 
-            allFriends.sort((a, b) => {
+            friendsData.sort((a, b) => {
                 if (a.isOnline !== b.isOnline) return b.isOnline - a.isOnline;
                 return b.lastActiveDate - a.lastActiveDate;
             });
 
-            renderFriends(allFriends);
+            if (!keyword) {
+                allFriends = friendsData;
+            }
+            renderFriends(friendsData, !!keyword);
         } catch (error) {
             console.error("Lỗi khi tải hoạt động bạn bè:", error);
             activityContainers.forEach(c => {
@@ -137,13 +142,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ─── Local Friend Search ────────────────────────────────────────────────
+    // ─── API Friend Search ────────────────────────────────────────────────
     searchInputs.forEach(input => {
         if (!input) return;
+        let searchTimeout = null;
         input.addEventListener('input', e => {
-            const keyword = e.target.value.toLowerCase().trim();
-            const isSearch = keyword.length > 0;
-            renderFriends(allFriends.filter(f => f.name.toLowerCase().includes(keyword)), isSearch);
+            clearTimeout(searchTimeout);
+            const keyword = e.target.value.trim();
+            if (keyword.length === 0) {
+                renderFriends(allFriends, false);
+                return;
+            }
+            
+            activityContainers.forEach(c => {
+                if (c) c.innerHTML = '<div class="text-center text-muted-custom py-4 small"><div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2">Đang tìm...</span></div>';
+            });
+            
+            searchTimeout = setTimeout(() => {
+                loadFriendActivity(keyword);
+            }, 300);
         });
     });
 
@@ -228,10 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderGlobalSearchResults(users) {
+    function renderGlobalSearchResults(users, container = globalSearchResults) {
         const filtered = users.filter(u => u.id !== window.CURRENT_USER_ID);
         if (!filtered.length) {
-            globalSearchResults.innerHTML = '<div class="text-center text-muted-custom py-3 small">Không tìm thấy người dùng.</div>';
+            container.innerHTML = '<div class="text-center text-muted-custom py-3 small">Không tìm thấy người dùng.</div>';
             return;
         }
         let html = '';
@@ -273,13 +290,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         });
 
-        globalSearchResults.innerHTML = html;
+        container.innerHTML = html;
 
-        globalSearchResults.querySelectorAll('.search-follow-btn').forEach(btn => {
+        container.querySelectorAll('.search-follow-btn').forEach(btn => {
             btn.addEventListener('click', async function () {
                 const userId = this.dataset.userId;
                 const origHtml = this.innerHTML;
-                const csrf = getCsrfToken();
+                const csrf = getCookie('csrftoken');
 
                 this.disabled = true;
                 this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
@@ -461,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.querySelectorAll('.unfollow-btn').forEach(btn => {
             btn.addEventListener('click', async function () {
                 const userId = this.dataset.userId;
-                const csrf = getCsrfToken();
+                const csrf = getCookie('csrftoken');
                 this.disabled = true;
                 this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
                 try {
@@ -504,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(`/api/v1/social/follow-requests/${reqId}/${action}/`, {
                 method: 'POST',
-                headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json' }
+                headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
             });
             const result = await res.json();
             if (result.success && item) {
@@ -528,10 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getCsrfToken() {
-        const m = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'));
-        return m ? decodeURIComponent(m[2]) : '';
-    }
+
 
     function defaultAvatar() {
         return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';
