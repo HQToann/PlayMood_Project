@@ -102,6 +102,128 @@ class FollowRequest(models.Model):
         }
 
 
+class MoodTheme(models.Model):
+    """
+    Bản màu chủ đề (Theme) do Admin định nghĩa.
+    Dùng để gắn màu cho MoodType hoặc cho người dùng tự chọn khi viết status tự do.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(
+        max_length=100, unique=True, verbose_name='Tên bản màu',
+        help_text='VD: Bản màu Vàng Tươi'
+    )
+    color_hex = models.CharField(
+        max_length=30, default='#FFFFFF', verbose_name='Màu chính (Mã Hex)',
+        help_text='Dùng làm màu chữ cho tag. VD: #FBBF24'
+    )
+    gradient_from = models.CharField(
+        max_length=30, default='#FFD194', verbose_name='Gradient Bắt đầu',
+        help_text='Dùng làm màu nền. VD: #FFD194'
+    )
+    gradient_to = models.CharField(
+        max_length=30, default='#70E1F5', verbose_name='Gradient Kết thúc',
+        help_text='VD: #70E1F5'
+    )
+    is_active = models.BooleanField(default=True, verbose_name='Kích hoạt')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'social_mood_theme'
+        ordering = ['name']
+        verbose_name = 'Chủ đề màu'
+        verbose_name_plural = 'Chủ đề màu'
+
+    def __str__(self):
+        return self.name
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'color_hex': self.color_hex,
+            'gradient_from': self.gradient_from,
+            'gradient_to': self.gradient_to,
+        }
+
+
+class MoodType(models.Model):
+    """
+    Loại cảm xúc - do Admin quản lý.
+    Frontend chỉ cần gọi API GET /api/v1/social/mood-types/ để render danh sách.
+    """
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='Tên cảm xúc',
+        help_text='VD: Vui vẻ, Buồn man mác, Thư giãn...',
+    )
+
+    emoji = models.CharField(
+        max_length=10,
+        verbose_name='Emoji',
+        help_text='Emoji đại diện cho cảm xúc này',
+    )
+
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        verbose_name='Mô tả ngắn',
+        help_text='VD: Tràn đầy năng lượng',
+    )
+
+    theme = models.ForeignKey(
+        MoodTheme,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='mood_types',
+        verbose_name='Chủ đề màu (Theme)',
+        help_text='Gắn một bản màu cho cảm xúc này'
+    )
+
+    order = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name='Thứ tự hiển thị',
+        help_text='Số nhỏ hơn sẽ hiển thị trước',
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Đang kích hoạt',
+        help_text='Bỏ tick để ẩn cảm xúc này khỏi frontend',
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'social_mood_type'
+        ordering = ['order', 'name']
+        verbose_name = 'Loại cảm xúc'
+        verbose_name_plural = 'Loại cảm xúc'
+
+    def __str__(self):
+        return f'{self.emoji} {self.name}'
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'emoji': self.emoji,
+            'description': self.description,
+            'theme': self.theme.to_dict() if self.theme else None,
+            'order': self.order,
+        }
+
+
 class Mood(models.Model):
     """
     Trạng thái cảm xúc hiên tại của User - có thể gắn kèm bài hát
@@ -131,6 +253,16 @@ class Mood(models.Model):
         verbose_name='Trạng thái'
     )
 
+    # Loại cảm xúc do admin tạo (tuỳ chọn)
+    mood_type = models.ForeignKey(
+        'social.MoodType',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='moods',
+        verbose_name='Loại cảm xúc',
+    )
+
     # Bài hát gắn kèm Mood (tuỳ chọn)
     song = models.ForeignKey(
         'music.Song',
@@ -139,6 +271,16 @@ class Mood(models.Model):
         blank=True,
         related_name='moods',
         verbose_name='Bài hát đính kèm',
+    )
+
+    theme = models.ForeignKey(
+        MoodTheme,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='moods',
+        verbose_name='Chủ đề màu tuỳ chọn',
+        help_text='Màu do user tự chọn khi viết custom mood'
     )
 
     expires_at = models.DateTimeField(verbose_name='Hết hạn lúc')
@@ -167,6 +309,7 @@ class Mood(models.Model):
                 'display_name': self.user.get_display_name(),
                 'avatar': self.user.avatar.url if self.user.avatar else None,
             },
+            'mood_type': self.mood_type.to_dict() if self.mood_type_id else None,
             'status_text': self.status_text,
             'song': {
                 'id': str(self.song_id),
@@ -174,6 +317,7 @@ class Mood(models.Model):
                 'artist_display_name': self.song.artist.get_display_name(),
                 'cover_image': self.song.cover_image.url if self.song.cover_image else None,
             } if self.song_id else None,
+            'theme': self.theme.to_dict() if self.theme_id else None,
             'expires_at': self.expires_at.isoformat(),
             'is_expired': self.is_expired(),
             'created_at': self.created_at.isoformat(),

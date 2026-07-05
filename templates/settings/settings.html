@@ -22,73 +22,7 @@
         <div class="main-wrapper">
 
             <!-- LEFT SIDEBAR -->
-            <aside class="sidebar-left py-3 d-none d-lg-flex">
-                <div class="px-3 mb-4 flex-shrink-0">
-                    <a href="#" class="brand-logo">
-                        <div class="brand-icon"><i class="bi bi-music-note"></i></div>
-                        PlayMood
-                    </a>
-                </div>
-
-                <div class="flex-grow-1 overflow-auto custom-scrollbar">
-                    <div class="nav-section px-2">
-                        <a href="#" class="nav-link-custom">
-                            <i class="bi bi-house-door"></i> Trang chủ
-                        </a>
-                        <a href="#" class="nav-link-custom">
-                            <i class="bi bi-search"></i> Khám phá
-                        </a>
-                        <a href="#" class="nav-link-custom">
-                            <i class="bi bi-emoji-smile"></i> Tâm trạng
-                        </a>
-                        <a href="#" class="nav-link-custom">
-                            <i class="bi bi-music-note-list"></i> Playlist
-                        </a>
-                        {% if request.user.role == 'artist' %}
-                        <a href="{% url 'artist_manage_page' %}" class="nav-link-custom">
-                            <i class="bi bi-kanban"></i> Quản lý bài hát
-                        </a>
-                        {% endif %}
-                    </div>
-
-                    <div class="nav-section-title mt-4">THƯ VIỆN</div>
-                    <div class="nav-section px-2">
-                        <a href="#" class="nav-link-custom">
-                            <i class="bi bi-heart"></i> Yêu thích
-                        </a>
-                        <a href="#" class="nav-link-custom">
-                            <i class="bi bi-clock-history"></i> Nghe gần đây
-                        </a>
-                        <a href="#" class="nav-link-custom">
-                            <i class="bi bi-download"></i> Đã tải
-                        </a>
-                    </div>
-
-                    <div class="nav-section-title mt-4">PLAYLIST CỦA BẠN</div>
-                    <div class="nav-section px-2 pb-4">
-                        <a href="#" class="nav-link-custom text-white">
-                            <i class="bi bi-plus-lg text-secondary"></i> Tạo playlist mới
-                        </a>
-
-                        <div class="playlist-item mt-2">
-                            <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="cover" class="playlist-img">
-                            <div>
-                                <div style="font-size: 0.85rem; font-weight: 600;">Chill Buổi Tối</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">25 bài hát</div>
-                            </div>
-                        </div>
-                        <div class="playlist-item">
-                            <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="cover" class="playlist-img">
-                            <div>
-                                <div style="font-size: 0.85rem; font-weight: 600;">Chữa Lành Tâm Hồn</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">30 bài hát</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
+            {% include 'includes/left_sidebar.html' %}
 
             <!-- MAIN CONTENT -->
             <main class="main-content">
@@ -368,130 +302,12 @@
             </main>
 
             <!-- RIGHT SIDEBAR (Friends Activity) -->
-            <aside class="sidebar-right d-none d-xl-block">
-                <!-- Header Actions for Desktop Sidebar -->
-                <div class="d-flex justify-content-end align-items-center mb-4 gap-2">
-                    <!-- User Mood Tag -->
-                    <div class="badge rounded-pill px-3 py-2 shadow-sm me-auto"
-                        style="background: linear-gradient(135deg, #F8B4B4, #E99CBB); color: #121929; font-weight: 600; font-size: 0.8rem; cursor: pointer;"
-                        title="Tâm trạng hiện tại của bạn">
-                        <i class="bi bi-suit-heart-fill me-1"></i> Lãng Mạn
-                    </div>
-
-                    <a href="{% url 'notifications_page' %}" class="btn-icon position-relative text-decoration-none"
-                        style="display: inline-flex; align-items: center; justify-content: center; color: inherit;">
-                        <i class="bi bi-bell"></i>
-                        <span
-                            class="bell-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            style="display:none; font-size: 0.6rem; padding: 0.25em 0.4em;"></span>
-                    </a>
-                    <div class="dropdown">
-                        <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false"
-                            style="cursor: pointer;">
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="avatar" class="user-avatar">
-                            <span
-                                style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                                <span
-                                    style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{
-                                    request.user.display_name|default:request.user.username }}</span>
-                                <i class="bi bi-chevron-down small"></i>
-                            </span>
-                        </div>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
-                            style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                            <li><a class="dropdown-item py-2" href="{% url 'profile_page' %}"><i
-                                        class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'settings_page' %}"><i
-                                        class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
-                            <li>
-                                <hr class="dropdown-divider border-secondary opacity-25">
-                            </li>
-                            <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal"
-                                    data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i> Đăng
-                                    xuất</a></li>
-                        </ul>
-                    </div>
-
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
-                    <h6 class="mb-0 fw-bold">Hoạt động bạn bè</h6>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-accent small" id="onlineFriendsCount">0 online <i
-                                class="bi bi-people"></i></span>
-                        <i class="bi bi-person-plus-fill text-muted-custom"
-                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
-                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
-                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè"
-                            data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
-                    </div>
-                </div>
-
-                <div class="search-bar mb-4 w-100"
-                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
-                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
-                    <input type="text" id="friendSearchInput" placeholder="Tìm kiếm bạn bè..."
-                        style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
-                </div>
-
-                <div id="friendsActivityContainer">
-                    <div class="text-center text-muted-custom py-4 spinner-border-container">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
-                        <span class="ms-2 small">Đang tải...</span>
-                    </div>
-                </div>
-
-
-
-            </aside>
+            {% include 'includes/right_sidebar.html' %}
 
         </div>
 
         <!-- PLAYER BAR -->
-        <footer class="player-bar">
-            <!-- Info -->
-            <div class="player-info">
-                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                    alt="Cover" class="player-cover">
-                <div class="player-text">
-                    <div class="player-title">Có Chắc Yêu Là Đây</div>
-                    <div class="text-muted-custom player-artist">Sơn Tùng M-TP</div>
-                </div>
-                <button class="btn-icon ms-2 heart-btn"><i class="bi bi-heart"></i></button>
-            </div>
-
-            <!-- Controls -->
-            <div class="player-controls-container">
-                <div class="player-controls">
-                    <button class="btn-icon"><i class="bi bi-shuffle fs-6"></i></button>
-                    <button class="btn-icon"><i class="bi bi-skip-start-fill fs-5"></i></button>
-                    <button class="btn-play"><i class="bi bi-play-fill ms-1"></i></button>
-                    <button class="btn-icon"><i class="bi bi-skip-end-fill fs-5"></i></button>
-                    <button class="btn-icon"><i class="bi bi-repeat fs-6"></i></button>
-                </div>
-                <div class="progress-container">
-                    <span>0:00</span>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill"></div>
-                    </div>
-                    <span>3:54</span>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="player-actions">
-                <button class="btn-icon"><i class="bi bi-mic"></i></button>
-                <button class="btn-icon"><i class="bi bi-music-note-list"></i></button>
-                <button class="btn-icon"><i class="bi bi-speaker"></i></button>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn-icon"><i class="bi bi-volume-up"></i></button>
-                    <div class="volume-bar">
-                        <div class="volume-fill"></div>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        {% include 'includes/player_bar.html' %}
     </div>
 
     <!-- Mobile Offcanvas Menu -->
@@ -509,7 +325,9 @@
             <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
                 <a href="#" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
                 <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-emoji-smile"></i> Tâm trạng</a>
+                <a href="{% url 'mood_page' %}" class="nav-link-custom">
+                            <i class="bi bi-emoji-smile"></i> Tâm trạng
+                        </a>
                 <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
                 {% if request.user.role == 'artist' %}
                 <a href="{% url 'artist_manage_page' %}" class="nav-link-custom"><i class="bi bi-kanban"></i> Quản lý
@@ -639,28 +457,7 @@
         </div>
     </div>
 
-    <!-- Logout Confirmation Modal -->
-    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-white"
-                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
-                <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">Đăng xuất</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-secondary">
-                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?
-                </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
-                        data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="handleLogout(event)">Đăng
-                        xuất</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Add Friend Modal -->
     <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel"
@@ -778,8 +575,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script src="{% static 'js/main.js' %}"></script>
     <script>
         // Image preview logic
@@ -913,36 +709,9 @@
             }
         }
 
-        async function handleLogout(e) {
-            e.preventDefault();
-
-            try {
-                // Gọi API Logout
-                const csrfToken = getCookie('csrftoken') || '{{ csrf_token }}';
-
-                const response = await fetch('/api/v1/auth/logout/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    window.location.href = "{% url 'login_page' %}";
-                } else {
-                    alert('Đăng xuất thất bại. Vui lòng thử lại.');
-                }
-            } catch (error) {
-                console.error('Logout error:', error);
-                alert('Lỗi kết nối. Vui lòng thử lại.');
-            }
-        }
-    </script>
-    <script>
-        window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
-    </script>
-    <script src="{% static 'js/friend_activity.js' %}?v=1.2"></script>
+        </script>
+    
+    
 </body>
 
 </html>

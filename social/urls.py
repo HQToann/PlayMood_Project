@@ -4,6 +4,8 @@ from social.views import (
     FollowStatusView,
     FollowersListView,
     FollowingListView,
+    MoodTypeListView,
+    MoodThemeListView,
     MyMoodView,
     UserMoodView,
     FeedView,
@@ -17,13 +19,16 @@ from social.views import (
     FriendsListView,
 )
 
-
 urlpatterns = [
     # Follow
     path('users/<uuid:user_id>/follow/', FollowToggleView.as_view(), name='social-follow-toggle'),
     path('users/<uuid:user_id>/follow-status/', FollowStatusView.as_view(), name='social-follow-status'),
     path('users/<uuid:user_id>/followers/', FollowersListView.as_view(), name='social-followers'),
     path('users/<uuid:user_id>/following/', FollowingListView.as_view(), name='social-following'),
+
+    # Mood Types & Themes (public, no auth required)
+    path('mood-themes/', MoodThemeListView.as_view(), name='social-mood-themes'),
+    path('mood-types/', MoodTypeListView.as_view(), name='social-mood-types'),
 
     # Mood
     path('me/mood/', MyMoodView.as_view(), name='social-my-mood'),

@@ -27,9 +27,11 @@ từ client để tránh client gửi ngày trong quá khú/quá xa tương lai
 """
 def validate_set_mood(data: dict) -> dict:
     errors = {}
+    mood_type_id = data.get('mood_type_id', None)
+    
     status_text = data.get('status_text', '').strip()
-    if not status_text:
-        errors['status_text'] = ['Trạng thái là bắt buộc']
+    if not status_text and not mood_type_id:
+        errors['status_text'] = ['Trạng thái hoặc loại cảm xúc là bắt buộc']
     elif len(status_text) > STATUS_TEXT_MAX:
         errors['status_text'] = [f'Trạng thái tối đa {STATUS_TEXT_MAX} ký tự']
     
@@ -51,12 +53,28 @@ def validate_set_mood(data: dict) -> dict:
         errors['duration_hours'] = ['Thời gian hiển thị không phải là số nguyên (giờ)']
         duration_hours = MOOD_DEFAULT_DURATION_HOURS
 
+    theme_id = data.get('theme_id', None)
+    if theme_id:
+        try:
+            theme_id = uuid.UUID(str(theme_id))
+        except (ValueError, AttributeError):
+            errors['theme_id'] = ['theme_id không đúng định dạng UUID']
+            
+    mood_type_id = data.get('mood_type_id', None)
+    if mood_type_id:
+        try:
+            mood_type_id = uuid.UUID(str(mood_type_id))
+        except (ValueError, AttributeError):
+            errors['mood_type_id'] = ['mood_type_id không đúng định dạng UUID']
+
     if errors:
         raise ValidationError('Dữ liệu tâm trạng không hợp lệ', fields=errors)
     
     return {
         'status_text': sanitize_text(status_text),
         'song_id': song_id,
+        'theme_id': theme_id,
+        'mood_type_id': mood_type_id,
         'expires_at': timezone.now() + timedelta(hours=duration_hours),
     }
 

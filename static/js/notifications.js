@@ -134,10 +134,10 @@ function buildNotificationEl(notif) {
 
     el.innerHTML = `
         ${unreadDot}
-        <div class="notification-avatar position-relative ${avatarMargin}">
+        <a href="${notif.sender ? `/profile/${notif.sender.id}/` : '#'}" class="notification-avatar position-relative ${avatarMargin} text-decoration-none" title="Xem hồ sơ" style="cursor:pointer;">
             ${avatarHtml}
             ${badgeHtml}
-        </div>
+        </a>
         <div class="notification-content flex-grow-1">
             <div class="text-white mb-1" style="font-size:0.95rem;">${notif.message}</div>
             <div class="text-muted-custom small">
@@ -154,11 +154,21 @@ function buildNotificationEl(notif) {
         </button>
     `;
 
-    // Đánh dấu đã đọc khi click vào body
+    // Đánh dấu đã đọc khi click vào body (nhưng không khi click vào avatar)
     el.addEventListener('click', (e) => {
-        if (e.target.closest('.notification-delete-btn') || e.target.closest('.follow-back-btn') || e.target.closest('.fr-action-btn')) return;
+        if (e.target.closest('.notification-delete-btn') || e.target.closest('.follow-back-btn') || e.target.closest('.fr-action-btn') || e.target.closest('.notification-avatar')) return;
         markRead(el, notif.id);
     });
+
+    // Click avatar dẫn đến profile (mark as read luôn)
+    const avatarLink = el.querySelector('.notification-avatar');
+    if (avatarLink && notif.sender) {
+        avatarLink.addEventListener('click', (e) => {
+            e.stopPropagation();
+            markRead(el, notif.id);
+            // Điều hướng sẽ được xử lý bởi thẻ <a>
+        });
+    }
 
     // Xóa thông báo
     el.querySelector('.notification-delete-btn').addEventListener('click', (e) => {

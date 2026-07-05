@@ -1,7 +1,7 @@
 import logging
 from accounts.models import User
 from music.models import Song
-from social.models import Follow, FollowRequest, Mood, FriendActivity
+from social.models import Follow, FollowRequest, Mood, FriendActivity, MoodTheme, MoodType
 from social.selectors import is_following, get_my_mood
 from social.exceptions import CannotFollowSelf, FollowTargetNotFound, BlockedFollowError
 from accounts.exceptions import NotFound
@@ -198,11 +198,31 @@ def set_mood(user: User, data: dict) -> Mood:
         except Song.DoesNotExist:
             raise NotFound('Bài hát không tồn tại')
 
+    mood_type = None
+    if data.get('mood_type_id'):
+        try:
+            mood_type = MoodType.objects.get(id=data['mood_type_id'])
+        except MoodType.DoesNotExist:
+            raise NotFound('Loại cảm xúc không tồn tại')
+
+    theme = None
+    if data.get('theme_id'):
+        try:
+            theme = MoodTheme.objects.get(id=data['theme_id'])
+        except MoodTheme.DoesNotExist:
+            raise NotFound('Chủ đề màu không tồn tại')
+
+    # Nếu chọn MoodType, ưu tiên theme của MoodType
+    if mood_type and mood_type.theme:
+        theme = mood_type.theme
+
     mood, _created = Mood.objects.update_or_create(
         user=user,
         defaults={
             'status_text': data['status_text'],
+            'mood_type': mood_type,
             'song': song,
+            'theme': theme,
             'expires_at': data['expires_at'],
         },
     )

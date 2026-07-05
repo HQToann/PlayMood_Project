@@ -87,11 +87,11 @@
                                 <div class="song-manage-item row align-items-center py-3 px-3 rounded-3 mb-2" style="background-color: rgba(255,255,255,0.02); transition: background-color 0.2s; ${hiddenByAdmin ? 'border: 1px solid rgba(220, 53, 69, 0.4);' : 'border: 1px solid transparent;'}">
                                     <div class="col-12 col-md-5 d-flex align-items-center gap-3 mb-3 mb-md-0">
                                         ${coverUrl 
-                                            ? `<img src="${coverUrl}" alt="cover" class="rounded" style="width: 50px; height: 50px; object-fit: cover; cursor:pointer;" class="play-trigger" data-audio-url="${song.audio_file}">`
+                                            ? `<img src="${coverUrl}" alt="cover" class="rounded play-trigger" style="width: 50px; height: 50px; object-fit: cover; cursor:pointer;" data-audio-url="${song.audio_file}">`
                                             : `<div class="d-flex align-items-center justify-content-center rounded bg-secondary bg-opacity-25 play-trigger" style="width: 50px; height: 50px; cursor:pointer;" data-audio-url="${song.audio_file}"><i class="bi bi-music-note text-secondary fs-4"></i></div>`
                                         }
                                         <div>
-                                            <div class="text-white fw-semibold" style="cursor:pointer;" class="play-trigger" data-audio-url="${song.audio_file}">${song.title}</div>
+                                            <div class="text-white fw-semibold play-trigger" style="cursor:pointer;" data-audio-url="${song.audio_file}">${song.title}</div>
                                             <div class="text-secondary small">${song.genre ? song.genre.name : 'Chưa phân loại'} • ${dateStr}</div>
                                         </div>
                                     </div>
@@ -421,7 +421,7 @@
                 const item = trigger.closest('.song-manage-item');
                 const title = item.querySelector('.text-white').textContent;
                 const cover = item.querySelector('img') ? item.querySelector('img').src : pbCover.src;
-                const artist = "{{ request.user.get_display_name }}";
+                const artist = window.CURRENT_USER_DISPLAY_NAME || 'Unknown Artist';
                 
                 pbContainer.classList.remove('d-none');
                 pbTitle.textContent = title;

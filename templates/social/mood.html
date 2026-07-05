@@ -1,0 +1,883 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Dark Theme</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            {% include 'includes/left_sidebar.html' with active_page='mood' %}
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="top-header">
+                    <button class="btn-icon d-lg-none me-3" type="button" data-bs-toggle="offcanvas"
+                        data-bs-target="#mobileMenuOffcanvas">
+                        <i class="bi bi-list fs-3"></i>
+                    </button>
+                    <div class="search-bar me-auto">
+                        <i class="bi bi-search text-muted-custom"></i>
+                        <input type="text" placeholder="Tìm bài hát, nghệ sĩ...">
+                    </div>
+
+                    <div class="header-actions">
+                        <!-- Status Removed -->
+
+                        <button class="btn-icon d-xl-none"><i class="bi bi-bell"></i></button>
+                        <div class="dropdown d-xl-none">
+                            <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false"
+                                style="cursor: pointer;">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                    alt="avatar" class="user-avatar">
+                                <span
+                                    style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                    <span
+                                        style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">Thanh</span>
+                                    <i class="bi bi-chevron-down small"></i>
+                                </span>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
+                                style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                <li><a class="dropdown-item py-2" href="#"><i
+                                            class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
+                                <li><a class="dropdown-item py-2" href="#"><i
+                                            class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
+                                <li>
+                                    <hr class="dropdown-divider border-secondary opacity-25">
+                                </li>
+                                <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i>
+                                        Đăng xuất</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </header>
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll">
+                    <div style="padding: 0 32px 140px 32px;">
+
+                        <!-- HERO HEADER -->
+                        <div class="mb-1" style="position: relative; margin-top: -24px;">
+                            <!-- Removed radial gradient to match homepage -->
+                            <p class="mb-1"
+                                style="color: rgba(255,255,255,0.45); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 600;">
+                                PLAYMOOD</p>
+                            <h1 class="fw-bold mb-1"
+                                style="font-size: 2.4rem; letter-spacing: -1px; background: linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.5)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                Bạn đang cảm thấy thế nào?</h1>
+                            <p style="color: rgba(255,255,255,0.45); font-size: 0.95rem; margin-top: 6px;">Chọn một cảm
+                                xúc, chia sẻ khoảnh khắc với bạn bè của bạn.</p>
+                        </div>
+
+                        <div id="moodTypeGrid" class="mb-4" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <!-- Skeletons - sẽ bị thay bởi JS -->
+                            <div
+                                style="width: 80px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite;">
+                            </div>
+                            <div
+                                style="width: 120px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .1s;">
+                            </div>
+                            <div
+                                style="width: 90px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .2s;">
+                            </div>
+                            <div
+                                style="width: 100px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .3s;">
+                            </div>
+                            <div
+                                style="width: 110px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .4s;">
+                            </div>
+                        </div>
+
+                        <!-- POST MOOD FORM -->
+                        <div
+                            style="border-radius: 20px; background: rgba(255,255,255,0.03); border: none; padding: 16px;">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div
+                                    style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                                    <i class="bi bi-chat-fill"></i>
+                                </div>
+                                <div>
+                                    <div style="color: #fff; font-weight: 700; font-size: 1rem; line-height: 1.2;">Chia
+                                        sẻ khoảnh khắc</div>
+                                    <div id="selectedMoodLabel"
+                                        style="color: rgba(255,255,255,0.4); font-size: 0.82rem;">Chưa chọn cảm xúc
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form id="postMoodForm" onsubmit="handlePostMood(event)">
+                                <input type="hidden" name="mood_type_id" id="mood_type_id" value="">
+
+                                <textarea id="status_text" name="status_text" rows="2" maxlength="15"
+                                    placeholder="Viết gì đó về cảm xúc của bạn... (tuỳ chọn)"
+                                    style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; padding: 12px 14px; font-size: 0.92rem; resize: none; outline: none; transition: border-color 0.2s, background 0.2s; font-family: inherit; line-height: 1.5;"
+                                    onfocus="this.style.borderColor='#667eea'; this.style.background='rgba(0,0,0,0.4)';"
+                                    onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"
+                                    oninput="document.getElementById('charCount').textContent=this.value.length;"></textarea>
+                                <div
+                                    style="text-align:right; color: rgba(255,255,255,0.3); font-size: 0.78rem; margin-top: 6px;">
+                                    <span id="charCount">0</span>/15
+                                </div>
+
+                                <!-- Divider -->
+                                <div style="border-top: 1px solid rgba(255,255,255,0.06); margin: 12px 0;"></div>
+
+                                <!-- Theme Color Picker -->
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">Màu chủ đề:</div>
+                                    <div class="d-flex align-items-center gap-2" id="themeColorPicker">
+                                        <!-- Render by JS -->
+                                    </div>
+                                    <input type="hidden" id="theme_id_input" name="theme_id" value="">
+                                </div>
+
+                                <!-- Attached Song Preview -->
+                                <div id="songAttachmentArea" class="d-flex align-items-center gap-2 mb-3">
+                                    <div
+                                        style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 1.1rem; flex-shrink: 0;">
+                                        🎵</div>
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="color: rgba(255,255,255,0.5); font-size: 0.88rem;">Chưa đính kèm bài
+                                            hát</div>
+                                        <div style="color: rgba(255,255,255,0.25); font-size: 0.78rem;">Bài hát sẽ hiển
+                                            thị cùng tâm trạng của bạn</div>
+                                    </div>
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#searchMusicModal"
+                                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 50px; padding: 7px 18px; font-size: 0.82rem; cursor: pointer; transition: all .2s; white-space: nowrap;"
+                                        onmouseover="this.style.background='linear-gradient(135deg, #667eea, #764ba2)'; this.style.borderColor='transparent'; this.style.color='#fff';"
+                                        onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.6)';">
+                                        <i class="bi bi-search me-1"></i> Tìm nhạc
+                                    </button>
+                                </div>
+                                <input type="hidden" id="attached_song_id" name="song_id" value="">
+
+                                <!-- Footer Controls -->
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <!-- Custom Premium Dropdown -->
+                                    <div class="dropdown">
+                                        <div class="d-flex align-items-center gap-2 dropdown-toggle"
+                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                            style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.07); border-radius: 50px; padding: 6px 12px; cursor: pointer; user-select: none;">
+                                            <span id="selectedExpiresText"
+                                                style="color: rgba(255,255,255,0.7); font-size: 0.88rem;">Tự xóa sau 24
+                                                giờ (Mặc định)</span>
+                                            <i class="bi bi-chevron-down ms-1"
+                                                style="color:rgba(255,255,255,0.3); font-size:0.7rem;"></i>
+                                        </div>
+                                        <ul class="dropdown-menu custom-dropdown-menu">
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#"
+                                                    onclick="selectExpires(event, 1, 'Tự xóa sau 1 giờ')">Tự xóa sau 1
+                                                    giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#"
+                                                    onclick="selectExpires(event, 4, 'Tự xóa sau 4 giờ')">Tự xóa sau 4
+                                                    giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#"
+                                                    onclick="selectExpires(event, 12, 'Tự xóa sau 12 giờ')">Tự xóa sau
+                                                    12 giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item active" href="#"
+                                                    onclick="selectExpires(event, 24, 'Tự xóa sau 24 giờ (Mặc định)')">Tự
+                                                    xóa sau 24 giờ (Mặc định)</a></li>
+                                        </ul>
+                                        <input type="hidden" name="expires_hours" id="expires_hours_input" value="24">
+                                    </div>
+
+                                    <button type="submit" id="submitBtn"
+                                        style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: #fff; border-radius: 50px; padding: 10px 24px; font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: all .25s; box-shadow: 0 4px 14px rgba(102,126,234,0.35); letter-spacing: 0.2px;"
+                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102,126,234,0.5)';"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(102,126,234,0.45)';">
+                                        Đăng Tâm Trạng
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Playlist suggestion section -->
+                        <div class="mt-5">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <p class="mb-0"
+                                        style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">
+                                        GỢI Ý CHO BẠN</p>
+                                    <h5 class="fw-bold text-white mb-0 mt-1" id="playlistSectionTitle">Playlist phù hợp
+                                        với tâm trạng</h5>
+                                </div>
+                                <a href="#"
+                                    style="color: rgba(255,255,255,0.4); font-size: 0.82rem; text-decoration: none; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;"
+                                    onmouseover="this.style.color='#fff'"
+                                    onmouseout="this.style.color='rgba(255,255,255,0.4)'">Xem tất cả</a>
+                            </div>
+                            <div class="horizontal-scroll-container pb-3">
+                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
+                                    <div class="card-image-wrapper"><img
+                                            src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                            alt="Song">
+                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                    </div>
+                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Tình Yêu Màu
+                                        Hồng</div>
+                                    <div class="card-subtitle" style="font-size:0.78rem;">Various Artists</div>
+                                </div>
+                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
+                                    <div class="card-image-wrapper"><img
+                                            src="https://images.unsplash.com/photo-1494774157365-9e04c6720e47?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                            alt="Song">
+                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                    </div>
+                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Giai Điệu Tình
+                                        Yêu</div>
+                                    <div class="card-subtitle" style="font-size:0.78rem;">Sâu lắng</div>
+                                </div>
+                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
+                                    <div class="card-image-wrapper"><img
+                                            src="https://images.unsplash.com/photo-1525286102434-29759c288926?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                            alt="Song">
+                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                    </div>
+                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Love Songs 2024
+                                    </div>
+                                    <div class="card-subtitle" style="font-size:0.78rem;">Hot Hits</div>
+                                </div>
+                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
+                                    <div class="card-image-wrapper"><img
+                                            src="https://images.unsplash.com/photo-1460500063983-994d4c27756c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                            alt="Song">
+                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                    </div>
+                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Acoustic Love
+                                    </div>
+                                    <div class="card-subtitle" style="font-size:0.78rem;">Guitar & Vocals</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <style>
+                        @keyframes skeleton-pulse {
+
+                            0%,
+                            100% {
+                                opacity: 0.35;
+                            }
+
+                            50% {
+                                opacity: 0.65;
+                            }
+                        }
+
+                        .mood-card-item {
+                            border-radius: 8px;
+                            padding: 8px 16px;
+                            text-align: center;
+                            cursor: pointer;
+                            position: relative;
+                            overflow: hidden;
+                            transition: all 0.2s ease;
+                            user-select: none;
+                            background: rgba(255, 255, 255, 0.08);
+                            color: #fff;
+                        }
+
+                        .mood-card-item:hover {
+                            background: rgba(255, 255, 255, 0.15);
+                        }
+
+                        .mood-card-item:active {
+                            transform: scale(0.97);
+                        }
+
+                        .mood-card-item.selected {
+                            background: rgba(255, 255, 255, 0.2);
+                            outline: 1px solid rgba(255, 255, 255, 0.4);
+                            font-weight: 600;
+                        }
+
+                        .mood-card-item .mood-name {
+                            font-size: 0.85rem;
+                            font-weight: 500;
+                        }
+
+                        .mood-card-item.selected .mood-name {
+                            font-weight: 600;
+                        }
+
+                        .color-swatch {
+                            border: 2px solid transparent;
+                            transition: transform 0.2s;
+                        }
+
+                        .color-swatch:hover {
+                            transform: scale(1.1);
+                        }
+
+                        .color-swatch.selected {
+                            border-color: rgba(255, 255, 255, 0.8);
+                        }
+
+                        /* Custom Dropdown Styling */
+                        .dropdown-toggle::after {
+                            display: none !important;
+                        }
+
+                        .custom-dropdown-menu {
+                            background: #1e2130;
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            border-radius: 12px;
+                            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+                            padding: 8px;
+                            min-width: 200px;
+                        }
+
+                        .custom-dropdown-item {
+                            color: rgba(255, 255, 255, 0.7) !important;
+                            border-radius: 8px;
+                            transition: all 0.2s;
+                            font-size: 0.88rem;
+                            padding: 8px 12px;
+                            margin-bottom: 2px;
+                        }
+
+                        .custom-dropdown-item:last-child {
+                            margin-bottom: 0;
+                        }
+
+                        .custom-dropdown-item:hover {
+                            background: rgba(255, 255, 255, 0.1) !important;
+                            color: #fff !important;
+                        }
+
+                        .custom-dropdown-item.active {
+                            background: rgba(102, 126, 234, 0.15) !important;
+                            color: #a5b4fc !important;
+                            font-weight: 500;
+                        }
+                    </style>
+
+                    <script>
+                        // ============================================
+                        // Fetch data từ API
+                        // ============================================
+                        let MOOD_THEMES = [];
+                        let MOOD_TYPES = [];
+
+                        let selectedMoodId = null;
+                        let selectedThemeId = null;
+
+                        function renderThemes() {
+                            const picker = document.getElementById('themeColorPicker');
+                            picker.innerHTML = '';
+                            MOOD_THEMES.forEach(theme => {
+                                const div = document.createElement('div');
+                                div.className = 'color-swatch';
+                                if (theme.id === selectedThemeId) div.classList.add('selected');
+                                div.dataset.id = theme.id;
+                                div.style.width = '24px';
+                                div.style.height = '24px';
+                                div.style.borderRadius = '50%';
+                                div.style.background = `linear-gradient(135deg, ${theme.gradient_from}, ${theme.gradient_to})`;
+                                div.style.cursor = 'pointer';
+                                div.style.display = 'flex';
+                                div.style.alignItems = 'center';
+                                div.style.justifyContent = 'center';
+                                div.style.fontSize = '0.7rem';
+                                div.style.color = '#fff';
+                                if (theme.id === selectedThemeId) {
+                                    div.innerHTML = '✓';
+                                    document.getElementById('theme_id_input').value = theme.id;
+                                }
+
+                                div.addEventListener('click', () => {
+                                    // Khi tự chọn theme, bỏ chọn tag cảm xúc
+                                    deselectMood();
+                                    selectTheme(theme.id);
+                                });
+                                picker.appendChild(div);
+                            });
+                        }
+
+                        function selectTheme(themeId) {
+                            selectedThemeId = themeId;
+                            document.getElementById('theme_id_input').value = themeId;
+                            document.querySelectorAll('.color-swatch').forEach(s => {
+                                if (s.dataset.id === themeId) {
+                                    s.classList.add('selected');
+                                    s.innerHTML = '✓';
+                                    s.style.borderColor = 'rgba(255, 255, 255, 0.8)';
+                                } else {
+                                    s.classList.remove('selected');
+                                    s.innerHTML = '';
+                                    s.style.borderColor = 'transparent';
+                                }
+                            });
+                        }
+
+                        function renderMoodTypes(moodTypes) {
+                            const grid = document.getElementById('moodTypeGrid');
+                            grid.innerHTML = '';
+                            moodTypes.forEach(mt => {
+                                const div = document.createElement('div');
+                                div.className = 'mood-card-item';
+                                div.dataset.id = mt.id;
+                                div.innerHTML = `
+                                <div class="mood-name" style="color: ${mt.theme.color_hex}; transition: color 0.2s;">${mt.name}</div>`;
+                                div.addEventListener('click', () => selectMood(mt, div));
+                                grid.appendChild(div);
+                            });
+                        }
+
+                        function deselectMood() {
+                            selectedMoodId = null;
+                            document.getElementById('mood_type_id').value = '';
+                            document.querySelectorAll('.mood-card-item').forEach(c => {
+                                c.classList.remove('selected');
+                                c.style.background = 'rgba(255, 255, 255, 0.08)';
+                                const nameDiv = c.querySelector('.mood-name');
+                                if (nameDiv) {
+                                    // Phục hồi lại màu chữ ban đầu từ data
+                                    const mtId = c.dataset.id;
+                                    const mt = MOOD_TYPES.find(m => m.id === mtId);
+                                    if (mt) nameDiv.style.color = mt.theme.color_hex;
+                                }
+                            });
+                            const label = document.getElementById('selectedMoodLabel');
+                            if (label) label.textContent = 'Chưa chọn cảm xúc';
+                        }
+
+                        function selectMood(mt, el) {
+                            deselectMood(); // Bỏ chọn các tag khác và phục hồi màu chữ
+
+                            el.classList.add('selected');
+                            el.style.background = `linear-gradient(135deg, ${mt.theme.gradient_from}, ${mt.theme.gradient_to})`;
+                            const nameDiv = el.querySelector('.mood-name');
+                            if (nameDiv) {
+                                nameDiv.style.color = '#ffffff'; // Đổi màu chữ thành trắng khi được chọn để nổi bật trên nền gradient
+                            }
+
+                            selectedMoodId = mt.id;
+                            document.getElementById('mood_type_id').value = mt.id;
+                            const label = document.getElementById('selectedMoodLabel');
+                            if (label) label.textContent = mt.name;
+
+                            // Auto select the theme for this mood
+                            selectTheme(mt.theme.id);
+
+                            // Update playlist title
+                            document.getElementById('playlistSectionTitle').textContent = `Playlist gợi ý cho "${mt.name}"`;
+                        }
+
+                        // Load data từ Backend
+                        async function loadMoodData() {
+                            try {
+                                const [themesRes, typesRes, myMoodRes] = await Promise.all([
+                                    fetch('/api/v1/social/mood-themes/').then(r => r.json()),
+                                    fetch('/api/v1/social/mood-types/').then(r => r.json()),
+                                    fetch('/api/v1/social/me/mood/').then(r => r.json()).catch(() => ({ success: false })) // Bỏ qua lỗi nếu chưa đăng nhập
+                                ]);
+
+                                if (themesRes.success) {
+                                    MOOD_THEMES = themesRes.data;
+                                    if (MOOD_THEMES.length > 0) {
+                                        selectedThemeId = MOOD_THEMES[0].id; // Mặc định chọn theme đầu tiên
+                                    }
+                                    renderThemes();
+                                }
+
+                                if (typesRes.success) {
+                                    MOOD_TYPES = typesRes.data;
+                                    // Bản mood types API trả về cần có object theme lồng nhau để render
+                                    renderMoodTypes(MOOD_TYPES);
+                                }
+
+                                // Hiển thị Tâm trạng hiện tại
+                                const myMoodTag = document.getElementById('myMoodBadge');
+                                if (myMoodRes.success && myMoodRes.data) {
+                                    const mood = myMoodRes.data;
+                                    if (myMoodTag) {
+                                        myMoodTag.style.display = 'inline-block';
+                                        myMoodTag.style.background = `linear-gradient(135deg, ${mood.theme.gradient_from}, ${mood.theme.gradient_to})`;
+                                        myMoodTag.style.color = '#fff';
+
+                                        let contentHtml = '';
+                                        if (mood.mood_type) {
+                                            contentHtml = `<span class="me-1">${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
+                                        } else {
+                                            contentHtml = `<i class="bi bi-chat-fill me-1"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
+                                        }
+                                        myMoodTag.innerHTML = contentHtml;
+                                        myMoodTag.title = mood.status_text || 'Tâm trạng hiện tại của bạn';
+                                    }
+                                } else {
+                                    if (myMoodTag) myMoodTag.style.display = 'none';
+                                }
+                            } catch (e) {
+                                console.error('Lỗi khi tải dữ liệu mood:', e);
+                            }
+                        }
+
+                        // Init
+                        document.addEventListener('DOMContentLoaded', () => {
+                            loadMoodData();
+                        });
+
+                        // Select expires hours
+                        function selectExpires(event, val, text) {
+                            event.preventDefault();
+                            document.getElementById('expires_hours_input').value = val;
+                            document.getElementById('selectedExpiresText').textContent = text;
+
+                            // Update active state
+                            const items = event.currentTarget.closest('.custom-dropdown-menu').querySelectorAll('.custom-dropdown-item');
+                            items.forEach(item => item.classList.remove('active'));
+                            event.currentTarget.classList.add('active');
+                        }
+
+                        // Lấy CSRF token từ cookie
+                        function getCookie(name) {
+                            let cookieValue = null;
+                            if (document.cookie && document.cookie !== '') {
+                                const cookies = document.cookie.split(';');
+                                for (let i = 0; i < cookies.length; i++) {
+                                    const cookie = cookies[i].trim();
+                                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                        break;
+                                    }
+                                }
+                            }
+                            return cookieValue;
+                        }
+
+                        // Handle form submit
+                        async function handlePostMood(event) {
+                            event.preventDefault();
+
+                            const btn = document.getElementById('submitBtn');
+                            const originalText = btn.innerHTML;
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang đăng...';
+                            btn.disabled = true;
+
+                            const moodTypeId = document.getElementById('mood_type_id').value;
+                            const themeId = document.getElementById('theme_id_input').value;
+                            const statusText = document.getElementById('status_text').value;
+                            const durationHours = parseInt(document.getElementById('expires_hours_input').value, 10);
+
+                            const songId = document.getElementById('attached_song_id').value;
+
+                            const payload = {
+                                status_text: statusText,
+                                duration_hours: durationHours,
+                                theme_id: themeId || null
+                            };
+                            if (moodTypeId) payload.mood_type_id = moodTypeId;
+                            if (songId) payload.song_id = songId;
+
+                            try {
+                                const csrfToken = getCookie('csrftoken') || '{{ csrf_token }}';
+                                const response = await fetch('/api/v1/social/me/mood/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': csrfToken,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(payload)
+                                });
+
+                                const data = await response.json();
+                                if (response.ok && data.success) {
+                                    alert('✅ Đã đăng tâm trạng thành công!');
+                                    // Reset form
+                                    document.getElementById('status_text').value = '';
+                                    document.getElementById('charCount').textContent = '0';
+                                    document.getElementById('attached_song_id').value = '';
+                                    resetSongAttachmentUI();
+                                    deselectMood();
+
+                                    // Reload data to show new mood immediately
+                                    loadMoodData();
+                                } else {
+                                    alert('Lỗi: ' + (data.error?.message || 'Không thể đăng tâm trạng.'));
+                                }
+                            } catch (e) {
+                                console.error('Lỗi khi đăng mood:', e);
+                                alert('Lỗi kết nối, vui lòng thử lại.');
+                            } finally {
+                                btn.innerHTML = originalText;
+                                btn.disabled = false;
+                            }
+                        }
+
+                        // Handle Search Music
+                        let searchTimeout = null;
+
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const searchInput = document.getElementById('musicSearchInput');
+                            const searchResults = document.getElementById('searchResults');
+
+                            if (searchInput) {
+                                searchInput.addEventListener('input', (e) => {
+                                    clearTimeout(searchTimeout);
+                                    const query = e.target.value.trim();
+                                    if (!query) {
+                                        searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Nhập từ khóa để tìm kiếm bản nhạc bạn muốn đính kèm.</div>';
+                                        return;
+                                    }
+
+                                    searchTimeout = setTimeout(() => {
+                                        fetchSongs(query);
+                                    }, 500);
+                                });
+                            }
+                        });
+
+                        async function fetchSongs(query) {
+                            const searchLoading = document.getElementById('searchLoading');
+                            const searchResults = document.getElementById('searchResults');
+
+                            searchLoading.style.display = 'block';
+                            searchResults.innerHTML = '';
+                            try {
+                                const res = await fetch(`/api/v1/search/songs/?q=${encodeURIComponent(query)}`);
+                                const data = await res.json();
+                                searchLoading.style.display = 'none';
+
+                                if (data.success && data.data && data.data.items && data.data.items.length > 0) {
+                                    renderSearchResults(data.data.items, searchResults);
+                                } else {
+                                    searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Không tìm thấy kết quả nào.</div>';
+                                }
+                            } catch (err) {
+                                searchLoading.style.display = 'none';
+                                searchResults.innerHTML = '<div class="text-center text-danger py-4" style="font-size: 0.9rem;">Đã xảy ra lỗi, vui lòng thử lại sau.</div>';
+                            }
+                        }
+
+                        function renderSearchResults(songs, searchResultsEl) {
+                            let html = '';
+                            songs.forEach(song => {
+                                // Nếu cover_image null, dùng ảnh mặc định
+                                const cover = song.cover_image || 'https://via.placeholder.com/150?text=No+Cover';
+                                // Tên artist (dùng map lấy tên nếu trả về array)
+                                const artistNames = Array.isArray(song.artists) ? song.artists.map(a => a.name).join(', ') : 'Unknown Artist';
+
+                                html += `
+                                    <div class="d-flex align-items-center gap-3 p-2 rounded" style="cursor: pointer; transition: background 0.2s;" 
+                                         onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
+                                         onmouseout="this.style.background='transparent'"
+                                         onclick="selectSong('${song.id}', '${song.title.replace(/'/g, "\\'")}', '${artistNames.replace(/'/g, "\\'")}', '${cover}')">
+                                        <img src="${cover}" alt="${song.title}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${song.title}</div>
+                                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${artistNames}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+
+                            const target = searchResultsEl || document.getElementById('searchResults');
+                            if (target) {
+                                target.innerHTML = html;
+                            }
+                        }
+
+                        function selectSong(id, title, artist, cover) {
+                            // Update input
+                            document.getElementById('attached_song_id').value = id;
+
+                            // Update UI
+                            const area = document.getElementById('songAttachmentArea');
+                            area.innerHTML = `
+                                <img src="${cover}" alt="cover" style="width: 46px; height: 46px; border-radius: 12px; object-fit: cover; flex-shrink: 0;">
+                                <div style="flex:1; min-width:0;">
+                                    <div style="color: #fff; font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title}</div>
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${artist}</div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-link p-0 ms-2" 
+                                    style="color: rgba(255,255,255,0.4); text-decoration: none; font-size: 1.2rem; transition: color 0.2s;" 
+                                    onmouseover="this.style.color='#fff'" 
+                                    onmouseout="this.style.color='rgba(255,255,255,0.4)'"
+                                    onclick="resetSongAttachmentUI()" title="Xóa">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            `;
+
+                            // Đóng modal
+                            const modalEl = document.getElementById('searchMusicModal');
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                        }
+
+                        function resetSongAttachmentUI() {
+                            document.getElementById('attached_song_id').value = '';
+                            const area = document.getElementById('songAttachmentArea');
+                            area.innerHTML = `
+                                <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 1.1rem; flex-shrink: 0;">
+                                    🎵</div>
+                                <div style="flex:1; min-width:0;">
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.88rem;">Chưa đính kèm bài hát</div>
+                                    <div style="color: rgba(255,255,255,0.25); font-size: 0.78rem;">Bài hát sẽ hiển thị cùng tâm trạng của bạn</div>
+                                </div>
+                                <button type="button"
+                                    data-bs-toggle="modal" data-bs-target="#searchMusicModal"
+                                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 50px; padding: 7px 18px; font-size: 0.82rem; cursor: pointer; transition: all .2s; white-space: nowrap;"
+                                    onmouseover="this.style.background='linear-gradient(135deg, #667eea, #764ba2)'; this.style.borderColor='transparent'; this.style.color='#fff';"
+                                    onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.6)';">
+                                    <i class="bi bi-search me-1"></i> Tìm nhạc
+                                </button>
+                            `;
+                        }
+                    </script>
+                </div>
+            </main>
+
+            <!-- RIGHT SIDEBAR (Friends Activity) -->
+            {% include 'includes/right_sidebar.html' %}
+
+        </div>
+
+        <!-- PLAYER BAR -->
+        {% include 'includes/player_bar.html' %}
+    </div>
+
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
+        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+                PlayMood
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+                <a href="#" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
+                <a href="../mood/mood.html" class="nav-link-custom active"><i class="bi bi-emoji-smile"></i> Tâm
+                    trạng</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
+                <!-- Only show if user is Artist -->
+                <!-- <a href="#" class="nav-link-custom"><i class="bi bi-upload"></i> Upload nhạc</a> -->
+            </div>
+
+            <!-- Friends Activity (Mobile only) -->
+            <div class="px-3 py-3 flex-grow-1 overflow-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom"
+                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
+                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')"
+                            title="Thêm bạn bè"></i>
+                    </div>
+                </div>
+
+                <div class="search-bar mb-4 w-100"
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Linh Đan</div>
+                        <div class="friend-song">Đang nghe: Waiting For You</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Hải Nam</div>
+                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
+                        <div class="friend-time">1 giờ trước</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Music Modal -->
+    <style>
+        #musicSearchInput::placeholder {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        #musicSearchInput:focus {
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) !important;
+            background: rgba(0, 0, 0, 0.4) !important;
+        }
+    </style>
+    <div class="modal fade" id="searchMusicModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-white"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Tìm kiếm bài hát</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="musicSearchInput" class="form-control text-white mb-3"
+                        placeholder="Nhập tên bài hát hoặc ca sĩ..."
+                        style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; color: #fff;">
+
+                    <!-- Loading -->
+                    <div id="searchLoading" class="text-center py-3" style="display: none;">
+                        <div class="spinner-border text-light spinner-border-sm" role="status"></div>
+                    </div>
+
+                    <!-- Search Results -->
+                    <div id="searchResults" class="d-flex flex-column gap-2">
+                        <div class="text-center text-secondary py-4" style="font-size: 0.9rem;">
+                            Nhập từ khóa để tìm kiếm bản nhạc bạn muốn đính kèm.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

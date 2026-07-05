@@ -1,0 +1,43 @@
+        <!-- PLAYER BAR -->
+        <footer class="player-bar" id="globalPlayerBar">
+            <!-- Info -->
+            <div class="player-info">
+                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Cover" class="player-cover" id="pbCover">
+                <div class="player-text">
+                    <div class="player-title" id="pbTitle">Có Chắc Yêu Là Đây</div>
+                    <div class="text-muted-custom player-artist" id="pbArtist">Sơn Tùng M-TP</div>
+                </div>
+                <button class="btn-icon ms-2 heart-btn"><i class="bi bi-heart"></i></button>
+            </div>
+            
+            <!-- Controls -->
+            <div class="player-controls-container">
+                <div class="player-controls">
+                    <button class="btn-icon"><i class="bi bi-shuffle fs-6"></i></button>
+                    <button class="btn-icon"><i class="bi bi-skip-start-fill fs-5"></i></button>
+                    <button class="btn-play" id="pbPlayBtn"><i class="bi bi-play-fill ms-1" id="pbPlayIcon"></i></button>
+                    <button class="btn-icon"><i class="bi bi-skip-end-fill fs-5"></i></button>
+                    <button class="btn-icon"><i class="bi bi-repeat fs-6"></i></button>
+                </div>
+                <div class="progress-container">
+                    <span id="pbCurrentTime">0:00</span>
+                    <div class="progress-bar-bg" id="pbProgressBg" style="cursor: pointer;">
+                        <div class="progress-bar-fill" id="pbProgressFill"></div>
+                    </div>
+                    <span id="pbDuration">0:00</span>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="player-actions">
+                <button class="btn-icon"><i class="bi bi-mic"></i></button>
+                <button class="btn-icon"><i class="bi bi-music-note-list"></i></button>
+                <button class="btn-icon"><i class="bi bi-speaker"></i></button>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn-icon" id="pbMuteBtn"><i class="bi bi-volume-up" id="pbMuteIcon"></i></button>
+                    <div class="volume-bar" id="pbVolumeBg" style="cursor: pointer;">
+                        <div class="volume-fill" id="pbVolumeFill" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </footer>

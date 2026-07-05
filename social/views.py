@@ -23,10 +23,40 @@ from social.services import (
     toggle_follow, set_mood, delete_mood,
     accept_follow_request, reject_follow_request, cancel_follow_request,
 )
-from social.models import FollowRequest
+from social.models import FollowRequest, MoodType, MoodTheme
 from social.selectors import list_friends
 
 logger = logging.getLogger(__name__)
+
+
+class MoodThemeListView(View):
+    """
+    GET /api/v1/social/mood-themes/
+    Trả về danh sách bản màu chủ đề (Theme) do Admin tạo.
+    Frontend dùng để render ô chọn màu khi user viết custom mood.
+    """
+
+    def get(self, request):
+        themes = MoodTheme.objects.filter(is_active=True).order_by('name')
+        return JsonResponse({
+            'success': True,
+            'data': [t.to_dict() for t in themes],
+        })
+
+
+class MoodTypeListView(View):
+    """
+    GET /api/v1/social/mood-types/
+    Trả về danh sách loại cảm xúc do Admin tạo - không cần đăng nhập.
+    Frontend dùng để render các card chọn cảm xúc một cách dynamic.
+    """
+
+    def get(self, request):
+        mood_types = MoodType.objects.filter(is_active=True).order_by('order', 'name')
+        return JsonResponse({
+            'success': True,
+            'data': [mt.to_dict() for mt in mood_types],
+        })
 
 def parse_json_body(request) -> dict:
     """Parse json body an toàn - trả {} nếu rỗng hoặc lỗi parse"""

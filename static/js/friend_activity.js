@@ -116,14 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timeHtml = `<div class="friend-time mt-1 text-muted-custom" style="font-size:0.7rem;">${friend.timeText}</div>`;
 
                 html += `
-                <div class="friend-item ${opacityClass}" style="display:flex;align-items:center;padding:10px 0;cursor:pointer;">
-                    <div class="friend-avatar" style="width:40px;height:40px;position:relative;flex-shrink:0;margin-right:12px;">
+                <div class="friend-item ${opacityClass}" style="display:flex;align-items:center;padding:10px 0;cursor:pointer;" data-user-id="${friend.id}" onclick="window.location.href='/profile/${friend.id}/'">
+                    <a href="/profile/${friend.id}/" class="friend-avatar text-decoration-none" style="width:40px;height:40px;position:relative;flex-shrink:0;margin-right:12px;" title="Xem hồ sơ" onclick="event.stopPropagation();">
                         <img src="${friend.avatar}" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover ${grayscaleClass}">
                         ${dotHtml}
-                    </div>
+                    </a>
                     <div class="friend-info" style="flex-grow:1;overflow:hidden;">
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="friend-name fw-semibold text-white" style="font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${friend.name}</span>
+                            <a href="/profile/${friend.id}/" class="friend-name fw-semibold text-white text-decoration-none" style="font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="event.stopPropagation();">${friend.name}</a>
                         </div>
                         ${activityHtml}${timeHtml}
                     </div>
@@ -147,7 +147,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ─── Load My Mood Badge ─────────────────────────────────────────────────
+    async function loadMyMoodBadge() {
+        const myMoodTag = document.getElementById('myMoodBadge');
+        if (!myMoodTag) return;
+
+        try {
+            const res = await fetch('/api/v1/social/me/mood/');
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            if (data.success && data.data) {
+                const mood = data.data;
+                myMoodTag.style.display = 'inline-block';
+                if (mood.theme) {
+                    myMoodTag.style.background = `linear-gradient(135deg, ${mood.theme.gradient_from}, ${mood.theme.gradient_to})`;
+                }
+                myMoodTag.style.color = '#fff';
+
+                let contentHtml = '';
+                if (mood.mood_type) {
+                    contentHtml = `<span class="me-1">${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
+                } else {
+                    contentHtml = `<i class="bi bi-chat-fill me-1"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
+                }
+                myMoodTag.innerHTML = contentHtml;
+                myMoodTag.title = mood.status_text || 'Tâm trạng hiện tại của bạn';
+            } else {
+                myMoodTag.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Lỗi khi tải mood badge:", error);
+            myMoodTag.style.display = 'none';
+        }
+    }
+
     loadFriendActivity();
+    loadMyMoodBadge();
     setInterval(loadFriendActivity, 60000);
 
 
