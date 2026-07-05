@@ -158,16 +158,37 @@ def delete_song(song: Song, artist) -> None:
 
 #phát hành bài hát draft -> published
 def publish_song(song: Song, artist) -> Song:
+    from music.exceptions import NotSongOwner, SongAlreadyPublished, AdminHiddenSongCannotBePublished
+
     if str(song.artist_id) != str(artist.id):
         raise NotSongOwner()
     
-    if song.status != song.STATUS_DRAFT:
+    if song.hidden_by_admin:
+        raise AdminHiddenSongCannotBePublished()
+    
+    if song.status not in [Song.STATUS_DRAFT, Song.STATUS_HIDDEN]:
         raise SongAlreadyPublished()
     
     song.status = Song.STATUS_PUBLISHED
     if not song.released_at:
         song.released_at = timezone.now()
-    song.save(update_fields=['status', 'released_at', 'updated_at'])
+    song.save()
+    
+    # Gửi thông báo cho người theo dõi
+    from notifications.services import create_notification
+    from notifications.models import Notification
+    
+    # Lấy danh sách người theo dõi
+    followers = artist.followers.select_related('follower').all()
+    for follow in followers:
+        create_notification(
+            recipient=follow.follower,
+            notif_type=Notification.TYPE_NEW_SONG,
+            message=f"{artist.get_display_name()} vừa ra mắt bài hát mới: {song.title}",
+            sender=artist,
+            target_type=Notification.TARGET_SONG,
+            target_id=song.id
+        )
 
     logger.info('Song published: %s', song.title)
     return song

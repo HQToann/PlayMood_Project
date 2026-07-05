@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nghệ sĩ: Sơn Tùng M-TP | PlayMood</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="../css/home.css" rel="stylesheet">
+    <link href="../css/profile.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            <aside class="sidebar-left py-3 d-none d-lg-flex">
+                <div class="px-3 mb-4 flex-shrink-0">
+                    <a href="#" class="brand-logo">
+                        <div class="brand-icon"><i class="bi bi-music-note"></i></div>
+                        PlayMood
+                    </a>
+                </div>
+
+                <div class="flex-grow-1 overflow-auto custom-scrollbar">
+                    <div class="nav-section px-2">
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-house-door"></i> Trang chủ
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-search"></i> Khám phá
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-emoji-smile"></i> Tâm trạng
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-music-note-list"></i> Playlist
+                        </a>
+                        <!-- Only show if user is Artist -->
+                        <a href="artist_manage_songs.html" class="nav-link-custom">
+                            <i class="bi bi-kanban"></i> Quản lý bài hát
+                        </a>
+                    </div>
+
+                    <div class="nav-section-title mt-4">THƯ VIỆN</div>
+                    <div class="nav-section px-2">
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-heart"></i> Yêu thích
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-clock-history"></i> Nghe gần đây
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-download"></i> Đã tải
+                        </a>
+                    </div>
+
+                    <div class="nav-section-title mt-4">PLAYLIST CỦA BẠN</div>
+                    <div class="nav-section px-2 pb-4">
+                        <a href="#" class="nav-link-custom text-white">
+                            <i class="bi bi-plus-lg text-secondary"></i> Tạo playlist mới
+                        </a>
+
+                        <div class="playlist-item mt-2">
+                            <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="cover" class="playlist-img">
+                            <div>
+                                <div style="font-size: 0.85rem; font-weight: 600;">Chill Buổi Tối</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">25 bài hát</div>
+                            </div>
+                        </div>
+                        <div class="playlist-item">
+                            <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="cover" class="playlist-img">
+                            <div>
+                                <div style="font-size: 0.85rem; font-weight: 600;">Chữa Lành Tâm Hồn</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">30 bài hát</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="top-header">
+                    <button class="btn-icon d-lg-none me-3" type="button" data-bs-toggle="offcanvas"
+                        data-bs-target="#mobileMenuOffcanvas">
+                        <i class="bi bi-list fs-3"></i>
+                    </button>
+                    <div class="search-bar me-auto">
+                        <i class="bi bi-search text-muted-custom"></i>
+                        <input type="text" placeholder="Tìm bài hát, nghệ sĩ...">
+                    </div>
+
+                    <div class="header-actions">
+                        <!-- Status Removed -->
+
+                        <button class="btn-icon d-xl-none"><i class="bi bi-bell"></i></button>
+                        <div class="dropdown d-xl-none">
+                            <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false"
+                                style="cursor: pointer;">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                    alt="avatar" class="user-avatar">
+                                <span
+                                    style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                    <span
+                                        style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">Thanh</span>
+                                    <i class="bi bi-chevron-down small"></i>
+                                </span>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
+                                style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                <li><a class="dropdown-item py-2" href="#"><i
+                                            class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
+                                <li><a class="dropdown-item py-2" href="#"><i
+                                            class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
+                                <li>
+                                    <hr class="dropdown-divider border-secondary opacity-25">
+                                </li>
+                                <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i>
+                                        Đăng xuất</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </header>
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll">
+
+
+                    <!-- Profile Header (Banner & Info) -->
+                    <!-- Bìa và Avatar (Nghệ sĩ) -->
+                    <div class="profile-header-container mb-4">
+                        <!-- Ảnh bìa -->
+                        <div class="profile-cover position-relative"
+                            style="height: 250px; border-radius: 12px; overflow: hidden;">
+                            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                                alt="Cover" class="w-100 h-100 object-fit-cover">
+                            <!-- Lớp phủ tối mờ -->
+                            <div class="cover-overlay position-absolute w-100 h-100 top-0 start-0"
+                                style="background: linear-gradient(to top, rgba(17,17,21,1) 0%, rgba(17,17,21,0.6) 40%, rgba(17,17,21,0.2) 100%);">
+                            </div>
+                        </div>
+
+                        <!-- Thông tin nghệ sĩ đè lên ảnh bìa -->
+                        <div class="profile-info px-4 d-flex flex-column flex-md-row align-items-md-end gap-4"
+                            style="margin-top: -100px; position: relative; z-index: 2;">
+                            <!-- Ảnh đại diện -->
+                            <div class="flex-shrink-0 position-relative">
+                                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80"
+                                    alt="Avatar" class="rounded-circle object-fit-cover shadow-lg"
+                                    style="width: 200px; height: 200px; border: 5px solid var(--bg-main);">
+
+                                <!-- Mood Thought Bubble -->
+                                <style>
+                                    .artist-mood-bubble::before { top: 29px !important; left: 20px !important; }
+                                    .artist-mood-bubble::after { top: 41px !important; left: 10px !important; }
+                                </style>
+                                <div class="profile-mood-bubble artist-mood-bubble" title="Cảm xúc hiện tại" style="position: absolute; top: -38px; left: 110px; z-index: 3;">
+                                    <div class="badge d-inline-flex align-items-center gap-2 shadow-sm position-relative"
+                                        style="font-size: 0.85rem; padding: 6px 14px;">
+
+                                        <div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">
+                                            <i class="bi bi-suit-heart-fill text-danger"></i> <span class="fw-bold">Lãng
+                                                Mạn</span>
+                                        </div>
+                                        <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1"
+                                            style="flex-grow: 1; min-width: 0; max-width: 100px;">
+                                            <i class="bi bi-music-note-beamed flex-shrink-0 text-white"></i>
+                                            <div class="marquee-wrapper"
+                                                style="overflow: hidden; white-space: nowrap; flex-grow: 1; min-width: 0; height: 18px; display: flex; align-items: center;">
+                                                <span class="marquee-text fw-bold text-white"
+                                                    style="display: inline-block; font-size: 0.85rem;">Nơi Này Có
+                                                    Anh</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!-- Chi tiết -->
+                            <div class="profile-text flex-grow-1 pb-md-3">
+
+                                <!-- Nghệ danh -->
+                                <div class="d-flex align-items-center gap-2 mb-1" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                                    <i class="bi bi-patch-check-fill" style="color: var(--accent-color); font-size: 1.2rem;"></i>
+                                    <span class="text-white fw-medium" style="font-size: 0.95rem; letter-spacing: 0.5px;">Xác minh bởi PlayMood</span>
+                                </div>
+                                <h1 class="fw-bold mb-2 text-white"
+                                    style="font-size: 4rem; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); line-height: 1.1;">
+                                    Sơn Tùng M-TP</h1>
+
+                                <!-- Tiểu sử ngắn -->
+                                <p class="text-light mb-0 opacity-75"
+                                    style="max-width: 600px; font-size: 1rem; line-height: 1.5; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                                    Ca sĩ, nhạc sĩ kiêm nhà sản xuất âm nhạc. Mong muốn mang âm nhạc Việt Nam vươn tầm
+                                    thế giới. Âm nhạc là cảm xúc, là cuộc sống.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Thống kê và Mạng xã hội -->
+                        <div class="px-4 mt-4 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                            <!-- Thống kê người theo dõi -->
+                            <div class="d-flex gap-5">
+                                <div>
+                                    <div class="text-white fw-bold fs-5">1.5M</div>
+                                    <div class="text-secondary small text-uppercase fw-semibold"
+                                        style="letter-spacing: 1px;">Người theo dõi</div>
+                                </div>
+                                <div>
+                                    <div class="text-white fw-bold fs-5">120</div>
+                                    <div class="text-secondary small text-uppercase fw-semibold"
+                                        style="letter-spacing: 1px;">Đang theo dõi</div>
+                                </div>
+                                <div>
+                                    <div class="text-white fw-bold fs-5">10M</div>
+                                    <div class="text-secondary small text-uppercase fw-semibold"
+                                        style="letter-spacing: 1px;">Lượt thích</div>
+                                </div>
+                            </div>
+
+                            <!-- Mạng xã hội -->
+                            <div class="social-links d-flex gap-2">
+                                <a href="#"
+                                    class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
+                                    title="Website">
+                                    <i class="bi bi-globe2 text-white"></i>
+                                </a>
+                                <a href="#"
+                                    class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
+                                    title="Facebook">
+                                    <i class="bi bi-facebook text-white"></i>
+                                </a>
+                                <a href="#"
+                                    class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
+                                    title="YouTube">
+                                    <i class="bi bi-youtube text-white"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Profile Tabs -->
+                    <div class="profile-tabs">
+                        <div class="profile-tab active">Tổng quan</div>
+                        <div class="profile-tab">Playlist</div>
+                        <div class="profile-tab">Yêu thích</div>
+                        <div class="profile-tab">Đã tải</div>
+                        <div class="profile-tab">Nghe gần đây</div>
+                    </div>
+
+                    <!-- Profile Content: Top Tracks (Danh sách) -->
+                    <div class="home-section mb-5">
+                        <h2 class="profile-section-title">Bài hát yêu thích gần đây</h2>
+                        <div class="song-list-container">
+                            <!-- Song Item 1 -->
+                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded"
+                                style="transition: background-color 0.2s;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-secondary" style="width: 20px;">1</div>
+                                    <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
+                                        class="rounded" alt="cover">
+                                    <div>
+                                        <div class="fw-semibold">Chạy Ngay Đi</div>
+                                        <div class="small text-secondary">Sơn Tùng M-TP</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-4 text-secondary">
+                                    <span class="d-none d-md-block">Album M-TP</span>
+                                    <span>4:02</span>
+                                    <i class="bi bi-suit-heart-fill text-danger"></i>
+                                    <i class="bi bi-three-dots"></i>
+                                </div>
+                            </div>
+
+                            <!-- Song Item 2 -->
+                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded mt-2"
+                                style="transition: background-color 0.2s;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-secondary" style="width: 20px;">2</div>
+                                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
+                                        class="rounded" alt="cover">
+                                    <div>
+                                        <div class="fw-semibold">Waiting For You</div>
+                                        <div class="small text-secondary">MONO, Onionn</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-4 text-secondary">
+                                    <span class="d-none d-md-block">22</span>
+                                    <span>4:25</span>
+                                    <i class="bi bi-suit-heart-fill text-danger"></i>
+                                    <i class="bi bi-three-dots"></i>
+                                </div>
+                            </div>
+
+                            <!-- Song Item 3 -->
+                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded mt-2"
+                                style="transition: background-color 0.2s;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-secondary" style="width: 20px;">3</div>
+                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
+                                        class="rounded" alt="cover">
+                                    <div>
+                                        <div class="fw-semibold">See Tình</div>
+                                        <div class="small text-secondary">Hoàng Thuỳ Linh</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-4 text-secondary">
+                                    <span class="d-none d-md-block">LINK</span>
+                                    <span>3:10</span>
+                                    <i class="bi bi-heart"></i>
+                                    <i class="bi bi-three-dots"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Content: User Playlists -->
+                    <div class="home-section mb-5">
+                        <h2 class="profile-section-title">Playlist của Thành Nhân</h2>
+                        <div class="horizontal-scroll-container">
+                            <!-- Card 1 -->
+                            <div class="playlist-card">
+                                <div class="card-image-wrapper">
+                                    <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                        alt="Playlist">
+                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                </div>
+                                <div class="card-title">Chill Buổi Tối</div>
+                                <div class="card-subtitle">25 bài hát</div>
+                            </div>
+
+                            <!-- Card 2 -->
+                            <div class="playlist-card">
+                                <div class="card-image-wrapper">
+                                    <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                                        alt="Playlist">
+                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                </div>
+                                <div class="card-title">Chữa Lành Tâm Hồn</div>
+                                <div class="card-subtitle">30 bài hát</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- RIGHT SIDEBAR (Friends Activity) -->
+            <aside class="sidebar-right d-none d-xl-block">
+                <!-- Header Actions for Desktop Sidebar -->
+                <div class="d-flex justify-content-end align-items-center mb-4 gap-2">
+                    <!-- User Mood Tag -->
+                    <div class="badge rounded-pill px-3 py-2 shadow-sm me-auto"
+                        style="background: linear-gradient(135deg, #F8B4B4, #E99CBB); color: #121929; font-weight: 600; font-size: 0.8rem; cursor: pointer;"
+                        title="Tâm trạng hiện tại của bạn">
+                        <i class="bi bi-suit-heart-fill me-1"></i> Lãng Mạn
+                    </div>
+
+                    <button class="btn-icon"><i class="bi bi-bell"></i></button>
+                    <div class="dropdown">
+                        <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false"
+                            style="cursor: pointer;">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="avatar" class="user-avatar">
+                            <span
+                                style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                <span
+                                    style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">Thanh</span>
+                                <i class="bi bi-chevron-down small"></i>
+                            </span>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
+                            style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                            <li><a class="dropdown-item py-2" href="#"><i
+                                        class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
+                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-gear me-3 text-muted-custom"></i>
+                                    Cài đặt</a></li>
+                            <li>
+                                <hr class="dropdown-divider border-secondary opacity-25">
+                            </li>
+                            <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i> Đăng
+                                    xuất</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+                    <h6 class="mb-0 fw-bold">Hoạt động bạn bè</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom"
+                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
+                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')"
+                            title="Thêm bạn bè"></i>
+                    </div>
+                </div>
+
+                <div class="search-bar mb-4 w-100"
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
+                </div>
+
+                <!-- Friend 1 -->
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="fr" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="friend-name fw-semibold">M.</span>
+                        </div>
+                        <div class="friend-song mt-1"><i class="bi bi-music-note"></i> See Tình - Hoàng Thùy...</div>
+                        <div class="friend-time">2 phút trước</div>
+                    </div>
+                </div>
+
+                <!-- Friend 2 -->
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="fr" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="friend-name fw-semibold">Hải Đ...</span>
+                        </div>
+                        <div class="friend-song mt-1"><i class="bi bi-music-note"></i> Blinding Lights - The W...</div>
+                        <div class="friend-time">5 phút trước</div>
+                    </div>
+                </div>
+
+                <!-- Friend 3 -->
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="fr" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="friend-name fw-semibold">T...</span>
+                        </div>
+                        <div class="friend-song mt-1"><i class="bi bi-music-note"></i> Snowman - Sia</div>
+                        <div class="friend-time">10 phút trước</div>
+                    </div>
+                </div>
+
+                <!-- Offline Friend 1 -->
+                <div class="friend-item opacity-75">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="fr" class="w-100 h-100 rounded-circle object-fit-cover grayscale">
+                    </div>
+                    <div class="friend-info">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="friend-name fw-semibold">Đức P...</span>
+                        </div>
+                        <div class="friend-time mt-1">Không hoạt động<br>3 giờ trước</div>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+
+        <!-- PLAYER BAR -->
+        <footer class="player-bar">
+            <!-- Info -->
+            <div class="player-info">
+                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                    alt="Cover" class="player-cover">
+                <div class="player-text">
+                    <div class="player-title">Có Chắc Yêu Là Đây</div>
+                    <div class="text-muted-custom player-artist">Sơn Tùng M-TP</div>
+                </div>
+                <button class="btn-icon ms-2 heart-btn"><i class="bi bi-heart"></i></button>
+            </div>
+
+            <!-- Controls -->
+            <div class="player-controls-container">
+                <div class="player-controls">
+                    <button class="btn-icon"><i class="bi bi-shuffle fs-6"></i></button>
+                    <button class="btn-icon"><i class="bi bi-skip-start-fill fs-5"></i></button>
+                    <button class="btn-play"><i class="bi bi-play-fill ms-1"></i></button>
+                    <button class="btn-icon"><i class="bi bi-skip-end-fill fs-5"></i></button>
+                    <button class="btn-icon"><i class="bi bi-repeat fs-6"></i></button>
+                </div>
+                <div class="progress-container">
+                    <span>0:00</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                    <span>3:54</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="player-actions">
+                <button class="btn-icon"><i class="bi bi-mic"></i></button>
+                <button class="btn-icon"><i class="bi bi-music-note-list"></i></button>
+                <button class="btn-icon"><i class="bi bi-speaker"></i></button>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn-icon"><i class="bi bi-volume-up"></i></button>
+                    <div class="volume-bar">
+                        <div class="volume-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
+        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+                PlayMood
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+                <a href="#" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-emoji-smile"></i> Tâm trạng</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
+                <!-- Only show if user is Artist -->
+                <!-- <a href="#" class="nav-link-custom"><i class="bi bi-upload"></i> Upload nhạc</a> -->
+            </div>
+
+            <!-- Friends Activity (Mobile only) -->
+            <div class="px-3 py-3 flex-grow-1 overflow-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom"
+                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
+                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')"
+                            title="Thêm bạn bè"></i>
+                    </div>
+                </div>
+
+                <div class="search-bar mb-4 w-100"
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Linh Đan</div>
+                        <div class="friend-song">Đang nghe: Waiting For You</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Hải Nam</div>
+                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
+                        <div class="friend-time">1 giờ trước</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Followers Modal -->
+    <div class="modal fade custom-modal" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="followersModalLabel">Người theo dõi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- User Item -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Minh Anh</h6>
+                                <small class="text-secondary">@minhanh_chill</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Theo dõi lại</button>
+                    </div>
+                    <!-- User Item -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Hoàng Nam</h6>
+                                <small class="text-secondary">@nam_music</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Theo dõi lại</button>
+                    </div>
+                    <!-- User Item -->
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Linh Chi</h6>
+                                <small class="text-secondary">@chi_linh99</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Theo dõi lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Following Modal -->
+    <div class="modal fade custom-modal" id="followingModal" tabindex="-1" aria-labelledby="followingModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="followingModalLabel">Đang theo dõi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- User Item -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Sơn Tùng M-TP</h6>
+                                <small class="text-secondary">@sontungmtp</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-light rounded-pill px-3 text-dark fw-bold">Đang theo dõi</button>
+                    </div>
+                    <!-- User Item -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Đen Vâu</h6>
+                                <small class="text-secondary">@denvau</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-light rounded-pill px-3 text-dark fw-bold">Đang theo dõi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bio Modal -->
+    <div class="modal fade custom-modal" id="editBioModal" tabindex="-1" aria-labelledby="editBioModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="editBioModalLabel">Chỉnh sửa tiểu sử</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="bioTextarea" class="form-label text-secondary">Mô tả ngắn gọn về bạn</label>
+                        <textarea class="form-control text-light shadow-none" id="bioTextarea" rows="4"
+                            style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); resize: none;">Đam mê âm nhạc lofi và thích lang thang quán cà phê.</textarea>
+                        <div class="form-text text-end text-secondary mt-1">52/150</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4"
+                        data-bs-dismiss="modal">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+</body>
+
+</html>

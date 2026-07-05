@@ -166,6 +166,25 @@ class Song(models.Model):
         db_index=True,
     )
 
+    hidden_by_admin = models.BooleanField(
+        default=False,
+        verbose_name='Bị khoá bởi Admin',
+    )
+    hidden_reason = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Lý do bị khoá',
+    )
+    is_appealed = models.BooleanField(
+        default=False,
+        verbose_name='Đang có kiến nghị',
+    )
+    appeal_message = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Nội dung kiến nghị',
+    )
+
     allow_download = models.BooleanField(
         default=False,
         verbose_name='Cho phép tải',
@@ -239,6 +258,10 @@ class Song(models.Model):
             'release_at': self.released_at.isoformat() if self.released_at else None,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
+            'hidden_by_admin': self.hidden_by_admin,
+            'hidden_reason': self.hidden_reason,
+            'is_appealed': self.is_appealed,
+            'appeal_message': self.appeal_message,
         }
 
         if include_stats:

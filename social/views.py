@@ -19,7 +19,12 @@ from social.selectors import (
     is_following, get_follow_counts, list_followers, list_following,
     get_my_mood, get_user_mood, list_feed, list_my_activities,
 )
-from social.services import toggle_follow, set_mood, delete_mood
+from social.services import (
+    toggle_follow, set_mood, delete_mood,
+    accept_follow_request, reject_follow_request, cancel_follow_request,
+)
+from social.models import FollowRequest
+from social.selectors import list_friends
 
 logger = logging.getLogger(__name__)
 
@@ -292,11 +297,81 @@ class MyActivitiesView(View):
         try:
             filters = validate_list_feed_params(request.GET)
             result = list_my_activities(request.user, page=filters['page'], page_size=filters['page_size'])
-            return JsonResponse(
-                {
-                    'success': True,
-                    'data': result,
-                }
-            )
+            return JsonResponse({'success': True, 'data': result})
+        except Exception as e:
+            return handle_exception(e)
+
+
+# ─────────────────────────────────────────────
+# FOLLOW REQUEST VIEWS
+# ─────────────────────────────────────────────
+
+class FollowRequestReceivedView(View):
+    """GET /api/v1/social/follow-requests/received/ - Yêu cầu nhận được"""
+    @method_decorator(require_auth)
+    def get(self, request):
+        try:
+            reqs = FollowRequest.objects.filter(receiver=request.user).select_related('sender')
+            items = [r.to_dict() for r in reqs]
+            return JsonResponse({'success': True, 'data': {'items': items, 'total': len(items)}})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class FollowRequestSentView(View):
+    """GET /api/v1/social/follow-requests/sent/ - Yêu cầu đã gửi"""
+    @method_decorator(require_auth)
+    def get(self, request):
+        try:
+            reqs = FollowRequest.objects.filter(sender=request.user).select_related('receiver')
+            items = [r.to_dict() for r in reqs]
+            return JsonResponse({'success': True, 'data': {'items': items, 'total': len(items)}})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class FollowRequestAcceptView(View):
+    """POST /api/v1/social/follow-requests/<id>/accept/"""
+    @method_decorator(csrf_protect)
+    @method_decorator(require_auth)
+    def post(self, request, request_id):
+        try:
+            accept_follow_request(request.user, request_id)
+            return JsonResponse({'success': True, 'message': 'Đã chấp nhận yêu cầu kết bạn.'})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class FollowRequestRejectView(View):
+    """POST /api/v1/social/follow-requests/<id>/reject/"""
+    @method_decorator(csrf_protect)
+    @method_decorator(require_auth)
+    def post(self, request, request_id):
+        try:
+            reject_follow_request(request.user, request_id)
+            return JsonResponse({'success': True, 'message': 'Đã từ chối yêu cầu kết bạn.'})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class FollowRequestCancelView(View):
+    """POST /api/v1/social/follow-requests/<id>/cancel/ - Người GỮi hủy yêu cầu"""
+    @method_decorator(csrf_protect)
+    @method_decorator(require_auth)
+    def post(self, request, request_id):
+        try:
+            cancel_follow_request(request.user, request_id)
+            return JsonResponse({'success': True, 'message': 'Đã hủy yêu cầu kết bạn.'})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class FriendsListView(View):
+    """GET /api/v1/social/friends/ - Danh sách bạn bè (follow 2 chiều)"""
+    @method_decorator(require_auth)
+    def get(self, request):
+        try:
+            result = list_friends(request.user)
+            return JsonResponse({'success': True, 'data': result})
         except Exception as e:
             return handle_exception(e)

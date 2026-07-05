@@ -307,6 +307,14 @@ def approve_verification(verification_id, admin: User) -> ArtistVerification:
     # Nâng cấp role user
     User.objects.filter(id=verification.user_id).update(role=User.ROLE_ARTIST)
 
+    # Tự động tạo hồ sơ nghệ sĩ
+    from artists.services import create_artist_profile
+    user = User.objects.get(id=verification.user_id)
+    try:
+        create_artist_profile(user, {'stage_name': verification.real_name})
+    except Exception as e:
+        logger.warning('Could not auto-create artist profile for user %s: %s', user.username, str(e))
+
     logger.info(
         'Verification approved: user=%s, admin=%s',
         verification.user.username,

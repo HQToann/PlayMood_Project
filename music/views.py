@@ -291,6 +291,11 @@ class SongDetailView(View):
         
     @method_decorator(csrf_protect)
     @method_decorator(require_artist)
+    def post(self, request, song_id):
+        return self.patch(request, song_id)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
 
     def patch(self, request, song_id):
         try:
@@ -349,6 +354,29 @@ class SongPublishView(View):
         except Exception as e:
             return handle_exception(e)
         
+class SongAppealView(View):
+    """POST /api/v1/music/songs/<id>/appeal/ - Artist+Owner"""
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def post(self, request, song_id):
+        try:
+            song = get_song_by_id(song_id)
+            if str(song.artist_id) != str(request.user.id):
+                return JsonResponse({'success': False, 'error': {'message': 'Không có quyền'}}, status=403)
+            
+            body = parse_json_body(request)
+            appeal_message = body.get('message', '').strip()
+            if not appeal_message:
+                return JsonResponse({'success': False, 'error': {'message': 'Vui lòng nhập nội dung kiến nghị'}}, status=400)
+            
+            song.is_appealed = True
+            song.appeal_message = appeal_message
+            song.save(update_fields=['is_appealed', 'appeal_message', 'updated_at'])
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return handle_exception(e)
+            
 class SongHideView(View):
     """POST /api/v1/music/songs/<id>/hide/ - Artist+Owner."""
     @method_decorator(csrf_protect)

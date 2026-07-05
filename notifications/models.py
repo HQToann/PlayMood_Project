@@ -4,18 +4,22 @@ from django.db import models
 
 class Notification(models.Model):
     TYPE_FOLLOW = 'follow'
+    TYPE_FOLLOW_REQUEST = 'follow_request'
     TYPE_LIKE = 'like'
     TYPE_COMMENT = 'comment'
     TYPE_REPLY = 'reply'
     TYPE_SYSTEM = 'system'
     TYPE_VERIFY_RESULT = 'verify_result'
+    TYPE_NEW_SONG = 'new_song'
     TYPE_CHOICES = [
         (TYPE_FOLLOW, 'Theo dõi mới'),
+        (TYPE_FOLLOW_REQUEST, 'Yêu cầu kết bạn'),
         (TYPE_LIKE, 'Lượt thích'),
         (TYPE_COMMENT, 'Bình luận mới'),
         (TYPE_REPLY, 'Trả lời bình luận'),
         (TYPE_SYSTEM, 'Hệ thống'),
         (TYPE_VERIFY_RESULT, 'Kết quả xác thực'),
+        (TYPE_NEW_SONG, 'Bài hát mới'),
     ]
 
     TARGET_SONG = 'song'
@@ -50,7 +54,7 @@ class Notification(models.Model):
 
     notif_type = models.CharField(
         max_length=20,
-        choices=TARGET_CHOICES,
+        choices=TYPE_CHOICES,
         db_index=True,
         verbose_name='Loại',
     )

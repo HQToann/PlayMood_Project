@@ -51,7 +51,57 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.follower.username} -> follow -> {self.following.username}'
-    
+
+class FollowRequest(models.Model):
+    """
+    Yêu cầu kết bạn - dành cho quan hệ User <-> User (không áp dụng khi target là Artist).
+    Vòng đời: sender gửi -> receiver nhận thông báo -> accept (tạo Follow 2 chiều) hoặc reject/cancel.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    sender = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='sent_follow_requests',
+        verbose_name='Người gửi yêu cầu',
+    )
+    receiver = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='received_follow_requests',
+        verbose_name='Người nhận yêu cầu',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày gửi')
+
+    class Meta:
+        db_table = 'social_follow_request'
+        unique_together = [('sender', 'receiver')]
+        ordering = ['-created_at']
+        verbose_name = 'Yêu cầu kết bạn'
+        verbose_name_plural = 'Yêu cầu kết bạn'
+
+    def __str__(self):
+        return f'{self.sender.username} -> request -> {self.receiver.username}'
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'sender': {
+                'id': str(self.sender.id),
+                'username': self.sender.username,
+                'display_name': self.sender.get_display_name(),
+                'avatar': self.sender.avatar.url if self.sender.avatar else None,
+            },
+            'receiver': {
+                'id': str(self.receiver.id),
+                'username': self.receiver.username,
+                'display_name': self.receiver.get_display_name(),
+                'avatar': self.receiver.avatar.url if self.receiver.avatar else None,
+            },
+            'created_at': self.created_at.isoformat(),
+        }
+
+
 class Mood(models.Model):
     """
     Trạng thái cảm xúc hiên tại của User - có thể gắn kèm bài hát

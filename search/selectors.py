@@ -109,9 +109,13 @@ def search_users(q='', requester=None, page=1, page_size=20) -> dict:
     requester_id = getattr(requester, 'id', None)
     requester_is_auth = bool(requester_id and getattr(requester, 'is_authenticated', False))
 
+    following_ids = set()
+    requested_ids = set()
+
     if requester_is_auth:
-        from social.models import Follow
-        following_ids = Follow.objects.filter(follower_id=requester_id).values_list('following_id', flat=True)
+        from social.models import Follow, FollowRequest
+        following_ids = set(Follow.objects.filter(follower_id=requester_id).values_list('following_id', flat=True))
+        requested_ids = set(FollowRequest.objects.filter(sender_id=requester_id).values_list('receiver_id', flat=True))
         qs = qs.filter(Q(is_private=False) | Q(id__in=following_ids))
 
         blocked_ids = BlockList.objects.filter(blocked_id=requester_id).values_list('blocker_id', flat=True)
@@ -123,10 +127,24 @@ def search_users(q='', requester=None, page=1, page_size=20) -> dict:
     qs = qs.order_by('username')
     total = qs.count()
     start = (page - 1) * page_size
-    items = [u.to_dict(include_private=False) for u in qs[start:start + page_size]]
+
+    items = []
+    for u in qs[start:start + page_size]:
+        u_dict = u.to_dict(include_private=False)
+        # Gắn follow_status: none / requested / following
+        if requester_is_auth:
+            if u.id in following_ids:
+                u_dict['follow_status'] = 'following'
+            elif u.id in requested_ids:
+                u_dict['follow_status'] = 'requested'
+            else:
+                u_dict['follow_status'] = 'none'
+        else:
+            u_dict['follow_status'] = 'none'
+        items.append(u_dict)
 
     return {
-        'items': items, 
+        'items': items,
         'pagination': _pagination(page, page_size, total)
     }
 

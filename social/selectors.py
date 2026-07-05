@@ -193,3 +193,48 @@ def list_my_activities(user, page=1, page_size=20) -> dict:
             'total_pages': math.ceil(total / page_size) if total > 0 else 1
         },
     }
+
+
+def list_friends(user, page=1, page_size=50) -> dict:
+    """
+    Danh sách bạn bè: những người mà user follow và họ cũng follow lại (mutual follow).
+    """
+    # ID của những người user đang follow
+    following_ids = set(
+        Follow.objects.filter(follower=user).values_list('following_id', flat=True)
+    )
+    # ID của những người đang follow user
+    follower_ids = set(
+        Follow.objects.filter(following=user).values_list('follower_id', flat=True)
+    )
+    # Giao nhau = bạn bè 2 chiều
+    friend_ids = following_ids & follower_ids
+
+    from accounts.models import User as UserModel
+    qs = UserModel.objects.filter(id__in=friend_ids, is_active=True).select_related('mood', 'mood__song', 'mood__song__artist').order_by('username')
+    total = qs.count()
+    start = (page - 1) * page_size
+    items = []
+    for u in qs[start:start + page_size]:
+        mood = getattr(u, 'mood', None)
+        mood_data = None
+        if mood and not mood.is_expired():
+            mood_data = mood.to_dict()
+
+        items.append({
+            'id': str(u.id),
+            'username': u.username,
+            'display_name': u.get_display_name(),
+            'avatar': u.avatar.url if u.avatar else None,
+            'role': u.role,
+            'mood': mood_data,
+        })
+    return {
+        'items': items,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'total_pages': math.ceil(total / page_size) if total > 0 else 1,
+        },
+    }

@@ -10,8 +10,8 @@ class GenreAdmin(admin.ModelAdmin):
 
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
-    list_display = ('title', 'artist', 'genre', 'status', 'is_trending', 'play_count', 'created_at')
-    list_filter = ('status', 'is_trending', 'genre')
+    list_display = ('title', 'artist', 'genre', 'status', 'hidden_by_admin', 'is_appealed', 'created_at', 'play_count')
+    list_filter = ('status', 'hidden_by_admin', 'is_appealed', 'is_trending', 'created_at', 'genre')
     search_fields = ('title', 'artist__username')
     readonly_fields = ('play_count', 'created_at', 'updated_at')
     ordering = ('-created_at',)

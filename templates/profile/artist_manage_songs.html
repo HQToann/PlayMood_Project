@@ -1,0 +1,767 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nghệ sĩ: Sơn Tùng M-TP | PlayMood</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            <aside class="sidebar-left py-3 d-none d-lg-flex">
+                <div class="px-3 mb-4 flex-shrink-0">
+                    <a href="#" class="brand-logo">
+                        <div class="brand-icon"><i class="bi bi-music-note"></i></div>
+                        PlayMood
+                    </a>
+                </div>
+
+                <div class="flex-grow-1 overflow-auto custom-scrollbar">
+                    <div class="nav-section px-2">
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-house-door"></i> Trang chủ
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-search"></i> Khám phá
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-emoji-smile"></i> Tâm trạng
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-music-note-list"></i> Playlist
+                        </a>
+                                                <!-- Only show if user is Artist -->
+                        <a href="artist_manage_songs.html" class="nav-link-custom active">
+                            <i class="bi bi-kanban"></i> Quản lý bài hát
+                        </a>
+                    </div>
+
+                    <div class="nav-section-title mt-4">THƯ VIỆN</div>
+                    <div class="nav-section px-2">
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-heart"></i> Yêu thích
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-clock-history"></i> Nghe gần đây
+                        </a>
+                        <a href="#" class="nav-link-custom">
+                            <i class="bi bi-download"></i> Đã tải
+                        </a>
+                    </div>
+
+                    <div class="nav-section-title mt-4">PLAYLIST CỦA BẠN</div>
+                    <div class="nav-section px-2 pb-4">
+                        <a href="#" class="nav-link-custom text-white">
+                            <i class="bi bi-plus-lg text-secondary"></i> Tạo playlist mới
+                        </a>
+
+                        <div class="playlist-item mt-2">
+                            <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="cover" class="playlist-img">
+                            <div>
+                                <div style="font-size: 0.85rem; font-weight: 600;">Chill Buổi Tối</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">25 bài hát</div>
+                            </div>
+                        </div>
+                        <div class="playlist-item">
+                            <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                alt="cover" class="playlist-img">
+                            <div>
+                                <div style="font-size: 0.85rem; font-weight: 600;">Chữa Lành Tâm Hồn</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">30 bài hát</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="top-header">
+                    <button class="btn-icon d-lg-none me-3" type="button" data-bs-toggle="offcanvas"
+                        data-bs-target="#mobileMenuOffcanvas">
+                        <i class="bi bi-list fs-3"></i>
+                    </button>
+                    <div class="d-flex align-items-center me-auto">
+                        <h2 class="fw-bold text-white mb-0 fs-3 d-none d-md-block">Quản lý bài hát</h2>
+                    </div>
+
+                    <div class="header-actions d-flex align-items-center gap-3">
+                        <a href="artist_upload.html" class="btn btn-primary rounded-pill px-3 px-md-4 fw-bold text-dark d-flex align-items-center" style="background-color: var(--accent-color); border: none; white-space: nowrap;">
+                            <i class="bi bi-plus-lg"></i> <span class="d-none d-md-inline ms-2">Tải bài hát mới</span>
+                        </a>
+                        <!-- Status Removed -->
+
+                        <button class="btn-icon d-xl-none"><i class="bi bi-bell"></i></button>
+                        <div class="dropdown d-xl-none">
+                            <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false"
+                                style="cursor: pointer;">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                                    alt="avatar" class="user-avatar">
+                                <span
+                                    style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                    <span
+                                        style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">Thanh</span>
+                                    <i class="bi bi-chevron-down small"></i>
+                                </span>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
+                                style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                <li><a class="dropdown-item py-2" href="#"><i
+                                            class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
+                                <li><a class="dropdown-item py-2" href="#"><i
+                                            class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
+                                <li>
+                                    <hr class="dropdown-divider border-secondary opacity-25">
+                                </li>
+                                <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i>
+                                        Đăng xuất</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </header>
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll">
+
+
+                    <!-- Upload Content -->
+                    <div class="px-2 px-md-4 pb-5 pt-4">
+
+                                        <!-- Quản Lý Bài Hát -->
+                    <div class="home-section mb-5">
+                        <!-- Title moved to header -->
+                        <div class="manage-songs-list">
+                            
+                            <!-- Header Row -->
+                            <div class="row align-items-center mb-3 text-secondary fw-semibold small px-3 d-none d-md-flex">
+                                <div class="col-md-5">BÀI HÁT</div>
+                                <div class="col-md-2 text-center">TRẠNG THÁI</div>
+                                <div class="col-md-3 text-center">THỐNG KÊ</div>
+                                <div class="col-md-2 text-end">THAO TÁC</div>
+                            </div>
+                            <hr class="border-secondary opacity-25 mt-0 mb-4 d-none d-md-block">
+
+                            <div id="songsListContainer">
+    <div class="text-center text-secondary py-5">
+        <div class="spinner-border text-secondary mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div>Đang tải bài hát...</div>
+    </div>
+</div>
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Edit Song Modal -->
+    <div class="modal fade custom-modal" id="editSongModal" tabindex="-1" aria-labelledby="editSongModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="editSongModalLabel">Chỉnh sửa bài hát</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row g-4">
+                            <!-- Ảnh bìa -->
+                            <div class="col-md-4 text-center">
+                                <div class="position-relative d-inline-block rounded-3 overflow-hidden mb-2" style="width: 150px; height: 150px;">
+                                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" class="w-100 h-100 object-fit-cover" alt="cover">
+                                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(0,0,0,0.5); cursor: pointer;">
+                                        <i class="bi bi-camera text-white fs-2"></i>
+                                    </div>
+                                    <input type="file" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" accept=".jpg,.png" style="cursor: pointer;">
+                                </div>
+                                <div class="text-secondary small">Nhấn để thay đổi ảnh bìa</div>
+                            </div>
+                            
+                            <!-- Form fields -->
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-semibold">Tên bài hát</label>
+                                    <input type="text" class="form-control bg-dark text-white border-secondary shadow-none" value="Nơi Này Có Anh">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-semibold">Thể loại</label>
+                                    <select class="form-select bg-dark text-white border-secondary shadow-none">
+                                        <option value="uuid-1" selected>Pop</option>
+                                        <option value="uuid-2">R&B</option>
+                                        <option value="uuid-3">Ballad</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small fw-semibold">Lời bài hát</label>
+                                    <textarea class="form-control bg-dark text-white border-secondary shadow-none" rows="4">Em là ai từ đâu bước đến nơi đây dịu dàng chân phương...</textarea>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                                    <div>
+                                        <div class="fw-semibold text-white">Cho phép tải xuống</div>
+                                        <div class="text-secondary small">Người nghe có thể tải bài hát này về</div>
+                                    </div>
+                                    <div class="form-check form-switch custom-switch fs-4 m-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" checked>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 mt-3">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn rounded-pill px-4 fw-bold text-dark" style="background-color: var(--accent-color); border: none;" data-bs-dismiss="modal">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal fade custom-modal" id="deleteSongConfirmModal" tabindex="-1" aria-labelledby="deleteSongConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-white" id="deleteSongConfirmModalLabel">Xóa bài hát?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-secondary mb-0">Bạn có chắc chắn muốn xóa vĩnh viễn bài hát này khỏi hệ thống? Hành động này không thể hoàn tác.</p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 mt-2">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Xóa vĩnh viễn</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- Delete Song Confirm Modal -->
+    <div class="modal fade custom-modal" id="deleteSongConfirmModal" tabindex="-1" aria-labelledby="deleteSongConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-white" id="deleteSongConfirmModalLabel">Xóa bài hát?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa bài hát này khỏi hệ thống?
+                </div>
+                <div class="modal-footer border-top-0 pt-0 mt-3">
+                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" id="confirmDeleteBtn">Xóa vĩnh viễn</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appeal Song Modal -->
+    <div class="modal fade" id="appealSongModal" tabindex="-1" aria-labelledby="appealSongModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title text-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i> Khiếu nại bài hát bị ẩn</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-white">
+                    <div class="p-3 rounded mb-3" style="background-color: rgba(255,255,255,0.05);">
+                        <strong>Lý do bị ẩn:</strong>
+                        <p id="appealHiddenReason" class="text-danger mt-1 mb-0"></p>
+                    </div>
+                    <form id="appealSongForm">
+                        <input type="hidden" id="appealSongId">
+                        <div class="mb-3">
+                            <label for="appealMessage" class="form-label text-secondary small">Nội dung khiếu nại</label>
+                            <textarea class="form-control bg-transparent text-white" id="appealMessage" rows="4" style="border-color: rgba(255,255,255,0.2);" placeholder="Giải thích vì sao bài hát của bạn không vi phạm..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn text-white" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-warning fw-bold px-4 rounded-pill" id="confirmAppealBtn">Gửi khiếu nại</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100; margin-bottom: 80px;">
+        <div id="systemToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold" id="toastMessage"></div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userId = "{{ request.user.id }}";
+            const songsContainer = document.getElementById('songsListContainer');
+            
+            // Setup modals if they exist
+            const editSongModalElem = document.getElementById('editSongModal');
+            const editSongModal = editSongModalElem ? new bootstrap.Modal(editSongModalElem) : null;
+            
+            const appealModalElem = document.getElementById('appealSongModal');
+            const appealModal = appealModalElem ? new bootstrap.Modal(appealModalElem) : null;
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            function showToast(msg, isSuccess = true) {
+                const toastElem = document.getElementById('systemToast');
+                if(!toastElem) return;
+                const msgElem = document.getElementById('toastMessage');
+                msgElem.textContent = msg;
+                toastElem.className = `toast align-items-center border-0 text-white bg-${isSuccess ? 'success' : 'danger'}`;
+                const toast = new bootstrap.Toast(toastElem, { delay: 3000 });
+                toast.show();
+            }
+
+            let currentActionSongId = null;
+
+            async function loadSongs() {
+                try {
+                    const response = await fetch(`/api/v1/music/songs/?artist_id=${userId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const songs = data.data.items;
+                        songsContainer.innerHTML = '';
+                        
+                        if (!songs || songs.length === 0) {
+                            songsContainer.innerHTML = '<div class="text-center text-secondary py-5">Bạn chưa có bài hát nào. Hãy tải bài hát đầu tiên lên!</div>';
+                            return;
+                        }
+
+                        songs.forEach(song => {
+                            const isDraft = song.status === 'draft';
+                            const isHidden = song.status === 'hidden';
+                            const hiddenByAdmin = song.hidden_by_admin;
+                            
+                            const dateStr = song.released_at 
+                                ? new Date(song.released_at).toLocaleDateString('vi-VN') 
+                                : new Date(song.created_at).toLocaleDateString('vi-VN');
+                            
+                            const coverUrl = song.cover_image ? song.cover_image : null;
+
+                            let statusHtml = '';
+                            let actionHtml = '';
+
+                            if (hiddenByAdmin) {
+                                statusHtml = '<span class="text-danger fw-bold"><i class="bi bi-shield-lock me-1"></i> Bị khoá</span>';
+                                if (song.is_appealed) {
+                                    actionHtml = `<li><a class="dropdown-item py-2 text-warning disabled" href="#"><i class="bi bi-hourglass-split me-3"></i> Đang chờ xử lý khiếu nại</a></li>`;
+                                } else {
+                                    actionHtml = `<li><a class="dropdown-item py-2 text-warning action-appeal-song" href="#" data-bs-toggle="modal" data-bs-target="#appealSongModal" data-song-id="${song.id}" data-hidden-reason="${song.hidden_reason || 'Vi phạm chính sách'}"><i class="bi bi-exclamation-triangle me-3"></i> Khiếu nại</a></li>`;
+                                }
+                            } else if (isDraft) {
+                                statusHtml = '<span class="text-secondary">Bản nháp</span>';
+                                actionHtml = `<li><a class="dropdown-item py-2 text-success action-publish-song" href="#" data-song-id="${song.id}"><i class="bi bi-send-check me-3"></i> Phát hành ngay</a></li>`;
+                            } else if (isHidden) {
+                                statusHtml = '<span class="text-secondary">Đã ẩn</span>';
+                                actionHtml = `<li><a class="dropdown-item py-2 text-success action-publish-song" href="#" data-song-id="${song.id}"><i class="bi bi-eye me-3"></i> Hiện lại bài hát</a></li>`;
+                            } else {
+                                statusHtml = '<span class="text-secondary">Phát hành</span>';
+                                actionHtml = `<li><a class="dropdown-item py-2 action-hide-song" href="#" data-song-id="${song.id}"><i class="bi bi-eye-slash me-3 text-muted-custom"></i> Ẩn bài hát</a></li>`;
+                            }
+
+                            const html = `
+                                <div class="song-manage-item row align-items-center py-3 px-3 rounded-3 mb-2" style="background-color: rgba(255,255,255,0.02); transition: background-color 0.2s; ${isHidden || hiddenByAdmin ? 'opacity: 0.7;' : ''}">
+                                    <div class="col-12 col-md-5 d-flex align-items-center gap-3 mb-3 mb-md-0">
+                                        ${coverUrl 
+                                            ? `<img src="${coverUrl}" alt="cover" class="rounded" style="width: 50px; height: 50px; object-fit: cover; cursor:pointer;" class="play-trigger" data-audio-url="${song.audio_file}">`
+                                            : `<div class="d-flex align-items-center justify-content-center rounded bg-secondary bg-opacity-25 play-trigger" style="width: 50px; height: 50px; cursor:pointer;" data-audio-url="${song.audio_file}"><i class="bi bi-music-note text-secondary fs-4"></i></div>`
+                                        }
+                                        <div>
+                                            <div class="text-white fw-semibold" style="cursor:pointer;" class="play-trigger" data-audio-url="${song.audio_file}">${song.title}</div>
+                                            <div class="text-secondary small">${song.genre ? song.genre.name : 'Chưa phân loại'} • ${dateStr}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-2 text-md-center">
+                                        ${statusHtml}
+                                    </div>
+                                    <div class="col-6 col-md-3 text-md-center d-flex justify-content-end justify-content-md-center gap-4">
+                                        <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt nghe"><i class="bi bi-headphones me-1"></i> ${song.play_count || song.listens_count || 0}</div>
+                                        <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt thích"><i class="bi bi-heart me-1"></i> ${song.likes_count || 0}</div>
+                                    </div>
+                                    <div class="col-12 col-md-2 text-end mt-3 mt-md-0">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-link text-secondary p-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical fs-5"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="background-color: var(--bg-card); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                                <li><a class="dropdown-item py-2 action-edit-song" href="#" data-bs-toggle="modal" data-bs-target="#editSongModal" data-song-id="${song.id}"><i class="bi bi-pencil me-3 text-muted-custom"></i> Chỉnh sửa</a></li>
+                                                ${actionHtml}
+                                                <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                                                <li><a class="dropdown-item py-2 text-danger action-delete-song" href="#" data-bs-toggle="modal" data-bs-target="#deleteSongConfirmModal" data-song-id="${song.id}"><i class="bi bi-trash me-3"></i> Xóa bài hát</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            songsContainer.insertAdjacentHTML('beforeend', html);
+                        });
+                    } else {
+                        songsContainer.innerHTML = '<div class="text-danger py-3 text-center">Lỗi tải danh sách bài hát.</div>';
+                    }
+                } catch (err) {
+                    console.error(err);
+                    songsContainer.innerHTML = '<div class="text-danger py-3 text-center">Lỗi kết nối máy chủ.</div>';
+                }
+            }
+
+            loadSongs();
+
+            // Event Delegation for action clicks
+            document.body.addEventListener('click', async function(e) {
+                const target = e.target.closest('a.dropdown-item');
+                if (!target) return;
+
+                if (target.classList.contains('action-delete-song')) {
+                    currentActionSongId = target.getAttribute('data-song-id');
+                }
+
+                if (target.classList.contains('action-publish-song') || target.classList.contains('action-hide-song')) {
+                    e.preventDefault();
+                    const songId = target.getAttribute('data-song-id');
+                    const isPublish = target.classList.contains('action-publish-song');
+                    const url = `/api/v1/music/songs/${songId}/${isPublish ? 'publish' : 'hide'}/`;
+
+                    try {
+                        const csrfToken = getCookie('csrftoken');
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            loadSongs();
+                            showToast(isPublish ? 'Phát hành bài hát thành công!' : 'Đã ẩn bài hát thành công!');
+                        } else {
+                            showToast('Lỗi: ' + (data.error?.message || 'Có lỗi xảy ra'), false);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Lỗi kết nối máy chủ', false);
+                    }
+                }
+
+                if (target.classList.contains('action-appeal-song')) {
+                    e.preventDefault();
+                    currentActionSongId = target.getAttribute('data-song-id');
+                    const reason = target.getAttribute('data-hidden-reason');
+                    document.getElementById('appealSongId').value = currentActionSongId;
+                    document.getElementById('appealHiddenReason').textContent = reason;
+                    document.getElementById('appealMessage').value = '';
+                }
+
+                // Edit song
+                if (target.classList.contains('action-edit-song')) {
+                    e.preventDefault();
+                    currentActionSongId = target.getAttribute('data-song-id');
+                    
+                    try {
+                        const res = await fetch(`/api/v1/music/songs/${currentActionSongId}/`);
+                        const data = await res.json();
+                        if (data.success) {
+                            const s = data.data;
+                            document.getElementById('editSongTitle').value = s.title;
+                            document.getElementById('editSongGenre').value = s.genre ? s.genre.id : '';
+                            document.getElementById('editSongLyrics').value = s.lyrics || '';
+                            document.getElementById('editSongAllowDownload').checked = s.allow_download;
+                        } else {
+                            showToast('Lỗi tải thông tin bài hát', false);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            });
+
+            // Handle Delete confirmation
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', async function () {
+                    if (!currentActionSongId) return;
+                    try {
+                        const originalHtml = confirmDeleteBtn.innerHTML;
+                        confirmDeleteBtn.disabled = true;
+                        confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Đang xóa...';
+                        
+                        const response = await fetch(`/api/v1/music/songs/${currentActionSongId}/`, {
+                            method: 'DELETE',
+                            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                        });
+                        
+                        if (response.ok) {
+                            const m = bootstrap.Modal.getInstance(document.getElementById('deleteSongConfirmModal'));
+                            if (m) m.hide();
+                            loadSongs();
+                            showToast('Xóa bài hát thành công!');
+                        } else {
+                            showToast('Xóa thất bại', false);
+                        }
+                        
+                        confirmDeleteBtn.disabled = false;
+                        confirmDeleteBtn.innerHTML = originalHtml;
+                    } catch (err) {
+                        console.error(err);
+                        confirmDeleteBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Handle Appeal Submit
+            const confirmAppealBtn = document.getElementById('confirmAppealBtn');
+            if (confirmAppealBtn) {
+                confirmAppealBtn.addEventListener('click', async function () {
+                    const msg = document.getElementById('appealMessage').value.trim();
+                    if (!msg) {
+                        showToast('Vui lòng nhập nội dung khiếu nại', false);
+                        return;
+                    }
+                    if (!currentActionSongId) return;
+
+                    try {
+                        const originalHtml = confirmAppealBtn.innerHTML;
+                        confirmAppealBtn.disabled = true;
+                        confirmAppealBtn.innerHTML = 'Đang gửi...';
+
+                        const res = await fetch(`/api/v1/music/songs/${currentActionSongId}/appeal/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: JSON.stringify({ appeal_message: msg })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            if (appealModal) appealModal.hide();
+                            loadSongs();
+                            showToast('Gửi khiếu nại thành công! Vui lòng chờ admin xử lý.');
+                        } else {
+                            showToast('Lỗi: ' + (data.error?.message || 'Có lỗi xảy ra'), false);
+                        }
+                        confirmAppealBtn.disabled = false;
+                        confirmAppealBtn.innerHTML = originalHtml;
+                    } catch (err) {
+                        console.error(err);
+                        confirmAppealBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Handle Edit Submit
+            const editForm = document.getElementById('editSongForm');
+            if (editForm) {
+                editForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    if (!currentActionSongId) return;
+                    
+                    const btn = document.getElementById('confirmEditBtn');
+                    const originalHtml = btn.innerHTML;
+                    
+                    try {
+                        btn.disabled = true;
+                        btn.innerHTML = 'Đang lưu...';
+                        
+                        const formData = new FormData();
+                        formData.append('title', document.getElementById('editSongTitle').value);
+                        formData.append('genre_id', document.getElementById('editSongGenre').value);
+                        formData.append('lyrics', document.getElementById('editSongLyrics').value);
+                        formData.append('allow_download', document.getElementById('editSongAllowDownload').checked);
+                        
+                        const coverFile = document.getElementById('editSongCover').files[0];
+                        if (coverFile) formData.append('cover_image', coverFile);
+                        
+                        const res = await fetch(`/api/v1/music/songs/${currentActionSongId}/`, {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: formData
+                        });
+                        
+                        const data = await res.json();
+                        if (data.success) {
+                            if (editSongModal) editSongModal.hide();
+                            loadSongs();
+                            showToast('Đã lưu thay đổi thành công!');
+                        } else {
+                            showToast('Lỗi: ' + (data.error?.message || 'Lưu thất bại'), false);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Lỗi kết nối', false);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                });
+            }
+            
+            // Audio Player logic
+            const player = new Audio();
+            const pbPlayBtn = document.getElementById('pbPlayBtn');
+            const pbPlayIcon = document.getElementById('pbPlayIcon');
+            const pbTitle = document.getElementById('pbTitle');
+            const pbArtist = document.getElementById('pbArtist');
+            const pbCover = document.getElementById('pbCover');
+            const pbContainer = document.getElementById('globalPlayerBar');
+            
+            const pbCurrentTime = document.getElementById('pbCurrentTime');
+            const pbDuration = document.getElementById('pbDuration');
+            const pbProgressFill = document.getElementById('pbProgressFill');
+            const pbProgressBg = document.getElementById('pbProgressBg');
+            
+            const pbMuteBtn = document.getElementById('pbMuteBtn');
+            const pbMuteIcon = document.getElementById('pbMuteIcon');
+            const pbVolumeFill = document.getElementById('pbVolumeFill');
+            const pbVolumeBg = document.getElementById('pbVolumeBg');
+            
+            function formatTime(seconds) {
+                if (isNaN(seconds)) return '0:00';
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            }
+
+            document.body.addEventListener('click', function(e) {
+                const trigger = e.target.closest('[data-audio-url]');
+                if (!trigger) return;
+                
+                const audioUrl = trigger.getAttribute('data-audio-url');
+                if (!audioUrl || audioUrl === 'null') {
+                    showToast('Bài hát này chưa có file âm thanh!', false);
+                    return;
+                }
+                
+                const item = trigger.closest('.song-manage-item');
+                const title = item.querySelector('.text-white').textContent;
+                const cover = item.querySelector('img') ? item.querySelector('img').src : pbCover.src;
+                const artist = "{{ request.user.get_display_name }}";
+                
+                pbContainer.classList.remove('d-none');
+                pbTitle.textContent = title;
+                pbArtist.textContent = artist;
+                if(item.querySelector('img')) pbCover.src = cover;
+                
+                document.querySelectorAll('.song-manage-item').forEach(el => el.style.backgroundColor = 'rgba(255,255,255,0.02)');
+                
+                if (player.src.includes(audioUrl) && !player.paused) {
+                    player.pause();
+                    pbPlayIcon.className = 'bi bi-play-fill ms-1';
+                } else {
+                    if (!player.src.includes(audioUrl)) {
+                        player.src = audioUrl;
+                    }
+                    player.play().catch(console.error);
+                    pbPlayIcon.className = 'bi bi-pause-fill ms-1';
+                    item.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                }
+            });
+            
+            if (pbPlayBtn) {
+                pbPlayBtn.addEventListener('click', () => {
+                    if (player.src) {
+                        if (player.paused) {
+                            player.play();
+                            pbPlayIcon.className = 'bi bi-pause-fill ms-1';
+                        } else {
+                            player.pause();
+                            pbPlayIcon.className = 'bi bi-play-fill ms-1';
+                        }
+                    }
+                });
+            }
+            
+            player.addEventListener('loadedmetadata', () => {
+                pbDuration.textContent = formatTime(player.duration);
+            });
+            
+            player.addEventListener('timeupdate', () => {
+                pbCurrentTime.textContent = formatTime(player.currentTime);
+                const p = (player.currentTime / player.duration) * 100;
+                if(pbProgressFill) pbProgressFill.style.width = `${p || 0}%`;
+            });
+            
+            if (pbProgressBg) {
+                pbProgressBg.addEventListener('click', (e) => {
+                    const rect = pbProgressBg.getBoundingClientRect();
+                    const pos = (e.clientX - rect.left) / rect.width;
+                    player.currentTime = pos * player.duration;
+                });
+            }
+            
+            player.addEventListener('volumechange', () => {
+                const v = player.muted ? 0 : player.volume;
+                if(pbVolumeFill) pbVolumeFill.style.width = `${v * 100}%`;
+                if(pbMuteIcon) pbMuteIcon.className = player.muted || v === 0 ? 'bi bi-volume-mute' : (v < 0.5 ? 'bi bi-volume-down' : 'bi bi-volume-up');
+            });
+            
+            player.addEventListener('ended', () => {
+                if(pbPlayIcon) pbPlayIcon.className = 'bi bi-play-fill';
+                if(pbProgressFill) pbProgressFill.style.width = '0%';
+                if(pbCurrentTime) pbCurrentTime.textContent = '0:00';
+            });
+            
+            if(pbMuteBtn) {
+                pbMuteBtn.addEventListener('click', () => {
+                    player.muted = !player.muted;
+                });
+            }
+            
+            if (pbVolumeBg) {
+                pbVolumeBg.addEventListener('click', (e) => {
+                    const rect = pbVolumeBg.getBoundingClientRect();
+                    const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                    player.volume = pos;
+                    player.muted = false;
+                });
+            }
+
+        });
+    </script>
+
+</body>
+</html>

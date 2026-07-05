@@ -8,7 +8,7 @@ from django.urls import path
 from music.views import (
     GenreListView, GenreDetailView,
     SongListView, SongTrendingView, SongDetailView,
-    SongPublishView, SongHideView, SongPlayView, SongDownloadView,
+    SongPublishView, SongHideView, SongAppealView, SongPlayView, SongDownloadView,
     SongLikeView, SongRatingView,
     SongCommentListView, CommentDetailView, CommentLikeView,
     ListenHistoryView,
@@ -29,6 +29,7 @@ urlpatterns = [
     path('songs/<uuid:song_id>/', SongDetailView.as_view(), name='music-song-detail'),
     path('songs/<uuid:song_id>/publish/', SongPublishView.as_view(), name='music-song-publish'),
     path('songs/<uuid:song_id>/hide/', SongHideView.as_view(), name='music-song-hide'),
+    path('songs/<uuid:song_id>/appeal/', SongAppealView.as_view(), name='music-song-appeal'),
     path('songs/<uuid:song_id>/play/', SongPlayView.as_view(), name='music-song-play'),
     path('songs/<uuid:song_id>/download/', SongDownloadView.as_view(), name='music-song-download'),
 

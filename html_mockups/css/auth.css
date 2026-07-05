@@ -1,0 +1,239 @@
+/* Cài đặt chung cho trang Auth */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #121929;
+    position: relative;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: white;
+}
+
+/* Glassmorphism Card */
+.auth-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+}
+
+/* Logo */
+.auth-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.auth-logo .brand-icon {
+    background: linear-gradient(135deg, #CFE8D7 0%, #DFD2E2 100%);
+    color: #121929;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    margin-bottom: 30px;
+}
+
+/* Form Inputs */
+.auth-form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.auth-form-group i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
+
+.auth-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 15px 12px 45px;
+    color: white;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.auth-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.auth-input:focus {
+    border-color: #8CA4D6;
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 3px rgba(140, 164, 214, 0.2);
+}
+
+.auth-input:focus+i,
+.auth-input:not(:placeholder-shown)+i {
+    color: #8CA4D6;
+}
+
+/* Nút Submit */
+.btn-auth-submit {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #8CA4D6 0%, #E99CBB 100%);
+    border: none;
+    border-radius: 12px;
+    color: #121929;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: opacity 0.3s, transform 0.2s;
+}
+
+.btn-auth-submit:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.btn-auth-submit:active {
+    transform: translateY(0);
+}
+
+/* Các link tiện ích (Quên MK, v.v) */
+.auth-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    font-size: 0.85rem;
+}
+
+.auth-link {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.auth-link:hover {
+    color: white;
+}
+
+/* Divider (Hoặc) */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider span {
+    padding: 0 15px;
+}
+
+/* Nút Đăng nhập MXH (Social) */
+.btn-social {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background 0.3s;
+}
+
+.btn-social:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Chuyển đổi Đăng nhập / Đăng ký */
+.auth-switch {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.auth-switch a {
+    color: #F8B4B4;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* Tab logic (Dành cho việc chuyển qua lại Login/Register trên cùng 1 form - JS giả lập) */
+.auth-register-form {
+    display: none;
+}
+
+.auth-container.is-register .auth-login-form {
+    display: none;
+}
+
+.auth-container.is-register .auth-register-form {
+    display: block;
+}
+
+
+/* Invert password reveal icon color in Edge/Chrome */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    filter: invert(100%);
+}
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+    .auth-page {
+        padding: 20px;
+    }
+    .auth-container {
+        padding: 30px 20px;
+        width: 100%;
+    }
+}

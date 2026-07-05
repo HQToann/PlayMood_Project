@@ -55,10 +55,10 @@ def list_songs(filters: dict, viewer=None) -> dict:
 
     #phân quyền theo role
     if viewer_id_auth and viewer_role == 'artist':
-        #tác giả thấy các bài public và draft
+        #tác giả thấy các bài public, draft và hidden của chính mình
         qs = qs.filter(
             Q(status=Song.STATUS_PUBLISHED) |
-            Q(status=Song.STATUS_DRAFT, artist_id=viewer_id)
+            Q(status__in=[Song.STATUS_DRAFT, Song.STATUS_HIDDEN], artist_id=viewer_id)
         )
     elif viewer_id_auth and viewer_role == 'admin':
         pass #admin lấy tất cả
@@ -145,10 +145,15 @@ def get_song_detail(song_id, viewer=None) -> Song:
     
     viewer_id = getattr(viewer, 'id', None)
     viewer_is_auth = bool(viewer_id and getattr(viewer, 'is_authenticated', False))
+    
+    viewer_role = getattr(viewer, 'role', '')
+    is_admin = (viewer_role == 'admin') or getattr(viewer, 'is_staff', False)
+    is_author = (str(viewer_id) == str(song.artist_id))
 
-    #hidden không ai thấy kể cả tác giả
+    #hidden: chỉ admin và tác giả có thể xem
     if song.status == Song.STATUS_HIDDEN:
-        raise SongNotFound()
+        if not viewer_is_auth or (not is_admin and not is_author):
+            raise SongNotFound()
     
     #draft chỉ tác giả thấy
     if song.status == Song.STATUS_DRAFT:

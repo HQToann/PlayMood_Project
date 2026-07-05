@@ -30,6 +30,11 @@ class SongAlreadyPublished(AppException):
     def __init__(self, message='Bài hát đã được phát hành'):
         super().__init__(message, error_code='ALREADY_PUBLISHED')
 
+class AdminHiddenSongCannotBePublished(AppException):
+    """Bài hát bị khoá bởi Admin, nghệ sĩ không thể mở khoá - HTTP 403."""
+    def __init__(self, message='Bài hát này đã bị khoá bởi Quản trị viên do vi phạm chính sách'):
+        super().__init__(message, error_code='ADMIN_LOCKED')
+
 class CommentNotFound(AppException):
     """Bình luận không tồn tại hoặc ẩn - HTTP 404."""
     def __init__(self, message='Bình luận không tồn tại'):

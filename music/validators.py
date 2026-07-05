@@ -167,9 +167,9 @@ def validate_song_update(data: dict, files: dict) -> dict:
         result['allow_download'] = bool(val)
 
     if 'cover_image' in files:
-        cover = files['cover_file']
+        cover = files['cover_image']
         if cover.content_type not in ALLOWED_IMAGE_TYPES:
-            errors['cover_image'] = [f'Chỉ chấp nhận: {", ".join[ALLOWED_IMAGE_TYPES]}']
+            errors['cover_image'] = [f'Chỉ chấp nhận: {", ".join(ALLOWED_IMAGE_TYPES)}']
         elif cover.size > MAX_IMAGE_SIZE:
             errors['cover_image'] = ['Ảnh bìa tối đa 5MB']
 
