@@ -216,10 +216,9 @@ def list_friends(user, page=1, page_size=50) -> dict:
     start = (page - 1) * page_size
     items = []
     for u in qs[start:start + page_size]:
-        mood = getattr(u, 'mood', None)
         mood_data = None
-        if mood and not mood.is_expired():
-            mood_data = mood.to_dict()
+        if hasattr(u, 'mood') and u.mood and not u.mood.is_expired():
+            mood_data = u.mood.to_dict()
 
         items.append({
             'id': str(u.id),

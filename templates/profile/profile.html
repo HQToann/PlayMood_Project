@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -10,9 +11,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="../css/style.css" rel="stylesheet">
-    <link href="../css/home.css" rel="stylesheet">
-    <link href="../css/profile.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/profile.css' %}" rel="stylesheet">
 </head>
 
 <body>
@@ -114,15 +115,15 @@
                                 <span
                                     style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                     <span
-                                        style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">Thanh</span>
+                                        style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.display_name|default:request.user.username }}</span>
                                     <i class="bi bi-chevron-down small"></i>
                                 </span>
                             </div>
                             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
                                 style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                                <li><a class="dropdown-item py-2" href="#"><i
+                                <li><a class="dropdown-item py-2" href="{% url 'profile_page' %}"><i
                                             class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
-                                <li><a class="dropdown-item py-2" href="#"><i
+                                <li><a class="dropdown-item py-2" href="{% url 'settings_page' %}"><i
                                             class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
                                 <li>
                                     <hr class="dropdown-divider border-secondary opacity-25">
@@ -331,15 +332,15 @@
                             <span
                                 style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 <span
-                                    style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">Thanh</span>
+                                    style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.display_name|default:request.user.username }}</span>
                                 <i class="bi bi-chevron-down small"></i>
                             </span>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
                             style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                            <li><a class="dropdown-item py-2" href="#"><i
+                            <li><a class="dropdown-item py-2" href="{% url 'profile_page' %}"><i
                                         class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
-                            <li><a class="dropdown-item py-2" href="#"><i class="bi bi-gear me-3 text-muted-custom"></i>
+                            <li><a class="dropdown-item py-2" href="{% url 'settings_page' %}"><i class="bi bi-gear me-3 text-muted-custom"></i>
                                     Cài đặt</a></li>
                             <li>
                                 <hr class="dropdown-divider border-secondary opacity-25">
@@ -633,7 +634,12 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/main.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <!-- Nhúng script Friend Activity -->
+    <script>
+        window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
+    </script>
+    <script src="{% static 'js/friend_activity.js' %}"></script>
 </body>
 
 </html>
