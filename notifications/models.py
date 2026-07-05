@@ -111,6 +111,7 @@ class Notification(models.Model):
                 'username': self.sender.username,
                 'display_name': self.sender.get_display_name(),
                 'avatar': self.sender.avatar.url if self.sender.avatar else None,
+                'is_artist': self.sender.role == 'artist',
             } if self.sender_id else None,
             'notif_type': self.notif_type,
             'target_type': self.target_type,

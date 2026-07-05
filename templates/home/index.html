@@ -100,7 +100,12 @@
                     <div class="header-actions">
                         <!-- Status Removed -->
 
-                        <button class="btn-icon d-xl-none"><i class="bi bi-bell"></i></button>
+                        <a href="{% url 'notifications_page' %}" class="btn-icon d-xl-none text-decoration-none" style="display: inline-flex; align-items: center; justify-content: center; color: inherit;">
+                            <div class="position-relative d-inline-flex">
+                                <i class="bi bi-bell"></i>
+                                <span class="bell-badge position-absolute badge rounded-pill bg-danger" style="display:none; font-size: 0.55rem; padding: 2px 4px; top: 0; right: 0;"></span>
+                            </div>
+                        </a>
                                                 <div class="dropdown d-xl-none">
                             <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
                                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="avatar" class="user-avatar">
@@ -317,7 +322,12 @@
                         <i class="bi bi-suit-heart-fill me-1"></i> Lãng Mạn
                     </div>
                     
-                    <button class="btn-icon"><i class="bi bi-bell"></i></button>
+                    <a href="{% url 'notifications_page' %}" class="btn-icon text-decoration-none" style="display: inline-flex; align-items: center; justify-content: center; color: inherit;">
+                        <div class="position-relative d-inline-flex">
+                            <i class="bi bi-bell"></i>
+                            <span class="bell-badge position-absolute badge rounded-pill bg-danger" style="display:none; font-size: 0.55rem; padding: 2px 4px; top: 0; right: 0;"></span>
+                        </div>
+                    </a>
                                         <div class="dropdown">
                         <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
                             <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="avatar" class="user-avatar">

@@ -107,7 +107,12 @@
                     <div class="header-actions">
                         <!-- Status Removed -->
 
-                        <button class="btn-icon d-xl-none"><i class="bi bi-bell"></i></button>
+                        <a href="{% url 'notifications_page' %}" class="btn-icon d-xl-none text-decoration-none" style="display: inline-flex; align-items: center; justify-content: center; color: inherit;">
+                            <div class="position-relative d-inline-flex">
+                                <i class="bi bi-bell"></i>
+                                <span class="bell-badge position-absolute badge rounded-pill bg-danger" style="display:none; font-size: 0.55rem; padding: 2px 4px; top: 0; right: 0;"></span>
+                            </div>
+                        </a>
                         <div class="dropdown d-xl-none">
                             <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false"
                                 style="cursor: pointer;">

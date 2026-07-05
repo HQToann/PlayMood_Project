@@ -14,7 +14,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const count = data.data?.unread_count || 0;
         document.querySelectorAll('.bell-badge').forEach(b => {
             b.textContent = count > 99 ? '99+' : count;
-            b.style.display = count > 0 ? 'flex' : 'none';
+            b.style.display = count > 0 ? 'inline-block' : 'none';
+            
+            // Revert any previously set inline styles just in case
+            b.style.top = '';
+            b.style.right = '';
+            b.style.left = '';
+            b.style.transform = '';
+            
+            // Change bell icon to solid white if there are notifications
+            // The icon is now wrapped in a div, so we need to find it correctly
+            const icon = b.parentElement.querySelector('i');
+            if (icon) {
+                if (count > 0) {
+                    icon.classList.remove('bi-bell');
+                    icon.classList.add('bi-bell-fill', 'text-white');
+                } else {
+                    icon.classList.remove('bi-bell-fill', 'text-white');
+                    icon.classList.add('bi-bell');
+                }
+            }
         });
     })
     .catch(() => {

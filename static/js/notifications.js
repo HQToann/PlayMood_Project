@@ -95,13 +95,19 @@ function buildNotificationEl(notif) {
     // Nút kết bạn lại nếu là follow hoặc nút xử lý yêu cầu nếu là follow_request
     let actionBtnHtml = '';
     if (notif.notif_type === 'follow' && notif.sender) {
-        actionBtnHtml = `<button class="btn btn-sm btn-outline-secondary text-muted-custom rounded-circle
-                           align-self-center me-2 d-flex align-items-center justify-content-center
-                           follow-back-btn"
-                   data-user-id="${notif.sender.id}"
-                   style="width:32px;height:32px;" title="Theo dõi lại">
-               <i class="bi bi-person-plus-fill"></i>
-           </button>`;
+        // Nếu tôi là nghệ sĩ, và người theo dõi tôi là người dùng bình thường -> KHÔNG hiện nút theo dõi lại
+        const amIArtist = window.IS_ARTIST || false;
+        const isSenderNormalUser = !notif.sender.is_artist;
+        
+        if (!(amIArtist && isSenderNormalUser)) {
+            actionBtnHtml = `<button class="btn btn-sm btn-outline-secondary text-muted-custom rounded-circle
+                               align-self-center me-2 d-flex align-items-center justify-content-center
+                               follow-back-btn"
+                       data-user-id="${notif.sender.id}"
+                       style="width:32px;height:32px;" title="Theo dõi lại">
+                   <i class="bi bi-person-plus-fill"></i>
+               </button>`;
+        }
     } else if (notif.notif_type === 'follow_request' && notif.sender) {
         actionBtnHtml = `<button class="btn btn-sm rounded-circle
                            align-self-center me-2 d-flex align-items-center justify-content-center
@@ -338,20 +344,15 @@ async function handleFrAction(action) {
 
         if (resAction.ok) {
             frActionModalInstance.hide();
-            // Update button UI
+            // Xóa luôn thông báo khỏi giao diện và CSDL để không hiện lại khi tải lại trang
             if (currentFrActionBtn) {
-                if (action === 'accept') {
-                    currentFrActionBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
-                    currentFrActionBtn.classList.replace('btn-outline-info', 'btn-outline-success');
-                    currentFrActionBtn.classList.replace('text-info', 'text-success');
-                    currentFrActionBtn.title = 'Đã chấp nhận';
+                const notifEl = currentFrActionBtn.closest('.notification-item');
+                if (notifEl) {
+                    const notifId = notifEl.dataset.id;
+                    deleteNotification(notifEl, notifId);
                 } else {
-                    currentFrActionBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
-                    currentFrActionBtn.classList.replace('btn-outline-info', 'btn-outline-secondary');
-                    currentFrActionBtn.classList.replace('text-info', 'text-secondary');
-                    currentFrActionBtn.title = 'Đã từ chối';
+                    currentFrActionBtn.remove();
                 }
-                currentFrActionBtn.disabled = true;
             }
         } else {
             alert('Xử lý thất bại. Vui lòng thử lại.');

@@ -3,20 +3,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.CURRENT_USER_ID) return;
 
-    // ─── Lấy số lượng thông báo chưa đọc ──────────────────────────────────
-    fetch('/api/v1/notifications/unread-count/', {
-        headers: { 'Accept': 'application/json' }
-    })
-        .then(res => res.ok ? res.json() : Promise.reject('Auth failed'))
-        .then(data => {
-            const count = data.data?.unread_count || 0;
-            document.querySelectorAll('.bell-badge').forEach(b => {
-                b.textContent = count > 99 ? '99+' : count;
-                b.style.display = count > 0 ? 'flex' : 'none';
-            });
-        })
-        .catch(() => { });
-
     // ─── DOM Elements ──────────────────────────────────────────────────────
     const activityContainers = document.querySelectorAll('#friendsActivityContainer, #mobileFriendsActivityContainer');
     const searchInputs = document.querySelectorAll('#friendSearchInput, #mobileFriendSearchInput');
