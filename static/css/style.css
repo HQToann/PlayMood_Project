@@ -683,3 +683,19 @@ body {
     border-color: #fff;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23121929'/%3e%3c/svg%3e");
 }
+
+/* Custom marquee starting from left (seamless loop) */
+.marquee-wrapper {
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-flex;
+    vertical-align: middle;
+}
+.marquee-left {
+    display: flex;
+    animation: marquee-left-anim 6s linear infinite;
+}
+@keyframes marquee-left-anim {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}

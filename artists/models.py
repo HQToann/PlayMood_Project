@@ -34,14 +34,6 @@ class ArtistProfile(models.Model):
         verbose_name='Giới thiệu nghệ sĩ',
     )
 
-    #ảnh bìa riêng cho trang nghệ sĩ, path: covers/artists/<uuid>.<ext>
-    cover_image = models.ImageField(
-        upload_to='covers/artist',
-        blank=True,
-        null=True,
-        verbose_name='Ảnh bìa',
-    )
-
     website_url = models.CharField(
         max_length=225,
         blank=True,
@@ -97,7 +89,7 @@ class ArtistProfile(models.Model):
             'stage_name': self.stage_name,
             'display_name': self.get_display_name(),
             'bio': self.bio,
-            'cover_image': self.cover_image.url if self.cover_image else None,
+            'cover_image': self.user.cover.url if self.user.cover else None,
             'website_url': self.website_url,
             'facebook': self.facebook_url,
             'youtube': self.youtube_url,
@@ -113,5 +105,20 @@ class ArtistProfile(models.Model):
         
         
         return data
-    
 
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+
+@receiver(pre_delete, sender=ArtistProfile)
+def downgrade_user_role_on_profile_delete(sender, instance, **kwargs):
+    """
+    Khi xóa ArtistProfile (ví dụ từ Admin), tự động cập nhật role của User 
+    trở về 'user' bình thường. Dùng update() để tránh xung đột khi User 
+    đang trong quá trình bị xóa (CASCADE delete).
+    """
+    try:
+        if instance.user_id:
+            from accounts.models import User
+            User.objects.filter(id=instance.user_id, role='artist').update(role='user')
+    except Exception as e:
+        pass

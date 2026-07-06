@@ -149,31 +149,41 @@ def update_profile(user: User, data: dict) -> User:
     logger.info('Profile updated: %s', user.username)
     return user
 
-def update_avatar(user: User, avatar_file) -> User:
+def update_images(user: User, avatar_file=None, cover_file=None) -> User:
     """
-    Cập nhật ảnh đại diện.
-
-    File được upload thẳng lên Cloudinary qua DEFAULT_FILE_STORAGE.
-    Path: avatars/users/<uuid>.<ext>
+    Cập nhật ảnh đại diện và/hoặc ảnh bìa.
 
     Args:
         user:        User cần cập nhật
-        avatar_file: InMemoryUploadedFile từ request.FILES['avatar']
+        avatar_file: File ảnh đại diện (optional)
+        cover_file:  File ảnh bìa (optional)
 
     Returns:
         User sau khi cập nhật
     """
+    updated_fields = ['updated_at']
 
-    # Xoá avatar cũ nếu có
-    if user.avatar:
-        try:
-            user.avatar.delete(save=False)
-        except Exception:
-            pass
-    
-    user.avatar = avatar_file
-    user.save(update_fields=['avatar', 'updated_at'])
-    logger.info('Avatar updated: %s', user.username)
+    if avatar_file:
+        if user.avatar:
+            try:
+                user.avatar.delete(save=False)
+            except Exception:
+                pass
+        user.avatar = avatar_file
+        updated_fields.append('avatar')
+        logger.info('Avatar updated: %s', user.username)
+
+    if cover_file:
+        if user.cover:
+            try:
+                user.cover.delete(save=False)
+            except Exception:
+                pass
+        user.cover = cover_file
+        updated_fields.append('cover')
+        logger.info('Cover updated: %s', user.username)
+
+    user.save(update_fields=updated_fields)
     return user
 
 def update_privacy(user: User, is_private: bool) -> User:

@@ -73,6 +73,14 @@ class User(AbstractUser):
         verbose_name='Ảnh đại diện',
     )
 
+    # Cover lưu trên Cloudinary
+    cover = models.ImageField(
+        upload_to='covers/users/',
+        blank=True,
+        null=True,
+        verbose_name='Ảnh bìa',
+    )
+
     # Giới thiệu bản thân
     bio = models.TextField(
         blank=True,

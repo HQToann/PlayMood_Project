@@ -106,4 +106,21 @@
     <script>
         window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
     </script>
-    <script src="{% static 'js/friend_activity.js' %}"></script>
+    <script src="{% static 'js/friend_activity.js' %}?v=4"></script>
+    <style>
+        /* Custom marquee starting from left (seamless loop) */
+        .marquee-wrapper {
+            overflow: hidden;
+            white-space: nowrap;
+            display: inline-flex;
+            vertical-align: middle;
+        }
+        .marquee-left {
+            display: flex;
+            animation: marquee-left-anim 6s linear infinite;
+        }
+        @keyframes marquee-left-anim {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>

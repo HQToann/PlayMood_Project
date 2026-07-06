@@ -205,7 +205,6 @@
 .profile-mood-bubble .badge {
     position: relative;
     z-index: 2;
-    background: linear-gradient(135deg, #F8B4B4, #E99CBB) !important;
     color: #fff !important;
     font-weight: 600 !important;
     font-size: 0.85rem !important;
@@ -213,6 +212,14 @@
     border-radius: 50px !important;
     box-shadow: none !important;
     border: none !important;
+}
+
+/* Dynamic gradient override for artist profile mood badge */
+.profile-mood-bubble .mood-badge-dynamic {
+    background: linear-gradient(135deg, var(--mood-from, #ff758c), var(--mood-to, #ff7eb3)) !important;
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    height: 32px !important;
 }
 
 @keyframes cloud-float {
@@ -224,11 +231,11 @@
 .profile-mood-bubble::before {
     content: '';
     position: absolute;
-    top: 28px;
-    left: 20px;
+    top: 24px;
+    left: 18px;
     width: 14px;
     height: 14px;
-    background: #F8B4B4; 
+    background: var(--mood-from, #F8B4B4);
     border-radius: 50%;
     z-index: 1;
 }
@@ -237,11 +244,11 @@
 .profile-mood-bubble::after {
     content: '';
     position: absolute;
-    top: 40px;
+    top: 36px;
     left: 10px;
     width: 8px;
     height: 8px;
-    background: #F8B4B4;
+    background: var(--mood-from, #F8B4B4);
     border-radius: 50%;
     z-index: 1;
 }

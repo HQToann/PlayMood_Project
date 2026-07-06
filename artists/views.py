@@ -28,7 +28,7 @@ from artists.exceptions import (
 )
 from artists.validators import (
     validate_artist_profile_create, validate_artist_profile_update,
-    validate_cover_image, validate_list_artists_params,
+    validate_list_artists_params,
 )
 from artists.selectors import (
     get_artist_profile_by_user_id, get_artist_profile_detail, list_artists,
@@ -37,7 +37,6 @@ from artists.selectors import (
 from artists.services import (
     create_artist_profile,
     update_artist_profile,
-    update_cover_image,
     get_or_create_my_profile,
 )
 
@@ -197,31 +196,6 @@ class MyArtistProfileView(View):
         except Exception as e:
             return handle_exception(e)
         
-class ArtistCoverUploadView(View):
-    """
-    POST /api/v1/artists/me/cover/ - Upload ảnh bìa (Artists+Owner+CSRF)
-    """
-    @method_decorator(csrf_protect)
-    @method_decorator(require_artist)
-    def post(self, request):
-        try:
-            validate_cover_image(request.FILES)
-            profile = get_artist_profile_by_user_id(request.user.id)
-            profile = update_cover_image(
-                profile,
-                request.user,
-                request.FILES['cover_image'],
-            )
-            return JsonResponse(
-                {
-                    'success': True,
-                    'data': {
-                        'cover_image': profile.cover_image.url if profile.cover_image else None
-                    },
-                }
-            )
-        except Exception as e:
-            return handle_exception(e)
         
 class MyArtistStatsView(View):
     """

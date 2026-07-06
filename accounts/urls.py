@@ -4,7 +4,7 @@
 from django.urls import path
 from accounts.views import (
     MyProfileView,
-    AvatarUploadView,
+    ImageUploadView,
     PrivacyView,
     PublicProfileView,
     BlockView,
@@ -17,7 +17,7 @@ from accounts.views import (
 urlpatterns = [
     #hồ sơ cá nhân
     path('me/', MyProfileView.as_view(), name='account-me'),
-    path('me/avatar/', AvatarUploadView.as_view(), name='account-avatar'),
+    path('me/images/', ImageUploadView.as_view(), name='account-images'),
     path('me/privacy/', PrivacyView.as_view(), name='account-privacy'),
 
     #hồ sơ công khai

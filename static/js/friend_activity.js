@@ -58,13 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         const moodIcon = friend.mood.mood_type?.emoji ? `<span>${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
                         activityText = `${moodIcon} ${friend.mood.status_text}`;
                         if (activity && activity.activity_type === 'playing' && activity.song) {
-                            activityText += `<br><i class="bi bi-music-note text-info"></i> ${activity.song.title}`;
+                            activityText += `<br><div class="marquee-wrapper" style="max-width: 150px; margin-bottom: -4px;"><div class="marquee-left text-accent"><span class="pe-4">${activity.song.title}</span><span class="pe-4">${activity.song.title}</span></div></div>`;
                         } else if (friend.mood.song) {
-                            activityText += `<br><i class="bi bi-music-note text-info"></i> ${friend.mood.song.title}`;
+                            activityText += `<br><div class="marquee-wrapper" style="max-width: 150px; margin-bottom: -4px;"><div class="marquee-left text-accent"><span class="pe-4">${friend.mood.song.title}</span><span class="pe-4">${friend.mood.song.title}</span></div></div>`;
                         }
                     } else if (activity) {
                         if (activity.activity_type === 'playing' && activity.song)
-                            activityText = `<i class="bi bi-music-note text-info"></i> Đang nghe ${activity.song.title}`;
+                            activityText = `Đang nghe <div class="marquee-wrapper" style="max-width: 110px; margin-bottom: -4px;"><div class="marquee-left text-accent"><span class="pe-4">${activity.song.title}</span><span class="pe-4">${activity.song.title}</span></div></div>`;
                         else if (activity.activity_type === 'mood')
                             activityText = `<i class="bi bi-emoji-smile text-warning"></i> ${activity.extra_text}`;
                     }
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const moodIcon = friend.mood.mood_type?.emoji ? `<span>${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
                     activityText = `${moodIcon} ${friend.mood.status_text}`;
                     if (friend.mood.song) {
-                        activityText += `<br><i class="bi bi-music-note text-info"></i> ${friend.mood.song.title}`;
+                        activityText += `<br><div class="marquee-wrapper" style="max-width: 150px; margin-bottom: -4px;"><div class="marquee-left text-accent"><span class="pe-4">${friend.mood.song.title}</span><span class="pe-4">${friend.mood.song.title}</span></div></div>`;
                     }
                 }
 

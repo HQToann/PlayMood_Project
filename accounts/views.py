@@ -36,7 +36,7 @@ from accounts.services import (
     login_user,
     logout_user,
     update_profile,
-    update_avatar,
+    update_images,
     update_privacy,
     change_password,
     toggle_block,
@@ -283,56 +283,62 @@ class MyProfileView(View):
             return _handle_exception(e)
         
 @method_decorator([csrf_protect, require_auth], name='dispatch')
-class AvatarUploadView(View):
-    """POST /api/v1/accounts/me/avatar/ - Upload ảnh đại diện."""
+class ImageUploadView(View):
+    """POST /api/v1/accounts/me/images/ - Upload ảnh đại diện và/hoặc ảnh bìa."""
 
     def post(self, request):
         try:
-            if 'avatar' not in request.FILES:
+            if 'avatar' not in request.FILES and 'cover' not in request.FILES:
                 return JsonResponse(
                     {
                         'success': False,
                         'error': {
                             'code': 'VALIDATION_ERROR',
-                            'fields': {'avatar': ['File ảnh là bắt buộc']},
+                            'message': 'Phải cung cấp ít nhất một file ảnh (avatar hoặc cover)',
                         }
                     },
                     status=400,
                 )
-            avatar_file = request.FILES['avatar']
+            
+            avatar_file = request.FILES.get('avatar')
+            cover_file = request.FILES.get('cover')
 
-            # Validate MIME type ảnh
-            allowed_types = {'image/jpg', 'image/jpeg', 'image/pnj', 'image/webp', 'image/gif'}
-            if avatar_file.content_type not in allowed_types:
-                return JsonResponse(
-                    {
-                        'success': False,
-                        'error': {
-                            'code': 'VALIDATION_ERROR',
-                            'fields': {'avatar': ['Chỉ nhấp nhận JPEG, PNG, WEBP, GIF']},
-                        }
-                    },
-                    status=400,
-                )
-            
+            allowed_types = {'image/jpg', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'}
             max_size = 5 * 1024 * 1024
-            if avatar_file.size > max_size:
-                return JsonResponse(
-                    {
-                        'success': False,
-                        'error': {
-                            'code': 'VALIDATION_ERROR',
-                            'fields': {'avatar': ['File tối đa 5 MB']},
-                        }
-                    },
-                    status=400,
-                )
+
+            for file_field, file_obj in [('avatar', avatar_file), ('cover', cover_file)]:
+                if file_obj:
+                    if file_obj.content_type not in allowed_types:
+                        return JsonResponse(
+                            {
+                                'success': False,
+                                'error': {
+                                    'code': 'VALIDATION_ERROR',
+                                    'fields': {file_field: ['Chỉ chấp nhận JPEG, PNG, WEBP, GIF']},
+                                }
+                            },
+                            status=400,
+                        )
+                    if file_obj.size > max_size:
+                        return JsonResponse(
+                            {
+                                'success': False,
+                                'error': {
+                                    'code': 'VALIDATION_ERROR',
+                                    'fields': {file_field: ['File tối đa 5 MB']},
+                                }
+                            },
+                            status=400,
+                        )
             
-            user = update_avatar(request.user, avatar_file)
+            # Since update_avatar is now update_images, we need to call update_images
+            from accounts.services import update_images
+            user = update_images(request.user, avatar_file, cover_file)
             return JsonResponse({
                 'success': True,
                 'data': {
                     'avatar': user.avatar.url if user.avatar else None,
+                    'cover': user.cover.url if hasattr(user, 'cover') and user.cover else None,
                 },
             })
         except Exception as e:

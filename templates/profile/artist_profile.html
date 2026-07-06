@@ -11,9 +11,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=3" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
-    <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+    <link href="{% static 'css/profile.css' %}?v=7" rel="stylesheet">
 </head>
 
 <body>
@@ -27,54 +27,7 @@
             <!-- MAIN CONTENT -->
             <main class="main-content">
                 <!-- Header -->
-                <header class="top-header">
-                    <button class="btn-icon d-lg-none me-3" type="button" data-bs-toggle="offcanvas"
-                        data-bs-target="#mobileMenuOffcanvas">
-                        <i class="bi bi-list fs-3"></i>
-                    </button>
-                    <div class="search-bar me-auto">
-                        <i class="bi bi-search text-muted-custom"></i>
-                        <input type="text" placeholder="Tìm bài hát, nghệ sĩ...">
-                    </div>
-
-                    <div class="header-actions">
-                        <!-- Status Removed -->
-
-                        <a href="{% url 'notifications_page' %}" class="btn-icon d-xl-none text-decoration-none" style="display: inline-flex; align-items: center; justify-content: center; color: inherit;">
-                            <div class="position-relative d-inline-flex">
-                                <i class="bi bi-bell"></i>
-                                <span class="bell-badge position-absolute badge rounded-pill bg-danger" style="display:none; font-size: 0.55rem; padding: 2px 4px; top: 0; right: 0;"></span>
-                            </div>
-                        </a>
-                        <div class="dropdown d-xl-none">
-                            <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false"
-                                style="cursor: pointer;">
-                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                    alt="avatar" class="user-avatar">
-                                <span
-                                    style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                                    <span
-                                        style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.display_name|default:request.user.username }}</span>
-                                    <i class="bi bi-chevron-down small"></i>
-                                </span>
-                            </div>
-                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg"
-                                style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                                <li><a class="dropdown-item py-2" href="{% url 'profile_page' %}"><i
-                                            class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
-                                <li><a class="dropdown-item py-2" href="{% url 'settings_page' %}"><i
-                                            class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
-                                <li>
-                                    <hr class="dropdown-divider border-secondary opacity-25">
-                                </li>
-                                <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal"
-                                        data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i>
-                                        Đăng xuất</a></li>
-                            </ul>
-                        </div>
-
-                    </div>
-                </header>
+                {% include 'includes/top_header.html' %}
 
                 <!-- Scrollable Content -->
                 <div class="content-scroll">
@@ -86,7 +39,7 @@
                         <!-- Ảnh bìa -->
                         <div class="profile-cover position-relative"
                             style="height: 250px; border-radius: 12px; overflow: hidden;">
-                            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            <img src="{% if target_user.cover %}{{ target_user.cover.url }}{% else %}https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80{% endif %}"
                                 alt="Cover" class="w-100 h-100 object-fit-cover">
                             <!-- Lớp phủ tối mờ -->
                             <div class="cover-overlay position-absolute w-100 h-100 top-0 start-0"
@@ -95,42 +48,50 @@
                         </div>
 
                         <!-- Thông tin nghệ sĩ đè lên ảnh bìa -->
-                        <div class="profile-info px-4 d-flex flex-column flex-md-row align-items-md-end gap-4"
-                            style="margin-top: -130px; position: relative; z-index: 2;">
+                        <style>
+                            @media (min-width: 768px) {
+                                .fixed-profile-info {
+                                    height: 200px;
+                                }
+                            }
+                        </style>
+                        <div class="profile-info fixed-profile-info px-4 d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4"
+                            style="margin-top: -100px; position: relative; z-index: 2;">
                             <!-- Ảnh đại diện -->
                             <div class="flex-shrink-0 position-relative">
-                                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80"
+                                <img src="{% if target_user.avatar %}{{ target_user.avatar.url }}{% else %}https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80{% endif %}"
                                     alt="Avatar" class="rounded-circle object-fit-cover shadow-lg"
                                     style="width: 200px; height: 200px; border: 5px solid var(--bg-main);">
 
                                 {% if is_own_profile %}
-                                <div class="profile-avatar-edit" title="Đổi ảnh đại diện" style="position: absolute; bottom: 5px; right: 5px; width: 45px; height: 45px; border-radius: 50%; background: var(--bg-card); border: 4px solid var(--bg-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; z-index: 3;">
+                                <div class="profile-avatar-edit" title="Đổi ảnh đại diện" data-bs-toggle="modal"
+                                    data-bs-target="#editImagesModal"
+                                    style="position: absolute; bottom: 5px; right: 5px; width: 45px; height: 45px; border-radius: 50%; background: var(--bg-card); border: 4px solid var(--bg-main); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; z-index: 3;">
                                     <i class="bi bi-camera-fill text-white" style="font-size: 1.3rem;"></i>
                                 </div>
                                 {% endif %}
 
                                 <!-- Mood Thought Bubble -->
-                                <style>
-                                    .artist-mood-bubble::before { top: 29px !important; left: 20px !important; }
-                                    .artist-mood-bubble::after { top: 41px !important; left: 10px !important; }
-                                </style>
                                 {% if target_user.mood and not target_user.mood.is_expired and target_user.mood.mood_type %}
                                 {% with color_from=target_user.mood.theme.gradient_from|default:target_user.mood.mood_type.theme.gradient_from|default:'#ff758c' color_to=target_user.mood.theme.gradient_to|default:target_user.mood.mood_type.theme.gradient_to|default:'#ff7eb3' %}
-                                <style>
-                                    .artist-mood-bubble::before { background: {{ color_from }} !important; top: 29px !important; left: 20px !important; }
-                                    .artist-mood-bubble::after  { background: {{ color_from }} !important; top: 41px !important; left: 10px !important; }
-                                    .artist-mood-bubble .badge  { background: linear-gradient(135deg, {{ color_from }}, {{ color_to }}) !important; color: #fff !important; }
-                                </style>
-                                <div class="profile-mood-bubble artist-mood-bubble" title="{{ target_user.mood.status_text|default:'Cảm xúc hiện tại' }}" style="position: absolute; top: -38px; left: 110px; z-index: 3;">
-                                    <div class="badge rounded-pill d-inline-flex align-items-center gap-2 shadow-sm"
-                                        style="font-size: 0.85rem; padding: 8px 16px; font-weight: 600; color: #fff;">
-                                        <span>{{ target_user.mood.mood_type.emoji }}</span>
-                                        <span>{{ target_user.mood.mood_type.name }}</span>
+                                <div class="profile-mood-bubble"
+                                    title="{{ target_user.mood.status_text|default:'Cảm xúc hiện tại' }}"
+                                    style="position: absolute; top: -30px; left: 110px; z-index: 3; --mood-from: {{ color_from }}; --mood-to: {{ color_to }};">
+                                    <div class="badge d-inline-flex align-items-center gap-2 shadow-sm mood-badge-dynamic"
+                                        style="font-size: 0.8rem; background: linear-gradient(135deg, var(--mood-from), var(--mood-to)) !important; border-radius: 20px; padding: 6px 12px;">
+                                        <div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">
+                                            <span>{{ target_user.mood.mood_type.emoji }}</span> {{ target_user.mood.mood_type.name }}
+                                        </div>
                                         {% if target_user.mood.song %}
-                                        <span class="border-start border-white border-opacity-50 ps-2 d-flex align-items-center gap-1" style="font-weight: 400;">
-                                            <i class="bi bi-music-note-beamed"></i>
-                                            <span style="max-width: 90px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: inline-block;">{{ target_user.mood.song.title }}</span>
-                                        </span>
+                                        <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1"
+                                            style="flex-grow: 1; min-width: 0; max-width: 100px;">
+                                            <i class="bi bi-music-note-beamed flex-shrink-0 text-white"></i>
+                                            <div class="marquee-wrapper"
+                                                style="overflow: hidden; white-space: nowrap; flex-grow: 1; min-width: 0; height: 16px; display: flex; align-items: center;">
+                                                <span class="marquee-text text-white"
+                                                    style="display: inline-block; font-size: 0.8rem;">{{ target_user.mood.song.title }}</span>
+                                            </div>
+                                        </div>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -141,42 +102,39 @@
 
                             </div>
                             <!-- Chi tiết -->
-                            <div class="profile-text flex-grow-1 pb-md-3">
+                            <div class="profile-text flex-grow-1" style="margin-top: 32px;">
 
                                 <!-- Nghệ danh -->
-                                <div class="d-flex align-items-center gap-2 mb-1" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-                                    <i class="bi bi-patch-check-fill" style="color: var(--accent-color); font-size: 1.2rem;"></i>
-                                    <span class="text-white fw-medium" style="font-size: 0.95rem; letter-spacing: 0.5px;">Xác minh bởi PlayMood</span>
+                                <div class="d-flex align-items-center gap-2 mb-1"
+                                    style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                                    <i class="bi bi-patch-check-fill"
+                                        style="color: var(--accent-color); font-size: 1.2rem;"></i>
+                                    <span class="text-white fw-medium"
+                                        style="font-size: 0.95rem; letter-spacing: 0.5px;">Xác minh bởi PlayMood</span>
                                 </div>
                                 <h1 class="fw-bold mb-0 text-white"
                                     style="font-size: 4rem; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px; margin-top: -4px;">
                                     {{ target_user.display_name|default:target_user.username }}</h1>
+                                <div class="profile-handle text-secondary mb-2 mt-1 fs-6">@{{ target_user.username }}
+                                </div>
 
                                 <!-- Tiểu sử ngắn -->
                                 {% if is_own_profile %}
                                 <div id="bioWrapper" style="max-width: 560px; position: relative;">
-                                    <!-- Bio display box (click pencil to edit) -->
-                                    <div id="bioDisplay"
-                                        style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px 16px; cursor: pointer;"
-                                        onclick="startEditBio()" title="Click để chỉnh sửa tiểu sử">
-                                        <span id="bioText" class="text-light opacity-75" style="font-size: 0.95rem; line-height: 1.5; flex: 1;">{{ target_user.bio|default:'Thêm tiểu sử...' }}</span>
-                                        <i class="bi bi-pencil-fill text-secondary" style="font-size: 0.85rem; flex-shrink: 0;"></i>
-                                    </div>
-                                    <!-- Bio edit textarea -->
-                                    <div id="bioEditArea" style="display: none;">
-                                        <textarea id="bioInput" rows="2" maxlength="100"
-                                            style="width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.35); border-radius: 12px; color: #fff; font-size: 0.95rem; line-height: 1.5; padding: 10px 16px; resize: none; outline: none;"
-                                            placeholder="Nhập tiểu sử (tối đa 100 ký tự)...">{{ target_user.bio }}</textarea>
-                                        <div class="d-flex gap-2 mt-2">
-                                            <button onclick="saveBio()" style="background: var(--accent-color); color: #121929; border: none; border-radius: 20px; padding: 5px 18px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">Lưu</button>
-                                            <button onclick="cancelEditBio()" style="background: rgba(255,255,255,0.08); color: #fff; border: none; border-radius: 20px; padding: 5px 18px; font-size: 0.82rem; cursor: pointer;">Huỷ</button>
-                                        </div>
+                                    <!-- Bio display box (click to open modal) -->
+                                    <div id="bioDisplay" class="profile-bio text-secondary clickable-bio"
+                                        style="display: inline-block; position: relative; padding-right: 32px; max-width: 100%; word-break: break-word; font-size: 0.95rem; cursor: pointer; transition: color 0.2s;"
+                                        data-bs-toggle="modal" data-bs-target="#editBioModal" title="Chỉnh sửa Bio">
+                                        <span id="bioText"
+                                            style="white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">{{ target_user.bio|default:'Thêm tiểu sử...' }}</span>
+                                        <i class="bi bi-pencil-fill"
+                                            style="position: absolute; bottom: 3px; right: 10px; font-size: 0.85rem;"></i>
                                     </div>
                                 </div>
                                 {% else %}
                                 {% if target_user.bio %}
                                 <p class="text-light mb-0 opacity-75"
-                                    style="max-width: 560px; font-size: 0.95rem; line-height: 1.5; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                                    style="max-width: 560px; font-size: 0.95rem; line-height: 1.5; text-shadow: 0 2px 4px rgba(0,0,0,0.5); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
                                     {{ target_user.bio }}
                                 </p>
                                 {% endif %}
@@ -186,46 +144,53 @@
                         </div>
 
                         <!-- Thống kê và Mạng xã hội -->
-                        <div class="px-4 mt-4 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                        <div
+                            class="px-4 mt-5 pt-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
                             <!-- Thống kê người theo dõi -->
                             <div class="d-flex gap-5">
                                 <div>
-                                    <div class="text-white fw-bold fs-5">1.5M</div>
+                                    <div class="text-white fw-bold fs-5" id="followersCount">0</div>
                                     <div class="text-secondary small text-uppercase fw-semibold"
                                         style="letter-spacing: 1px;">Người theo dõi</div>
                                 </div>
                                 <div>
-                                    <div class="text-white fw-bold fs-5">120</div>
+                                    <div class="text-white fw-bold fs-5" id="followingCount">0</div>
                                     <div class="text-secondary small text-uppercase fw-semibold"
                                         style="letter-spacing: 1px;">Đang theo dõi</div>
                                 </div>
                                 <div>
-                                    <div class="text-white fw-bold fs-5">10M</div>
+                                    <div class="text-white fw-bold fs-5" id="totalLikesCount">0</div>
                                     <div class="text-secondary small text-uppercase fw-semibold"
                                         style="letter-spacing: 1px;">Lượt thích</div>
                                 </div>
                             </div>
 
                             <!-- Mạng xã hội -->
-                            <div class="social-links d-flex gap-2">
-                                <a href="#"
+                            <div class="social-links d-flex gap-2 align-items-center">
+                                {% if target_user.astist_profile.website_url %}
+                                <a href="{{ target_user.astist_profile.website_url }}" target="_blank"
                                     class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
                                     title="Website">
                                     <i class="bi bi-globe2 text-white"></i>
                                 </a>
-                                <a href="#"
+                                {% endif %}
+                                {% if target_user.astist_profile.facebook_url %}
+                                <a href="{{ target_user.astist_profile.facebook_url }}" target="_blank"
                                     class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
                                     title="Facebook">
                                     <i class="bi bi-facebook text-white"></i>
                                 </a>
-                                <a href="#"
+                                {% endif %}
+                                {% if target_user.astist_profile.youtube_url %}
+                                <a href="{{ target_user.astist_profile.youtube_url }}" target="_blank"
                                     class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
                                     title="YouTube">
                                     <i class="bi bi-youtube text-white"></i>
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -253,7 +218,8 @@
                                         class="rounded" alt="cover">
                                     <div>
                                         <div class="fw-semibold">Chạy Ngay Đi</div>
-                                        <div class="small text-secondary">{{ target_user.display_name|default:target_user.username }}</div>
+                                        <div class="small text-secondary">{{
+                                            target_user.display_name|default:target_user.username }}</div>
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-4 text-secondary">
@@ -362,8 +328,8 @@
                 <a href="{% url 'home' %}" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
                 <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
                 <a href="{% url 'mood_page' %}" class="nav-link-custom">
-                            <i class="bi bi-emoji-smile"></i> Tâm trạng
-                        </a>
+                    <i class="bi bi-emoji-smile"></i> Tâm trạng
+                </a>
                 <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
                 <!-- Only show if user is Artist -->
                 <!-- <a href="#" class="nav-link-custom"><i class="bi bi-upload"></i> Upload nhạc</a> -->
@@ -374,19 +340,21 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
                     <div class="d-flex align-items-center gap-3">
-                        <span class="text-accent small" id="mobileOnlineFriendsCount">0 online <i class="bi bi-people"></i></span>
+                        <span class="text-accent small" id="mobileOnlineFriendsCount">0 online <i
+                                class="bi bi-people"></i></span>
                         <i class="bi bi-person-plus-fill text-muted-custom"
                             style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
                             onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
-                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')"
-                            title="Thêm bạn bè" data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè"
+                            data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
                     </div>
                 </div>
 
                 <div class="search-bar mb-4 w-100"
                     style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
                     <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
-                    <input type="text" id="mobileFriendSearchInput" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
+                    <input type="text" id="mobileFriendSearchInput" placeholder="Tìm kiếm bạn bè..."
+                        style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
                 </div>
 
                 <div id="mobileFriendsActivityContainer">
@@ -508,36 +476,140 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="bioTextarea" class="form-label text-secondary">Mô tả ngắn gọn về bạn</label>
-                        <textarea class="form-control text-light shadow-none" id="bioTextarea" rows="4"
-                            style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); resize: none;">Đam mê âm nhạc lofi và thích lang thang quán cà phê.</textarea>
-                        <div class="form-text text-end text-secondary mt-1">52/150</div>
+                        <label for="bioInput" class="form-label text-secondary">Mô tả ngắn gọn về bạn</label>
+                        <textarea class="form-control text-light shadow-none" id="bioInput" rows="4" maxlength="70"
+                            style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); resize: none;"
+                            placeholder="Nhập tiểu sử (tối đa 70 ký tự)...">{{ target_user.bio|default:'' }}</textarea>
+                        <div class="form-text text-end text-secondary mt-1"><span id="bioCharCount">0</span>/70 ký tự
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4"
                         data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4"
+                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4" onclick="saveBio()"
                         data-bs-dismiss="modal">Lưu thay đổi</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Edit Images Modal -->
+    <div class="modal fade custom-modal" id="editImagesModal" tabindex="-1" aria-labelledby="editImagesModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="editImagesModalLabel">Cập nhật hình ảnh</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editImagesForm" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label class="form-label text-secondary fw-semibold mb-2">Ảnh đại diện</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80"
+                                    id="avatarPreview" alt="Avatar"
+                                    class="rounded-circle object-fit-cover shadow-sm flex-shrink-0"
+                                    style="width: 70px; height: 70px; border: 2px solid var(--bg-main);">
+                                <input type="file" class="form-control text-light shadow-none" id="avatarInput"
+                                    accept="image/*"
+                                    style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary fw-semibold mb-2">Ảnh bìa</label>
+                            <div class="d-flex flex-column gap-2">
+                                <div
+                                    style="width: 100%; height: 100px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                                        id="coverPreview" alt="Cover" class="w-100 h-100 object-fit-cover">
+                                </div>
+                                <input type="file" class="form-control text-light shadow-none" id="coverInput"
+                                    accept="image/*"
+                                    style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4"
+                        onclick="saveImages()" data-bs-dismiss="modal">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Socials Modal -->
+    <div class="modal fade custom-modal" id="editSocialsModal" tabindex="-1" aria-labelledby="editSocialsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="editSocialsModalLabel">Cập nhật liên kết</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSocialsForm">
+                        <div class="mb-3">
+                            <label for="websiteInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-globe2"></i> Website</label>
+                            <input type="url" class="form-control text-light shadow-none" id="websiteInput"
+                                value="{{ target_user.astist_profile.website_url|default:'' }}"
+                                placeholder="https://..."
+                                style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        </div>
+                        <div class="mb-3">
+                            <label for="facebookInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-facebook"></i> Facebook</label>
+                            <input type="url" class="form-control text-light shadow-none" id="facebookInput"
+                                value="{{ target_user.astist_profile.facebook_url|default:'' }}"
+                                placeholder="https://facebook.com/..."
+                                style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        </div>
+                        <div class="mb-3">
+                            <label for="youtubeInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-youtube"></i> YouTube</label>
+                            <input type="url" class="form-control text-light shadow-none" id="youtubeInput"
+                                value="{{ target_user.astist_profile.youtube_url|default:'' }}"
+                                placeholder="https://youtube.com/..."
+                                style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4"
+                        onclick="saveSocials()" data-bs-dismiss="modal">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Add Friend Modal -->
-    <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">
+    <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 450px;">
-            <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
                 <div class="modal-header border-bottom-0 pb-0">
                     <h5 class="modal-title fw-bold" id="addFriendModalLabel">Thêm bạn bè</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body px-4 py-3">
-                    <div class="search-bar mb-4 w-100" style="padding: 10px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="search-bar mb-4 w-100"
+                        style="padding: 10px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.05);">
                         <i class="bi bi-search text-muted-custom" style="font-size: 1rem;"></i>
-                        <input type="text" id="globalUserSearchInput" placeholder="Tìm kiếm theo Tên, Email hoặc Username..." style="font-size: 0.95rem; background: none; border: none; color: white; outline: none; width: 85%; margin-left: 10px;">
+                        <input type="text" id="globalUserSearchInput"
+                            placeholder="Tìm kiếm theo Tên, Email hoặc Username..."
+                            style="font-size: 0.95rem; background: none; border: none; color: white; outline: none; width: 85%; margin-left: 10px;">
                     </div>
-                    
+
                     <div id="globalUserSearchResults" class="d-flex flex-column gap-3">
                         <!-- Kết quả sẽ hiện ở đây -->
                         <div class="text-center text-muted-custom py-3 small">
@@ -549,47 +621,165 @@
         </div>
     </div>
 
-    
+
     <script src="{% static 'js/main.js' %}"></script>
-    
+
     <script>
-    function startEditBio() {
-        document.getElementById('bioDisplay').style.display = 'none';
-        document.getElementById('bioEditArea').style.display = 'block';
-        document.getElementById('bioInput').focus();
-    }
-
-    function cancelEditBio() {
-        document.getElementById('bioEditArea').style.display = 'none';
-        document.getElementById('bioDisplay').style.display = 'flex';
-    }
-
-    async function saveBio() {
-        const bio = document.getElementById('bioInput').value.trim();
-        try {
-            const res = await fetch('/api/v1/accounts/me/', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                body: JSON.stringify({ bio })
-            });
-            const json = await res.json();
-            if (json.success) {
-                document.getElementById('bioText').textContent = bio || 'Thêm tiểu sử...';
-                cancelEditBio();
-                if (window.showToast) showToast('Đã cập nhật tiểu sử!', 'success');
-            } else {
-                if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật', 'error');
+        document.addEventListener('DOMContentLoaded', () => {
+            const bioInput = document.getElementById('bioInput');
+            const bioCharCount = document.getElementById('bioCharCount');
+            if (bioInput && bioCharCount) {
+                const updateCount = () => {
+                    bioCharCount.textContent = bioInput.value.length;
+                };
+                bioInput.addEventListener('input', updateCount);
+                updateCount();
             }
-        } catch(e) {
-            if (window.showToast) showToast('Lỗi kết nối', 'error');
-        }
-    }
+        });
 
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-    }
+        async function saveBio() {
+            const bio = document.getElementById('bioInput').value.trim();
+            try {
+                const res = await fetch('/api/v1/accounts/me/', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                    body: JSON.stringify({ bio })
+                });
+
+                if (res.ok) {
+                    document.getElementById('bioText').textContent = bio || 'Thêm tiểu sử...';
+                    if (window.showToast) showToast('Đã cập nhật tiểu sử!', 'success');
+                } else {
+                    const json = await res.json().catch(() => ({}));
+                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật', 'error');
+                }
+            } catch (e) {
+                if (window.showToast) showToast('Lỗi kết nối', 'error');
+            }
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Preview avatar
+        document.getElementById('avatarInput')?.addEventListener('change', function (e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        // Preview cover
+        document.getElementById('coverInput')?.addEventListener('change', function (e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('coverPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        async function saveImages() {
+            const avatarFile = document.getElementById('avatarInput')?.files[0];
+            const coverFile = document.getElementById('coverInput')?.files[0];
+
+            if (!avatarFile && !coverFile) {
+                if (window.showToast) showToast('Chưa chọn ảnh nào để cập nhật', 'info');
+                return;
+            }
+
+            const formData = new FormData();
+            if (avatarFile) formData.append('avatar', avatarFile);
+            if (coverFile) formData.append('cover', coverFile);
+
+            try {
+                const res = await fetch('/api/v1/accounts/me/images/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                    body: formData
+                });
+                const json = await res.json();
+                if (json.success || res.ok) {
+                    if (window.showToast) showToast('Đã cập nhật ảnh thành công!', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật ảnh', 'error');
+                }
+            } catch (e) {
+                if (window.showToast) showToast('Lỗi kết nối', 'error');
+            }
+        }
+
+        async function saveSocials() {
+            const website = document.getElementById('websiteInput').value.trim();
+            const facebook = document.getElementById('facebookInput').value.trim();
+            const youtube = document.getElementById('youtubeInput').value.trim();
+
+            try {
+                const res = await fetch('/api/v1/artists/me/', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        website_url: website,
+                        facebook_url: facebook,
+                        youtube_url: youtube
+                    })
+                });
+                const json = await res.json();
+                if (json.success || res.ok) {
+                    if (window.showToast) showToast('Đã cập nhật liên kết thành công!', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật liên kết', 'error');
+                }
+            } catch (e) {
+                if (window.showToast) showToast('Lỗi kết nối', 'error');
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1).replace('.0', '') + 'K';
+            return num.toString();
+        }
+
+        async function loadStats() {
+            try {
+                const targetUserId = "{{ target_user.id|default:request.user.id }}";
+                
+                // Load follow stats
+                const followRes = await fetch(`/api/v1/social/users/${targetUserId}/follow-status/`);
+                const followData = await followRes.json();
+                if (followData.success) {
+                    const followersEl = document.getElementById('followersCount');
+                    const followingEl = document.getElementById('followingCount');
+                    if (followersEl) followersEl.innerText = formatNumber(followData.data.followers_count || 0);
+                    if (followingEl) followingEl.innerText = formatNumber(followData.data.following_count || 0);
+                }
+
+                // Load artist stats
+                const statsRes = await fetch(`/api/v1/artists/${targetUserId}/stats/`);
+                const statsData = await statsRes.json();
+                if (statsData.success) {
+                    const likesEl = document.getElementById('totalLikesCount');
+                    if (likesEl) likesEl.innerText = formatNumber(statsData.data.total_likes || 0);
+                }
+            } catch (e) {
+                console.error("Lỗi khi tải thống kê", e);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadStats);
     </script>
 
 </body>
