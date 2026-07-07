@@ -1,0 +1,574 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Song Detail</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <style>
+        /* Song Detail specific styles */
+        .song-header {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(to bottom, rgba(30,50,90, 0.8), var(--bg-app));
+        }
+        
+        .song-cover {
+            width: 232px;
+            height: 232px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        
+        .song-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .song-type {
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .song-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0 0 1rem 0;
+            line-height: 1.1;
+        }
+        
+        .song-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .song-meta .artist-img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .song-meta .creator {
+            color: var(--text-primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        
+        .song-meta .creator:hover {
+            text-decoration: underline;
+        }
+        
+        .song-controls {
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-play-large {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .btn-play-large:hover {
+            transform: scale(1.05);
+            background-color: #1ed760; /* Lighter green */
+        }
+        
+        .action-icon {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .action-icon:hover {
+            color: var(--text-primary);
+        }
+
+        .action-icon.active {
+            color: var(--accent-color);
+        }
+
+        /* Lyrics section */
+        .lyrics-container {
+            background-color: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 0 2rem 3rem 2rem;
+        }
+
+        .lyrics-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .lyrics-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: var(--text-secondary);
+            white-space: pre-line;
+        }
+
+        .lyrics-text .active-line {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        /* Artists info */
+        .artist-card-horizontal {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        .artist-card-horizontal:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .artist-card-horizontal img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            
+            <!-- LEFT SIDEBAR -->
+            {% include 'includes/left_sidebar.html' %}
+            
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                {% include 'includes/top_header.html' %}
+                
+                <!-- Scrollable Content -->
+                <div class="content-scroll pb-5">
+                    
+                    <!-- Song Header -->
+                    <div class="song-header">
+                        <img id="detail-cover" src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Cover" class="song-cover">
+                        <div class="song-info">
+                            <div class="song-type">Bài Hát</div>
+                            <h1 class="song-title" id="detail-title">Đang tải...</h1>
+                            <div class="song-meta">
+                                <img id="detail-artist-img" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80" alt="Artist" class="artist-img">
+                                <a href="#" class="creator" id="detail-artist-name">...</a>
+                                <span>•</span>
+                                <span id="detail-year">...</span>
+                                <span>•</span>
+                                <span id="detail-duration">...</span>
+                                <span>•</span>
+                                <span id="detail-plays">... lượt nghe</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Song Controls -->
+                    <div class="song-controls">
+                        <button class="btn-play-large">
+                            <i class="bi bi-play-fill" style="margin-left: 2px;"></i>
+                        </button>
+                        <i class="bi bi-heart-fill action-icon active" title="Bỏ yêu thích"></i>
+                        <i class="bi bi-plus-circle action-icon" title="Thêm vào playlist"></i>
+                        <i class="bi bi-arrow-down-circle action-icon" title="Tải xuống"></i>
+                        <i class="bi bi-three-dots action-icon"></i>
+                    </div>
+
+                    <!-- Lyrics Section -->
+                    <div class="lyrics-container">
+                        <div class="lyrics-title">Lời bài hát</div>
+                        <div class="lyrics-text" id="detail-lyrics" style="white-space: pre-wrap; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">
+Đang tải lời bài hát...
+                        </div>
+                        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 text-secondary" style="font-size: 0.8rem;">
+                            Cung cấp bởi PlayMood
+                        </div>
+                    </div>
+
+                    <!-- Artist Section -->
+                    <div class="px-4 mb-5">
+                        <div class="artist-card-horizontal">
+                            <img id="detail-artist-avatar" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Artist">
+                            <div>
+                                <div class="text-uppercase text-secondary" style="font-size: 0.75rem; letter-spacing: 1px; font-weight: 600;">Nghệ sĩ</div>
+                                <div class="fw-bold fs-4 text-white" id="detail-artist-name-2">...</div>
+                                <div class="text-secondary" style="font-size: 0.9rem;" id="detail-artist-followers">... người nghe hàng tháng</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended Songs -->
+                    <div class="px-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold mb-0">Có thể bạn sẽ thích</h4>
+                            <a href="#" class="text-secondary text-decoration-none hover-text-white" style="font-size: 0.875rem; font-weight: 600;">XEM TẤT CẢ</a>
+                        </div>
+                        <div class="d-flex flex-column gap-2">
+                            <!-- Card component usage mockup (normally generated dynamically) -->
+                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded position-relative" style="transition: background-color 0.2s;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-secondary" style="width: 20px;">1</div>
+                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded" alt="cover" style="width: 40px; height: 40px;">
+                                    <div>
+                                        <div class="fw-semibold">See Tình</div>
+                                        <div class="small text-secondary">Hoàng Thuỳ Linh</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-4 text-secondary">
+                                    <span class="d-none d-md-block">LINK</span>
+                                    <span>3:10</span>
+                                    <i class="bi bi-heart"></i>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded position-relative" style="transition: background-color 0.2s;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-secondary" style="width: 20px;">2</div>
+                                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded" alt="cover" style="width: 40px; height: 40px;">
+                                    <div>
+                                        <div class="fw-semibold">Waiting For You</div>
+                                        <div class="small text-secondary">MONO, Onionn</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-4 text-secondary">
+                                    <span class="d-none d-md-block">22</span>
+                                    <span>4:25</span>
+                                    <i class="bi bi-heart"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="px-4 mt-5 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0">Bình luận <span class="text-secondary fs-6 fw-normal">(128)</span></h4>
+                        </div>
+                        
+                        <!-- Comment Input -->
+                        <div class="d-flex gap-3 mb-4 align-items-center">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&q=80" alt="User Avatar" class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
+                            <div class="flex-grow-1 d-flex gap-2">
+                                <input type="text" class="form-control bg-transparent text-white border-secondary border-opacity-50" placeholder="Viết bình luận của bạn..." style="border-radius: 20px;">
+                                <button class="btn btn-sm rounded-pill px-4 fw-bold text-dark flex-shrink-0" style="background-color: var(--accent-color); border: none;">Bình luận</button>
+                            </div>
+                        </div>
+
+                        <!-- Comment List -->
+                        <div class="d-flex flex-column gap-4">
+                            <!-- Comment 1 -->
+                            <div class="d-flex gap-3">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-baseline justify-content-between mb-1">
+                                        <div class="d-flex align-items-baseline gap-2">
+                                            <span class="fw-bold">Ngọc Yến</span>
+                                            <span class="text-secondary" style="font-size: 0.75rem;">2 giờ trước</span>
+                                        </div>
+                                        <div class="dropdown">
+                                            <i class="bi bi-three-dots text-secondary" style="cursor: pointer; padding: 0 8px;" data-bs-toggle="dropdown" aria-expanded="false" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')"></i>
+                                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" style="background-color: var(--bg-card); min-width: 120px; font-size: 0.85rem;">
+                                                <li><a class="dropdown-item py-2 text-danger" href="#"><i class="bi bi-flag me-2"></i> Báo cáo</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="text-light" style="font-size: 0.9rem;">
+                                        Bài hát hay quá, giai điệu nghe rất bắt tai, lặp đi lặp lại mãi trong đầu. 😭
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mt-2 text-secondary" style="font-size: 0.85rem;">
+                                        <div class="d-flex align-items-center gap-1" style="cursor: pointer;" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')">
+                                            <i class="bi bi-heart"></i> 45
+                                        </div>
+                                        <div style="cursor: pointer;" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')">
+                                            Phản hồi
+                                        </div>
+                                    </div>
+
+                                    <!-- Nested Reply -->
+                                    <div class="d-flex gap-3 mt-3">
+                                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&w=30&h=30&fit=crop" class="rounded-circle object-fit-cover" style="width: 30px; height: 30px;">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-baseline justify-content-between mb-1">
+                                                <div class="d-flex align-items-baseline gap-2">
+                                                    <span class="fw-bold" style="font-size: 0.9rem;">Thanh Tuấn</span>
+                                                    <span class="text-secondary" style="font-size: 0.7rem;">1 giờ trước</span>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <i class="bi bi-three-dots text-secondary" style="cursor: pointer; padding: 0 8px;" data-bs-toggle="dropdown" aria-expanded="false" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')"></i>
+                                                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" style="background-color: var(--bg-card); min-width: 120px; font-size: 0.85rem;">
+                                                        <li><a class="dropdown-item py-2 text-danger" href="#"><i class="bi bi-flag me-2"></i> Báo cáo</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="text-light" style="font-size: 0.85rem;">
+                                                Công nhận nha bạn ơi! Mình nghe đi nghe lại chục lần rồi kkk 😂
+                                            </div>
+                                            <div class="d-flex align-items-center gap-3 mt-2 text-secondary" style="font-size: 0.8rem;">
+                                                <div class="d-flex align-items-center gap-1" style="cursor: pointer;" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')">
+                                                    <i class="bi bi-heart"></i> 12
+                                                </div>
+                                                <div style="cursor: pointer;" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')">
+                                                    Phản hồi
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Comment 2 -->
+                            <div class="d-flex gap-3">
+                                <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-baseline justify-content-between mb-1">
+                                        <div class="d-flex align-items-baseline gap-2">
+                                            <span class="fw-bold">Hoàng Nam</span>
+                                            <span class="text-secondary" style="font-size: 0.75rem;">5 giờ trước</span>
+                                        </div>
+                                        <div class="dropdown">
+                                            <i class="bi bi-three-dots text-secondary" style="cursor: pointer; padding: 0 8px;" data-bs-toggle="dropdown" aria-expanded="false" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')"></i>
+                                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" style="background-color: var(--bg-card); min-width: 120px; font-size: 0.85rem;">
+                                                <li><a class="dropdown-item py-2 text-danger" href="#"><i class="bi bi-flag me-2"></i> Báo cáo</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="text-light" style="font-size: 0.9rem;">
+                                        Sếp Tùng mãi đỉnh! Vẫn nhớ cái cảm giác thức đêm chờ ra mắt MV này. Quá tuyệt vời!
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mt-2 text-secondary" style="font-size: 0.85rem;">
+                                        <div class="d-flex align-items-center gap-1 text-accent" style="cursor: pointer;">
+                                            <i class="bi bi-heart-fill"></i> 124
+                                        </div>
+                                        <div style="cursor: pointer;" onmouseover="this.classList.replace('text-secondary', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-secondary')">
+                                            Phản hồi
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            {% include 'includes/right_sidebar.html' %}
+            
+        </div>
+        
+        <!-- PLAYER BAR -->
+        {% include 'includes/player_bar.html' %}
+    </div>
+    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas" style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+                PlayMood
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+                <a href="#" class="nav-link-custom active"><i class="bi bi-house-door"></i> Trang chủ</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-emoji-smile"></i> Tâm trạng</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
+            </div>
+            
+            <!-- Friends Activity (Mobile only) -->
+            <div class="px-3 py-3 flex-grow-1 overflow-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom" style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.classList.replace('text-muted-custom', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè"></i>
+                    </div>
+                </div>
+                
+                <div class="search-bar mb-4 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
+                </div>
+                
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Linh Đan</div>
+                        <div class="friend-song">Đang nghe: Waiting For You</div>
+                    </div>
+                </div>
+                
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Hải Nam</div>
+                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
+                    </div>
+                </div>
+                
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
+                        <div class="friend-time">1 giờ trước</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Đăng xuất</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="handleLogout(event)">Đăng xuất</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy ID bài hát từ URL (?id=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const songId = urlParams.get('id');
+
+            if (songId) {
+                // Gọi API backend
+                fetch(`/api/v1/music/songs/${songId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.data) {
+                            const song = data.data;
+                            
+                            // Hàm format duration từ giây sang mm:ss
+                            const formatDuration = (seconds) => {
+                                const m = Math.floor(seconds / 60);
+                                const s = seconds % 60;
+                                return `${m}:${s < 10 ? '0' : ''}${s}`;
+                            };
+                            
+                            // Cập nhật giao diện Header
+                            const coverUrl = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
+                            
+                            const imgEl = document.getElementById('detail-cover');
+                            imgEl.crossOrigin = "Anonymous";
+                            
+                            // Lấy màu nền khi ảnh đã tải xong
+                            imgEl.addEventListener('load', function() {
+                                try {
+                                    const colorThief = new ColorThief();
+                                    const color = colorThief.getColor(imgEl);
+                                    if (color) {
+                                        const songHeader = document.querySelector('.song-header');
+                                        // Đổi nền gradient với màu của ảnh (có độ trong suốt 0.4 để màu tối hơn)
+                                        songHeader.style.background = `linear-gradient(to bottom, rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.4), var(--bg-app))`;
+                                    }
+                                } catch (e) {
+                                    console.warn('Không thể lấy màu nền từ ảnh do lỗi CORS hoặc thư viện.', e);
+                                }
+                            });
+                            
+                            imgEl.src = coverUrl;
+                            
+                            document.getElementById('detail-title').textContent = song.title;
+                            
+                            const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
+                            const artistAvatar = (song.artist && song.artist.avatar) ? song.artist.avatar : 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80';
+                            
+                            document.getElementById('detail-artist-name').textContent = artistName;
+                            document.getElementById('detail-artist-img').src = artistAvatar;
+                            
+                            const releaseYear = song.released_at ? new Date(song.released_at).getFullYear() : (song.created_at ? new Date(song.created_at).getFullYear() : '2023');
+                            document.getElementById('detail-year').textContent = releaseYear;
+                            document.getElementById('detail-duration').textContent = formatDuration(song.duration);
+                            document.getElementById('detail-plays').textContent = `${song.play_count.toLocaleString('vi-VN')} lượt nghe`;
+                            
+                            // Cập nhật Lyrics
+                            if (song.lyrics) {
+                                document.getElementById('detail-lyrics').textContent = song.lyrics;
+                            } else {
+                                document.getElementById('detail-lyrics').textContent = "Bài hát này chưa có lời.";
+                            }
+                            
+                            // Cập nhật Artist Section
+                            document.getElementById('detail-artist-avatar').src = artistAvatar;
+                            document.getElementById('detail-artist-name-2').textContent = artistName;
+                            document.getElementById('detail-artist-followers').textContent = "Cập nhật sau";
+                            
+                        } else {
+                            document.getElementById('detail-title').textContent = "Không tìm thấy bài hát";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi lấy thông tin bài hát:', error);
+                        document.getElementById('detail-title').textContent = "Lỗi tải dữ liệu";
+                    });
+            } else {
+                document.getElementById('detail-title').textContent = "Không tìm thấy bài hát (Thiếu ID)";
+            }
+        });
+    </script>
+</body>
+</html>

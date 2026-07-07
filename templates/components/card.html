@@ -1,0 +1,75 @@
+{% comment %}
+    Component: Card (Thẻ hiển thị Nhạc/Playlist/Nghệ sĩ)
+    Cách gọi (Cách dùng): 
+
+    1. Thẻ Nhạc (Nhỏ, vuông vuông):
+    include 'components/card.html' with style='song' image='url_anh' title='Tên bài' subtitle='Tên ca sĩ' url='#'
+
+    2. Thẻ Playlist (Lớn hơn, vuông vuông - Dùng cho Bảng xếp hạng / Playlist):
+    include 'components/card.html' with style='playlist' image='url_anh' title='Tên playlist' subtitle='Mô tả' url='#'
+
+    3. Thẻ Tròn (Dùng cho Nghệ sĩ hoặc Thể loại EDM/Party):
+    include 'components/card.html' with style='circle' image='url_anh' title='Tên' subtitle='Mô tả' url='#'
+    
+    4. Thẻ Danh sách (Dùng cho Playlist Grid):
+    include 'components/card.html' with style='list' index=1 image='url_anh' title='Tên' subtitle='Ca sĩ' album='Tên album' date_added='Ngày' duration='Thời lượng' is_playing=False is_favorite=False url='#'
+
+    5. Thẻ Tìm Kiếm (Dùng cho kết quả tìm kiếm):
+    include 'components/card.html' with style='search' image='url_anh' title='Tên' subtitle='Bài hát • Ca sĩ' url='#'
+{% endcomment %}
+
+{% if style == 'list' %}
+<div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
+    <div class="{% if is_playing %}text-accent{% else %}text-secondary{% endif %} text-center">
+        {% if is_playing %}
+            <i class="bi bi-music-note-beamed"></i>
+        {% else %}
+            {{ index }}
+        {% endif %}
+    </div>
+    <div class="d-flex align-items-center gap-3 text-truncate">
+        <img src="{{ image|default:'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&q=80' }}" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover;">
+        <div class="text-truncate">
+            <div class="fw-semibold text-truncate {% if is_playing %}text-accent{% else %}text-white{% endif %}">{{ title }}</div>
+            <div class="small text-secondary text-truncate">{{ subtitle }}</div>
+        </div>
+    </div>
+    <div class="text-secondary hide-md text-truncate">{{ album|default:'' }}</div>
+    <div class="text-secondary hide-lg text-truncate">{{ date_added|default:'' }}</div>
+    <div class="text-secondary">{{ duration|default:'' }}</div>
+    <div class="text-secondary text-center"><i class="bi {% if is_favorite %}bi-suit-heart-fill text-danger{% else %}bi-suit-heart hover-text-white{% endif %} position-relative" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
+    <div class="text-secondary text-center"><i class="bi bi-three-dots position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
+    {% if url %}
+    <a href="{{ url }}" class="stretched-link"></a>
+    {% endif %}
+</div>
+{% elif style == 'search' %}
+<div class="d-flex align-items-center justify-content-between p-2 hover-bg-light rounded position-relative" style="transition: background-color 0.2s;">
+    <div class="d-flex align-items-center gap-3">
+        <img src="{{ image|default:'https://images.unsplash.com/photo-1619983081563-430f63602796?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&q=80' }}" class="rounded" alt="cover" style="width: 48px; height: 48px; object-fit: cover;">
+        <div>
+            <div class="fw-semibold text-white fs-6">{{ title }}</div>
+            <div class="small text-secondary">{{ subtitle }}</div>
+        </div>
+    </div>
+    <div class="text-secondary px-2">
+        <i class="bi bi-plus-circle fs-5 position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;" title="Thêm vào danh sách phát"></i>
+    </div>
+    {% if url %}
+    <a href="{{ url }}" class="stretched-link"></a>
+    {% endif %}
+</div>
+{% else %}
+<div class="playlist-card position-relative" {% if style == 'song' %}style="min-width: 160px; max-width: 160px;"{% endif %}>
+    <div class="card-image-wrapper" {% if style == 'circle' %}style="border-radius: 50%;"{% endif %}>
+        <img src="{{ image|default:'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' }}" alt="{{ title|default:'Cover' }}">
+        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+    </div>
+    <div class="card-title {% if style == 'circle' %}text-center{% endif %}">{{ title }}</div>
+    <div class="card-subtitle {% if style == 'circle' %}text-center{% endif %}">{{ subtitle }}</div>
+    
+    {% if url %}
+    <a href="{{ url }}" class="stretched-link"></a>
+    {% endif %}
+</div>
+{% endif %}

@@ -85,7 +85,6 @@
                                         {% if target_user.mood.song %}
                                         <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1"
                                             style="flex-grow: 1; min-width: 0; max-width: 100px;">
-                                            <i class="bi bi-music-note-beamed flex-shrink-0 text-white"></i>
                                             <div class="marquee-wrapper"
                                                 style="overflow: hidden; white-space: nowrap; flex-grow: 1; min-width: 0; height: 16px; display: flex; align-items: center;">
                                                 <span class="marquee-text text-white"
@@ -209,66 +208,9 @@
                     <div class="home-section mb-5">
                         <h2 class="profile-section-title">Bài hát yêu thích gần đây</h2>
                         <div class="song-list-container">
-                            <!-- Song Item 1 -->
-                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded"
-                                style="transition: background-color 0.2s;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-secondary" style="width: 20px;">1</div>
-                                    <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
-                                        class="rounded" alt="cover">
-                                    <div>
-                                        <div class="fw-semibold">Chạy Ngay Đi</div>
-                                        <div class="small text-secondary">{{
-                                            target_user.display_name|default:target_user.username }}</div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-4 text-secondary">
-                                    <span class="d-none d-md-block">Album M-TP</span>
-                                    <span>4:02</span>
-                                    <i class="bi bi-suit-heart-fill text-danger"></i>
-                                    <i class="bi bi-three-dots"></i>
-                                </div>
-                            </div>
-
-                            <!-- Song Item 2 -->
-                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded mt-2"
-                                style="transition: background-color 0.2s;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-secondary" style="width: 20px;">2</div>
-                                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
-                                        class="rounded" alt="cover">
-                                    <div>
-                                        <div class="fw-semibold">Waiting For You</div>
-                                        <div class="small text-secondary">MONO, Onionn</div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-4 text-secondary">
-                                    <span class="d-none d-md-block">22</span>
-                                    <span>4:25</span>
-                                    <i class="bi bi-suit-heart-fill text-danger"></i>
-                                    <i class="bi bi-three-dots"></i>
-                                </div>
-                            </div>
-
-                            <!-- Song Item 3 -->
-                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded mt-2"
-                                style="transition: background-color 0.2s;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-secondary" style="width: 20px;">3</div>
-                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
-                                        class="rounded" alt="cover">
-                                    <div>
-                                        <div class="fw-semibold">See Tình</div>
-                                        <div class="small text-secondary">Hoàng Thuỳ Linh</div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-4 text-secondary">
-                                    <span class="d-none d-md-block">LINK</span>
-                                    <span>3:10</span>
-                                    <i class="bi bi-heart"></i>
-                                    <i class="bi bi-three-dots"></i>
-                                </div>
-                            </div>
+                            {% include 'components/card.html' with style='list' index='1' title='Chạy Ngay Đi' subtitle=target_user.display_name|default:target_user.username album='Album M-TP' duration='4:02' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&w=40&h=40&fit=crop' url='#' %}
+                            {% include 'components/card.html' with style='list' index='2' title='Waiting For You' subtitle='MONO, Onionn' album='22' duration='4:25' image='https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&w=40&h=40&fit=crop' url='#' %}
+                            {% include 'components/card.html' with style='list' index='3' title='See Tình' subtitle='Hoàng Thuỳ Linh' album='LINK' duration='3:10' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop' url='#' %}
                         </div>
                     </div>
 
@@ -276,27 +218,8 @@
                     <div class="home-section mb-5">
                         <h2 class="profile-section-title">Playlist của Thành Nhân</h2>
                         <div class="horizontal-scroll-container">
-                            <!-- Card 1 -->
-                            <div class="playlist-card">
-                                <div class="card-image-wrapper">
-                                    <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                                        alt="Playlist">
-                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                </div>
-                                <div class="card-title">Chill Buổi Tối</div>
-                                <div class="card-subtitle">25 bài hát</div>
-                            </div>
-
-                            <!-- Card 2 -->
-                            <div class="playlist-card">
-                                <div class="card-image-wrapper">
-                                    <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                                        alt="Playlist">
-                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                </div>
-                                <div class="card-title">Chữa Lành Tâm Hồn</div>
-                                <div class="card-subtitle">30 bài hát</div>
-                            </div>
+                            {% include 'components/card.html' with style='playlist' title='Chill Buổi Tối' subtitle='25 bài hát' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
+                            {% include 'components/card.html' with style='playlist' title='Chữa Lành Tâm Hồn' subtitle='30 bài hát' image='https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
                         </div>
                     </div>
 

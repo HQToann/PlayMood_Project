@@ -126,6 +126,8 @@ urlpatterns = [
     path('settings/', login_required_view('settings/settings.html'), name='settings_page'),
     path('notifications/', login_required_view('notifications/notifications.html'), name='notifications_page'),
     path('mood/', login_required_view('social/mood.html'), name='mood_page'),
+    path('playlist/', login_required_view('playlists/playlist.html'), name='playlist_page'),
+    path('song/', login_required_view('song/song.html'), name='song_page'),
 
     # Admin & API Routes
     path('admin/', admin.site.urls),

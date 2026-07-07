@@ -18,7 +18,7 @@
             <a href="{% url 'mood_page' %}" class="nav-link-custom {% if active_page == 'mood' %}active{% endif %}">
                 <i class="bi bi-emoji-smile"></i> Tâm trạng
             </a>
-            <a href="#" class="nav-link-custom {% if active_page == 'playlist' %}active{% endif %}">
+            <a href="{% url 'playlist_page' %}" class="nav-link-custom {% if active_page == 'playlist' %}active{% endif %}">
                 <i class="bi bi-music-note-list"></i> Playlist
             </a>
             {% if request.user.role == 'artist' %}

@@ -183,46 +183,10 @@
                                     onmouseout="this.style.color='rgba(255,255,255,0.4)'">Xem tất cả</a>
                             </div>
                             <div class="horizontal-scroll-container pb-3">
-                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
-                                    <div class="card-image-wrapper"><img
-                                            src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                                            alt="Song">
-                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                    </div>
-                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Tình Yêu Màu
-                                        Hồng</div>
-                                    <div class="card-subtitle" style="font-size:0.78rem;">Various Artists</div>
-                                </div>
-                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
-                                    <div class="card-image-wrapper"><img
-                                            src="https://images.unsplash.com/photo-1494774157365-9e04c6720e47?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                                            alt="Song">
-                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                    </div>
-                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Giai Điệu Tình
-                                        Yêu</div>
-                                    <div class="card-subtitle" style="font-size:0.78rem;">Sâu lắng</div>
-                                </div>
-                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
-                                    <div class="card-image-wrapper"><img
-                                            src="https://images.unsplash.com/photo-1525286102434-29759c288926?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                                            alt="Song">
-                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                    </div>
-                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Love Songs 2024
-                                    </div>
-                                    <div class="card-subtitle" style="font-size:0.78rem;">Hot Hits</div>
-                                </div>
-                                <div class="playlist-card" style="min-width: 150px; max-width: 150px;">
-                                    <div class="card-image-wrapper"><img
-                                            src="https://images.unsplash.com/photo-1460500063983-994d4c27756c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                                            alt="Song">
-                                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                    </div>
-                                    <div class="card-title mt-2 fw-semibold" style="font-size:0.88rem;">Acoustic Love
-                                    </div>
-                                    <div class="card-subtitle" style="font-size:0.78rem;">Guitar & Vocals</div>
-                                </div>
+                                {% include 'components/card.html' with style='song' title='Tình Yêu Màu Hồng' subtitle='Various Artists' image='https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
+                                {% include 'components/card.html' with style='song' title='Giai Điệu Tình Yêu' subtitle='Sâu lắng' image='https://images.unsplash.com/photo-1494774157365-9e04c6720e47?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
+                                {% include 'components/card.html' with style='song' title='Love Songs 2024' subtitle='Hot Hits' image='https://images.unsplash.com/photo-1525286102434-29759c288926?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
+                                {% include 'components/card.html' with style='song' title='Acoustic Love' subtitle='Guitar & Vocals' image='https://images.unsplash.com/photo-1460500063983-994d4c27756c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
                             </div>
                         </div>
 
