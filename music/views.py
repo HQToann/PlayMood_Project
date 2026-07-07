@@ -398,7 +398,7 @@ class SongHideView(View):
             return handle_exception(e)
         
 class SongPlayView(View):
-    """POST /api/v1/music/songs/<id>/play/ - Auth."""
+    """POST /api/v1/music/songs/<id>/play/ - Yêu cầu đăng nhập."""
     @method_decorator(require_auth)
     def post(self, request, song_id):
         try:

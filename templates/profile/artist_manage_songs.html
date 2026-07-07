@@ -301,7 +301,7 @@
         window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
         window.CURRENT_USER_DISPLAY_NAME = "{{ request.user.get_display_name|escapejs }}";
     </script>
-    <script src="{% static 'js/artist_manage_songs.js' %}?v=1.0"></script>
+    <script src="{% static 'js/artist_manage_songs.js' %}?v=1.1"></script>
 
     <!-- Add Friend Modal -->
     <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">

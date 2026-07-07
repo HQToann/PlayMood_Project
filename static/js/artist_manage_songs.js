@@ -86,8 +86,8 @@
                                         ${statusHtml}
                                     </div>
                                     <div class="col-6 col-md-3 text-md-center d-flex justify-content-end justify-content-md-center gap-4">
-                                        <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt nghe"><i class="bi bi-headphones me-1"></i> ${song.play_count || song.listens_count || 0}</div>
-                                        <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt thích"><i class="bi bi-heart me-1"></i> ${song.likes_count || 0}</div>
+                                        <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt nghe"><i class="bi bi-headphones me-1"></i> ${song.play_count || 0}</div>
+                                        <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt thích"><i class="bi bi-heart me-1"></i> ${song.like_count || 0}</div>
                                     </div>
                                     <div class="col-12 col-md-2 text-end mt-3 mt-md-0">
                                         <div class="dropdown">

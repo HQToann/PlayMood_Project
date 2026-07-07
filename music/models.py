@@ -247,7 +247,7 @@ class Song(models.Model):
                 'avatar': self.artist.avatar.url if self.artist.avatar else None,
             },
             'genre': self.genre.to_dict() if self.genre else None,
-            'audio_file': self.audio_file.url if self.audio_file else None,
+            'audio_file': self.audio_file.url if (self.audio_file and viewer and viewer.is_authenticated) else None,
             'cover_image': self.cover_image.url if self.cover_image else None,
             'lyrics': self.lyrics,
             'duration': self.duration,
@@ -272,6 +272,14 @@ class Song(models.Model):
                 round(sum(r.score for r in ratings) / ratings.count(), 1)
                 if ratings.count() > 0 else None
             )
+
+            from django.utils import timezone
+            from datetime import timedelta
+            thirty_days_ago = timezone.now() - timedelta(days=30)
+            data['artist']['monthly_listeners'] = ListenHistory.objects.filter(
+                song__artist=self.artist,
+                listened_at__gte=thirty_days_ago
+            ).values('user').distinct().count()
         if include_viewer_state and viewer and hasattr(viewer, 'id') and viewer.is_authenticated:
             data['is_liked'] = self.likes.filter(user=viewer).exists()
             my_rating = self.ratings.filter(user=viewer).first()

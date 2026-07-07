@@ -1,3 +1,4 @@
+{% load static %}
         <!-- PLAYER BAR -->
         <footer class="player-bar" id="globalPlayerBar">
             <!-- Info -->
@@ -41,3 +42,12 @@
                 </div>
             </div>
         </footer>
+        <div style="display:none;">{% csrf_token %}</div>
+        
+        <!-- Create Playlist Modal -->
+        {% include 'includes/create_playlist_modal.html' %}
+        <script>
+            window.CURRENT_USER_AUTHENTICATED = "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";
+            window.LOGIN_URL = "/auth/login/";
+        </script>
+        <script src="{% static 'js/player.js' %}?v=1.1"></script>

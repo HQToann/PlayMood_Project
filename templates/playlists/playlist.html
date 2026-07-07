@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlayMood - Playlist</title>
+    <title>PlayMood - Thư viện Playlist</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -13,378 +13,127 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <style>
-        /* Playlist specific styles */
-        .playlist-header {
-            display: flex;
-            gap: 2rem;
-            align-items: flex-end;
-            margin-bottom: 2rem;
-            padding: 2rem;
-            background: linear-gradient(to bottom, rgba(40,40,40, 0.8), var(--bg-app));
-        }
-        
-        .playlist-cover {
-            width: 232px;
-            height: 232px;
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-        }
-        
-        .playlist-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-        
-        .playlist-type {
-            text-transform: uppercase;
-            font-size: 0.875rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        
-        .playlist-title {
-            font-size: 4rem;
-            font-weight: 900;
-            margin: 0 0 1rem 0;
-            line-height: 1.1;
-        }
-        
-        .playlist-meta {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+        .hero-playlist {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, rgba(40,30,80,0.8), rgba(20,20,40,0.9));
+            border-radius: 12px;
+            margin: 1rem 2rem 2rem 2rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
         }
-
-        .playlist-meta .creator {
-            color: var(--text-primary);
-            font-weight: 700;
-            text-decoration: none;
+        .hero-playlist h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
         }
-        
-        .playlist-meta .creator:hover {
-            text-decoration: underline;
-        }
-        
-        .playlist-controls {
-            padding: 0 2rem;
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .btn-play-large {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
+        .btn-create-playlist {
             background-color: var(--accent-color);
             color: #000;
-            border: none;
-            display: flex;
+            font-weight: 700;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
+            gap: 0.5rem;
+            white-space: nowrap;
+            flex-shrink: 0;
             transition: transform 0.2s, background-color 0.2s;
         }
-        
-        .btn-play-large:hover {
+        .btn-create-playlist:hover {
             transform: scale(1.05);
-            background-color: #1ed760; /* Lighter green */
-        }
-        
-        .action-icon {
-            font-size: 2rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        .action-icon:hover {
-            color: var(--text-primary);
-        }
-
-        /* Custom Playlist Grid */
-        .playlist-grid {
-            display: grid;
-            grid-template-columns: 30px minmax(200px, 1fr) 25% 20% 50px 30px 30px;
-            align-items: center;
-            gap: 16px;
-            width: 100%;
-        }
-        @media (max-width: 991px) {
-            .playlist-grid {
-                grid-template-columns: 30px minmax(200px, 1fr) 30% 50px 30px 30px;
-            }
-            .playlist-grid .hide-lg {
-                display: none !important;
-            }
-        }
-        @media (max-width: 767px) {
-            .playlist-grid {
-                grid-template-columns: 30px minmax(150px, 1fr) 50px 30px 30px;
-            }
-            .playlist-grid .hide-md {
-                display: none !important;
-            }
-        }
-
-        .playlist-grid-row {
-            transition: background-color 0.2s;
-        }
-        .playlist-grid-row:hover {
-            background-color: rgba(255,255,255,0.05);
+            background-color: #1ed760;
+            color: #000;
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <div class="layout-container">
         <!-- Main Wrapper -->
         <div class="main-wrapper">
             
             <!-- LEFT SIDEBAR -->
-            {% include 'includes/left_sidebar.html' with active_page='playlist' %}            
+            {% include 'includes/left_sidebar.html' %}
+            
             <!-- MAIN CONTENT -->
             <main class="main-content">
-                <!-- Header -->
+                <!-- TOP HEADER -->
                 {% include 'includes/top_header.html' %}
                 
                 <!-- Scrollable Content -->
                 <div class="content-scroll pb-5">
                     
-                    <!-- Playlist Header -->
-                    <div class="playlist-header">
-                        <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Chill Buổi Tối" class="playlist-cover">
-                        <div class="playlist-info">
-                            <div class="playlist-type">Playlist</div>
-                            <h1 class="playlist-title">Chill Buổi Tối</h1>
-                            <div class="playlist-meta">
-                                <a href="#" class="creator">Thành Nhân</a>
-                                <span>•</span>
-                                <span>25 bài hát,</span>
-                                <span class="text-secondary">khoảng 1 giờ 15 phút</span>
-                            </div>
+                    <!-- Hero Section -->
+                    <div class="hero-playlist">
+                        <div>
+                            <h1>Thư viện Playlist</h1>
+                            <p class="text-secondary mb-0" style="font-size: 0.9rem;">Lưu trữ và khám phá những giai điệu yêu thích của bạn</p>
                         </div>
-                    </div>
-
-                    <!-- Playlist Controls -->
-                    <div class="playlist-controls">
-                        <button class="btn-play-large">
-                            <i class="bi bi-play-fill" style="margin-left: 2px;"></i>
+                        <button type="button" class="btn-create-playlist border-0" onclick="openCreatePlaylistModal(event)">
+                            <i class="bi bi-plus-lg"></i> Tạo Playlist
                         </button>
-                        <i class="bi bi-heart action-icon"></i>
-                        <i class="bi bi-three-dots action-icon"></i>
                     </div>
-
-                    <!-- Playlist Songs Table -->
-                    <div class="px-4">
-                        <!-- Header Row -->
-                        <div class="playlist-grid py-2 px-3 text-secondary border-bottom border-secondary border-opacity-25 mb-2" style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">
-                            <div class="text-center">#</div>
-                            <div>Tiêu đề</div>
-                            <div class="hide-md">Album</div>
-                            <div class="hide-lg">Ngày thêm</div>
-                            <div><i class="bi bi-clock"></i></div>
-                            <div></div>
-                            <div></div>
+                    
+                    <!-- Playlist của bản thân -->
+                    <div class="home-section">
+                        <div class="section-title-container">
+                            <h2 class="section-title">Playlist của bạn</h2>
                         </div>
-
-                        <!-- Playlist Items -->
-                        <div class="d-flex flex-column gap-1 pb-4">
-                            <!-- Song 1 -->
-                            <div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
-                                <div class="text-secondary text-center">1</div>
-                                <div class="d-flex align-items-center gap-3 text-truncate">
-                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div class="text-truncate">
-                                        <div class="fw-semibold text-truncate text-white">See Tình</div>
-                                        <div class="small text-secondary text-truncate">Hoàng Thuỳ Linh</div>
-                                    </div>
-                                </div>
-                                <div class="text-secondary hide-md text-truncate">LINK</div>
-                                <div class="text-secondary hide-lg text-truncate">10 ngày trước</div>
-                                <div class="text-secondary">3:10</div>
-                                <div class="text-secondary text-center"><i class="bi bi-suit-heart position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <div class="text-secondary text-center"><i class="bi bi-three-dots position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <a href="#" class="stretched-link"></a>
-                            </div>
-
-                            <!-- Song 2 -->
-                            <div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
-                                <div class="text-accent text-center"><i class="bi bi-music-note-beamed"></i></div>
-                                <div class="d-flex align-items-center gap-3 text-truncate">
-                                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div class="text-truncate">
-                                        <div class="fw-semibold text-truncate text-accent">Waiting For You</div>
-                                        <div class="small text-secondary text-truncate">MONO, Onionn</div>
-                                    </div>
-                                </div>
-                                <div class="text-secondary hide-md text-truncate">22</div>
-                                <div class="text-secondary hide-lg text-truncate">15 ngày trước</div>
-                                <div class="text-secondary">4:25</div>
-                                <div class="text-secondary text-center"><i class="bi bi-suit-heart-fill text-danger position-relative" style="z-index: 2; cursor: pointer;"></i></div>
-                                <div class="text-secondary text-center"><i class="bi bi-three-dots position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <a href="#" class="stretched-link"></a>
-                            </div>
-
-                            <!-- Song 3 -->
-                            <div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
-                                <div class="text-secondary text-center">3</div>
-                                <div class="d-flex align-items-center gap-3 text-truncate">
-                                    <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div class="text-truncate">
-                                        <div class="fw-semibold text-truncate text-white">Chạy Ngay Đi</div>
-                                        <div class="small text-secondary text-truncate">Sơn Tùng M-TP</div>
-                                    </div>
-                                </div>
-                                <div class="text-secondary hide-md text-truncate">Chạy Ngay Đi (Single)</div>
-                                <div class="text-secondary hide-lg text-truncate">1 tháng trước</div>
-                                <div class="text-secondary">4:02</div>
-                                <div class="text-secondary text-center"><i class="bi bi-suit-heart position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <div class="text-secondary text-center"><i class="bi bi-three-dots position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <a href="#" class="stretched-link"></a>
-                            </div>
-
-                            <!-- Song 4 -->
-                            <div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
-                                <div class="text-secondary text-center">4</div>
-                                <div class="d-flex align-items-center gap-3 text-truncate">
-                                    <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div class="text-truncate">
-                                        <div class="fw-semibold text-truncate text-white">Thiên Lý Ơi</div>
-                                        <div class="small text-secondary text-truncate">Jack - J97</div>
-                                    </div>
-                                </div>
-                                <div class="text-secondary hide-md text-truncate">Thiên Lý Ơi (Single)</div>
-                                <div class="text-secondary hide-lg text-truncate">1 tháng trước</div>
-                                <div class="text-secondary">3:45</div>
-                                <div class="text-secondary text-center"><i class="bi bi-suit-heart position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <div class="text-secondary text-center"><i class="bi bi-three-dots position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <a href="#" class="stretched-link"></a>
-                            </div>
-
-                            <!-- Song 5 -->
-                            <div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
-                                <div class="text-secondary text-center">5</div>
-                                <div class="d-flex align-items-center gap-3 text-truncate">
-                                    <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&w=40&h=40&fit=crop" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div class="text-truncate">
-                                        <div class="fw-semibold text-truncate text-white">Ngủ Một Mình</div>
-                                        <div class="small text-secondary text-truncate">HIEUTHUHAI</div>
-                                    </div>
-                                </div>
-                                <div class="text-secondary hide-md text-truncate">Ai Cũng Phải Bắt Đầu Từ Đâu Đó</div>
-                                <div class="text-secondary hide-lg text-truncate">2 tháng trước</div>
-                                <div class="text-secondary">3:18</div>
-                                <div class="text-secondary text-center"><i class="bi bi-suit-heart position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <div class="text-secondary text-center"><i class="bi bi-three-dots position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
-                                <a href="#" class="stretched-link"></a>
-                            </div>
+                        <div class="horizontal-scroll-container">
+                            {% include 'components/card.html' with style='playlist' title='Nhạc Buồn' subtitle='Bởi Bạn' image='https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='Chill Cuối Tuần' subtitle='Bởi Bạn' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='Tập Gym' subtitle='Bởi Bạn' image='https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
                         </div>
                     </div>
+                    
+                    <!-- Top Playlist -->
+                    <div class="home-section">
+                        <div class="section-title-container">
+                            <h2 class="section-title">Top Playlist Nổi Bật</h2>
+                            <a href="#" class="section-more-btn">Xem tất cả</a>
+                        </div>
+                        <div class="horizontal-scroll-container">
+                            {% include 'components/card.html' with style='playlist' title='Top 50 Việt Nam' subtitle='Các bài hát hàng đầu' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='Top 100 Global' subtitle='Bảng xếp hạng toàn cầu' image='https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='US-UK Hits' subtitle='Nhạc Âu Mỹ thịnh hành' image='https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='K-Pop Daebak' subtitle='Âm nhạc Hàn Quốc' image='https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                        </div>
+                    </div>
+
+                    <!-- Playlist phù hợp -->
+                    <div class="home-section">
+                        <div class="section-title-container">
+                            <h2 class="section-title">Playlist Phù Hợp Dành Cho Bạn</h2>
+                            <a href="#" class="section-more-btn">Xem thêm</a>
+                        </div>
+                        <div class="horizontal-scroll-container">
+                            {% include 'components/card.html' with style='playlist' title='Acoustic Thư Giãn' subtitle='Nhạc nhẹ nhàng dễ ngủ' image='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='Lái Xe Đêm' subtitle='Nhịp điệu cuốn hút' image='https://images.unsplash.com/photo-1465847899084-d164df4dedc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='Cà Phê Sáng' subtitle='Bắt đầu ngày mới' image='https://images.unsplash.com/photo-1445282768818-728615cd2cbc?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='Lofi Chill' subtitle='Giai điệu tập trung' image='https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                            {% include 'components/card.html' with style='playlist' title='Indie Vibes' subtitle='Nhạc độc lập chất lượng' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                        </div>
+                    </div>
+                    
                 </div>
             </main>
-
+            
             <!-- RIGHT SIDEBAR (Friends Activity) -->
-            {% include 'includes/right_sidebar.html' %}            
+            {% include 'includes/right_sidebar.html' %}
+            
         </div>
         
         <!-- PLAYER BAR -->
         {% include 'includes/player_bar.html' %}
     </div>
-    
-    <!-- Mobile Offcanvas Menu -->
-    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas" style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
-        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
-            <a href="#" class="brand-logo">
-                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
-                PlayMood
-            </a>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body p-0 d-flex flex-column">
-            <!-- Navigation Links -->
-            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
-                <a href="#" class="nav-link-custom active"><i class="bi bi-house-door"></i> Trang chủ</a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-emoji-smile"></i> Tâm trạng</a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
-            </div>
-            
-            <!-- Friends Activity (Mobile only) -->
-            <div class="px-3 py-3 flex-grow-1 overflow-auto">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
-                        <i class="bi bi-person-plus-fill text-muted-custom" style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.classList.replace('text-muted-custom', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè"></i>
-                    </div>
-                </div>
-                
-                <div class="search-bar mb-4 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
-                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
-                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
-                </div>
-                
-                <div class="friend-item">
-                    <div class="friend-avatar">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
-                        <div class="online-dot"></div>
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name">Linh Đan</div>
-                        <div class="friend-song">Đang nghe: Waiting For You</div>
-                    </div>
-                </div>
-                
-                <div class="friend-item">
-                    <div class="friend-avatar">
-                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
-                        <div class="online-dot"></div>
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name">Hải Nam</div>
-                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
-                    </div>
-                </div>
-                
-                <div class="friend-item">
-                    <div class="friend-avatar">
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
-                        <div class="friend-time">1 giờ trước</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Logout Confirmation Modal -->
-    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-white" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
-                <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">Đăng xuất</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-secondary">
-                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?
-                </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="handleLogout(event)">Đăng xuất</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Create Playlist Modal -->
+    {% include 'includes/create_playlist_modal.html' %}
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

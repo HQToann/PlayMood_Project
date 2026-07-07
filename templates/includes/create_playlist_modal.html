@@ -1,0 +1,55 @@
+    <!-- Create Playlist Modal -->
+    <div class="modal fade" id="createPlaylistModal" tabindex="-1" aria-labelledby="createPlaylistModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="createPlaylistModalLabel">Tạo Playlist mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createPlaylistForm">
+                        <div class="mb-3">
+                            <label for="playlistName" class="form-label text-secondary" style="font-size: 0.9rem;">Tên Playlist</label>
+                            <input type="text" class="form-control text-white border-secondary" id="playlistName" placeholder="Nhập tên playlist của bạn..." required style="background-color: rgba(255,255,255,0.05);">
+                        </div>
+                        <div class="mb-3">
+                            <label for="playlistCover" class="form-label text-secondary" style="font-size: 0.9rem;">Ảnh bìa (tùy chọn)</label>
+                            <input class="form-control text-white border-secondary" type="file" id="playlistCover" accept="image/*" style="background-color: rgba(255,255,255,0.05);">
+                        </div>
+                        <div class="mb-3">
+                            <label for="playlistDesc" class="form-label text-secondary" style="font-size: 0.9rem;">Mô tả (tùy chọn)</label>
+                            <textarea class="form-control text-white border-secondary" id="playlistDesc" rows="3" placeholder="Thêm mô tả cho playlist..." style="background-color: rgba(255,255,255,0.05);"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary" style="font-size: 0.9rem;">Trạng thái</label>
+                            <select class="form-select text-white border-secondary" id="playlistStatus" style="background-color: rgba(255,255,255,0.05);">
+                                <option value="public" style="background-color: var(--bg-card); color: white;">Công khai (Ai cũng có thể tìm thấy)</option>
+                                <option value="private" style="background-color: var(--bg-card); color: white;">Riêng tư (Chỉ mình bạn xem được)</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-create-playlist rounded-pill px-4 m-0" style="padding: 0.5rem 1.5rem; border: none; background-color: var(--accent-color); color: #000; font-weight: 700;">Tạo mới</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.openCreatePlaylistModal = function(event) {
+            if (event) event.preventDefault();
+            if (typeof window.CURRENT_USER_AUTHENTICATED !== 'undefined' && !window.CURRENT_USER_AUTHENTICATED) {
+                window.location.href = window.LOGIN_URL || '/auth/login/';
+                return;
+            }
+            const modalEl = document.getElementById('createPlaylistModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            } else {
+                console.warn('Bootstrap is not loaded yet or modal element not found');
+            }
+        };
+    </script>

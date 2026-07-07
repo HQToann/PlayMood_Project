@@ -29,9 +29,7 @@ def login_required_view(template_name):
     return view
 
 def home_view(request):
-    """Trang chủ - yêu cầu đăng nhập."""
-    if not request.user.is_authenticated:
-        return redirect(LOGIN_URL)
+    """Trang chủ - cho phép xem, nhưng phải đăng nhập mới nghe nhạc."""
     return render(request, 'home/index.html')
 
 def profile_routing_view(request):
@@ -127,7 +125,8 @@ urlpatterns = [
     path('notifications/', login_required_view('notifications/notifications.html'), name='notifications_page'),
     path('mood/', login_required_view('social/mood.html'), name='mood_page'),
     path('playlist/', login_required_view('playlists/playlist.html'), name='playlist_page'),
-    path('song/', login_required_view('song/song.html'), name='song_page'),
+    path('playlist/detail/', login_required_view('playlists/playlist_detail.html'), name='playlist_detail_page'),
+    path('song/', TemplateView.as_view(template_name='song/song.html'), name='song_page'),
 
     # Admin & API Routes
     path('admin/', admin.site.urls),

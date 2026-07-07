@@ -226,26 +226,31 @@ def admin_toggle_trending(song: Song) -> Song:
 #deup 5 phút
 #return: play_count hiện tại (sau khi tăng hợp lệ)
 def record_play(user, song: Song) -> int:
-    cutoff = timezone.now() - timedelta(minutes=5)
+    user_is_auth = getattr(user, 'is_authenticated', False) and getattr(user, 'id', None)
 
-    #kiểm tra đã nghe trong 5 phút chưa
-    already_played = ListenHistory.objects.filter(
-        user=user,
-        song=song,
-        listened_at__gte=cutoff,
-    ).exists()
+    if user_is_auth:
+        # Kiểm tra đã nghe trong 5 phút chưa để tránh tính trùng
+        cutoff = timezone.now() - timedelta(minutes=5)
+        already_played = ListenHistory.objects.filter(
+            user=user,
+            song=song,
+            listened_at__gte=cutoff,
+        ).exists()
 
-    if not already_played:
+        if not already_played:
+            Song.objects.filter(id=song.id).update(play_count=F('play_count') + 1)
+            ListenHistory.objects.create(user=user, song=song)
+
+            try:
+                from social.services import create_friend_activity
+                create_friend_activity(user=user, activity_type='playing', song=song)
+            except Exception as e:
+                logger.debug('FriendActivity log skipped: %s', e)
+    else:
+        # Người dùng chưa đăng nhập: vẫn tăng play_count, không ghi lịch sử
         Song.objects.filter(id=song.id).update(play_count=F('play_count') + 1)
-        ListenHistory.objects.create(user=user, song=song)
 
-        try:
-            from social.services import create_friend_activity
-            create_friend_activity(user=user, activity_type='playing', song=song)
-        except Exception as e:
-            logger.debug('FriendActivity log skipped: %s', e)
-        
-    #lấy play_count mới nhất từ DB
+    # Lấy play_count mới nhất từ DB
     song.refresh_from_db(fields=['play_count'])
     return song.play_count
 
