@@ -126,6 +126,12 @@ urlpatterns = [
     path('mood/', login_required_view('social/mood.html'), name='mood_page'),
     path('playlist/', login_required_view('playlists/playlist.html'), name='playlist_page'),
     path('playlist/detail/', login_required_view('playlists/playlist_detail.html'), name='playlist_detail_page'),
+    
+    # Library Routes
+    path('library/favorites/', login_required_view('library/favorites.html'), name='library_favorites_page'),
+    path('library/recent/', login_required_view('library/recent.html'), name='library_recent_page'),
+    path('library/downloaded/', login_required_view('library/downloaded.html'), name='library_downloaded_page'),
+
     path('song/', TemplateView.as_view(template_name='song/song.html'), name='song_page'),
 
     # Admin & API Routes

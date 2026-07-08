@@ -9,7 +9,7 @@ DESCRIPTION_MAX_LENGHT = 1000
 
 ALLOWED_IMAGE_TYPE = {
     'image/jpeg',
-    'image/pnj',
+    'image/png',
     'image/webp',
 }
 MAX_IMAGE_SIZE = 5*1024*1024

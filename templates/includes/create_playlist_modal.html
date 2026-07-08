@@ -12,9 +12,24 @@
                             <label for="playlistName" class="form-label text-secondary" style="font-size: 0.9rem;">Tên Playlist</label>
                             <input type="text" class="form-control text-white border-secondary" id="playlistName" placeholder="Nhập tên playlist của bạn..." required style="background-color: rgba(255,255,255,0.05);">
                         </div>
-                        <div class="mb-3">
-                            <label for="playlistCover" class="form-label text-secondary" style="font-size: 0.9rem;">Ảnh bìa (tùy chọn)</label>
-                            <input class="form-control text-white border-secondary" type="file" id="playlistCover" accept="image/*" style="background-color: rgba(255,255,255,0.05);">
+                        <div class="mb-3 text-center">
+                            <label class="form-label text-secondary d-block text-start" style="font-size: 0.9rem;">Ảnh bìa (tùy chọn)</label>
+                            <div class="position-relative d-inline-block mt-2" style="cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="document.getElementById('playlistCover').click();">
+                                <img id="playlistCoverPreview" src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Cover" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                                <div class="position-absolute top-50 start-50 translate-middle d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; background-color: rgba(0,0,0,0.6); border-radius: 50%; pointer-events: none;">
+                                    <i class="bi bi-camera text-white fs-5"></i>
+                                </div>
+                            </div>
+                            <input class="d-none" type="file" id="playlistCover" accept="image/*" onchange="
+                                const file = this.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        document.getElementById('playlistCoverPreview').src = e.target.result;
+                                    }
+                                    reader.readAsDataURL(file);
+                                }
+                            ">
                         </div>
                         <div class="mb-3">
                             <label for="playlistDesc" class="form-label text-secondary" style="font-size: 0.9rem;">Mô tả (tùy chọn)</label>
@@ -31,7 +46,7 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-create-playlist rounded-pill px-4 m-0" style="padding: 0.5rem 1.5rem; border: none; background-color: var(--accent-color); color: #000; font-weight: 700;">Tạo mới</button>
+                    <button type="button" id="btnCreatePlaylistSubmit" class="btn btn-create-playlist rounded-pill px-4 m-0" style="padding: 0.5rem 1.5rem; border: none; background-color: var(--accent-color); color: #000; font-weight: 700;">Tạo mới</button>
                 </div>
             </div>
         </div>
@@ -52,4 +67,122 @@
                 console.warn('Bootstrap is not loaded yet or modal element not found');
             }
         };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnSubmit = document.getElementById('btnCreatePlaylistSubmit');
+            if (btnSubmit && !btnSubmit.dataset.hasListener) {
+                btnSubmit.dataset.hasListener = 'true';
+                btnSubmit.addEventListener('click', async function() {
+                    const title = document.getElementById('playlistName').value.trim();
+                    const desc = document.getElementById('playlistDesc').value.trim();
+                    const status = document.getElementById('playlistStatus').value;
+                    const coverInput = document.getElementById('playlistCover');
+                    
+                    if (!title) {
+                        alert('Vui lòng nhập tên Playlist');
+                        return;
+                    }
+
+                    // Disable button while processing
+                    const originalText = btnSubmit.innerHTML;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang tạo...';
+                    btnSubmit.disabled = true;
+
+                    try {
+                        const csrfToken = typeof getCookie === 'function' ? getCookie('csrftoken') : '';
+                        
+                        // 1. Create Playlist via JSON
+                        const createRes = await fetch('/api/v1/playlists/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: JSON.stringify({
+                                title: title,
+                                description: desc,
+                                is_public: (status === 'public')
+                            })
+                        });
+
+                        const createData = await createRes.json();
+                        if (!createData.success) {
+                            throw new Error(createData.error?.message || 'Có lỗi xảy ra khi tạo playlist');
+                        }
+
+                        const playlistId = createData.data.id;
+
+                        // 2. Upload Cover Image if selected
+                        if (coverInput.files && coverInput.files.length > 0) {
+                            const formData = new FormData();
+                            formData.append('cover_image', coverInput.files[0]);
+                            
+                            const uploadRes = await fetch(`/api/v1/playlists/${playlistId}/cover/`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: formData
+                            });
+                            
+                            const uploadData = await uploadRes.json();
+                            if (!uploadData.success) {
+                                console.error('Lỗi khi upload ảnh bìa:', uploadData.error);
+                            }
+                        }
+
+                        // Success!
+                        const modalEl = document.getElementById('createPlaylistModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) {
+                            modal.hide();
+                        }
+                        
+                        // Reset form
+                        document.getElementById('createPlaylistForm').reset();
+                        
+                        // Nếu đang có yêu cầu "Tạo xong rồi thêm luôn bài hát"
+                        if (window.pendingSongToAddToNewPlaylist) {
+                            try {
+                                const addRes = await fetch(`/api/v1/playlists/${playlistId}/songs/`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': csrfToken
+                                    },
+                                    body: JSON.stringify({ song_id: window.pendingSongToAddToNewPlaylist })
+                                });
+                                const addData = await addRes.json();
+                                if (addRes.ok && addData.success) {
+                                    if (typeof showToast === 'function') {
+                                        showToast('Đã tạo playlist và thêm bài hát thành công!', 'success');
+                                    } else {
+                                        alert('Đã tạo playlist và thêm bài hát thành công!');
+                                    }
+                                } else {
+                                    console.error('Lỗi khi thêm bài hát vào playlist mới:', addData.error);
+                                }
+                            } catch(err) {
+                                console.error('Lỗi gọi API thêm bài hát:', err);
+                            }
+                            window.pendingSongToAddToNewPlaylist = null;
+                            
+                            // Đợi chút xíu cho toast hiện rồi tải lại trang
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            // Bình thường tạo xong thì load lại (hoặc tuỳ trang)
+                            window.location.reload(); 
+                        }
+
+                    } catch (error) {
+                        alert(error.message);
+                    } finally {
+                        btnSubmit.innerHTML = originalText;
+                        btnSubmit.disabled = false;
+                    }
+                });
+            }
+        });
     </script>

@@ -355,3 +355,34 @@ class PlaylistSongReorderView(View):
 
             
 
+
+# POST /api/v1/playlists/<id>/like/ — Toggle thích/bỏ thích playlist (auth+csrf)
+class PlaylistLikeView(View):
+    @method_decorator(csrf_protect)
+    @method_decorator(require_auth)
+    def post(self, request, playlist_id):
+        try:
+            from playlists.models import PlaylistLike
+            playlist = get_playlist_by_id(playlist_id)
+
+            like, created = PlaylistLike.objects.get_or_create(
+                user=request.user,
+                playlist=playlist,
+            )
+            if not created:
+                # Đã thích rồi → bỏ thích
+                like.delete()
+                action = 'unliked'
+            else:
+                action = 'liked'
+
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'action': action,
+                    'like_count': playlist.likes.count(),
+                    'is_liked': action == 'liked',
+                }
+            })
+        except Exception as e:
+            return handle_exception(e)

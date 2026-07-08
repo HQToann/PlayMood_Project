@@ -136,7 +136,7 @@ def list_playlist_songs(playlist_id, viewer=None, page=1, page_size=50) -> dict:
 
     total = qs.count()
     start = (page - 1) * page_size
-    items = [ps.to_dict() for ps in qs[start:start + page_size]]
+    items = [ps.to_dict(viewer=viewer) for ps in qs[start:start + page_size]]
 
     return {
         'items': items,

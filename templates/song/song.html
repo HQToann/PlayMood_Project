@@ -221,7 +221,12 @@
                             <i id="detail-play-icon" class="bi bi-play-fill" style="margin-left: 2px;"></i>
                         </button>
                         <i id="detail-like-btn" class="bi bi-heart action-icon" title="Yêu thích"></i>
-                        <i class="bi bi-plus-circle action-icon" title="Thêm vào playlist"></i>
+                        <div class="position-relative d-inline-block">
+                            <i class="bi bi-plus-circle action-icon" id="btn-add-to-playlist" title="Thêm vào playlist" style="cursor: pointer;"></i>
+                            <ul class="custom-dropdown-menu dropdown-menu-dark shadow" id="playlist-dropdown-menu" style="display: none; position: absolute; left: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 220px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050; max-height: 300px; overflow-y: auto;">
+                                <li class="text-center py-3 text-secondary small"><div class="spinner-border spinner-border-sm" role="status"></div></li>
+                            </ul>
+                        </div>
                         <i class="bi bi-arrow-down-circle action-icon" title="Tải xuống"></i>
                         <i class="bi bi-three-dots action-icon"></i>
                     </div>
@@ -657,58 +662,188 @@
                             if (likeBtn) {
                                 if (song.is_liked) {
                                     likeBtn.classList.remove('bi-heart');
-                                    likeBtn.classList.add('bi-heart-fill', 'active');
-                                    likeBtn.title = "Bỏ yêu thích";
-                                } else {
-                                    likeBtn.classList.remove('bi-heart-fill', 'active');
-                                    likeBtn.classList.add('bi-heart');
-                                    likeBtn.title = "Yêu thích";
+                                    likeBtn.classList.add('bi-heart-fill', 'text-accent');
                                 }
-
-                                likeBtn.onclick = function () {
-                                    if (!window.CURRENT_USER_AUTHENTICATED) {
-                                        window.location.href = window.LOGIN_URL || '/auth/login/';
-                                        return;
+                                
+                                likeBtn.addEventListener('click', async function () {
+                                    const isLiked = this.classList.contains('bi-heart-fill');
+                                    if (isLiked) {
+                                        this.classList.remove('bi-heart-fill', 'text-accent');
+                                        this.classList.add('bi-heart');
+                                    } else {
+                                        this.classList.remove('bi-heart');
+                                        this.classList.add('bi-heart-fill', 'text-accent');
                                     }
 
-                                    fetch(`/api/v1/music/songs/${song.id}/like/`, {
-                                        method: 'POST',
-                                        headers: {
-                                            'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '',
-                                            'Content-Type': 'application/json'
-                                        }
-                                    })
-                                        .then(res => res.json())
-                                        .then(data => {
-                                            if (data.success) {
-                                                if (data.data.action === 'liked') {
-                                                    likeBtn.classList.remove('bi-heart');
-                                                    likeBtn.classList.add('bi-heart-fill', 'active');
-                                                    likeBtn.title = "Bỏ yêu thích";
-                                                    song.is_liked = true;
-                                                    song.like_count = (song.like_count || 0) + 1;
-                                                } else {
-                                                    likeBtn.classList.remove('bi-heart-fill', 'active');
-                                                    likeBtn.classList.add('bi-heart');
-                                                    likeBtn.title = "Yêu thích";
-                                                    song.is_liked = false;
-                                                    song.like_count = Math.max(0, (song.like_count || 1) - 1);
-                                                }
-                                                // Cập nhật số lượt tim trên UI
-                                                const likesEl = document.getElementById('detail-likes');
-                                                if (likesEl) {
-                                                    likesEl.innerHTML = `<i class="bi bi-heart-fill" style="font-size:0.75rem;"></i> ${song.like_count.toLocaleString('vi-VN')}`;
-                                                }
-                                            } else {
-                                                const errorMsg = (typeof data.error === 'object' && data.error.message) ? data.error.message : (data.error || 'Lỗi xử lý');
-                                                if (window.showToast) window.showToast(errorMsg, false);
+                                    try {
+                                        const res = await fetch(`/api/v1/music/songs/${songId}/like/`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRFToken': getCookie('csrftoken')
                                             }
-                                        })
-                                        .catch(err => {
-                                            console.error("Like API Error:", err);
-                                            if (window.showToast) window.showToast('Lỗi mạng hoặc chưa đăng nhập', false);
                                         });
-                                };
+                                        const data = await res.json();
+                                        if (!res.ok || !data.success) {
+                                            // Revert
+                                            if (isLiked) {
+                                                this.classList.remove('bi-heart');
+                                                this.classList.add('bi-heart-fill', 'text-accent');
+                                            } else {
+                                                this.classList.remove('bi-heart-fill', 'text-accent');
+                                                this.classList.add('bi-heart');
+                                            }
+                                        } else {
+                                            // Cập nhật số lượt thích UI
+                                            const currentLikes = parseInt(document.getElementById('detail-likes').innerText.trim()) || 0;
+                                            document.getElementById('detail-likes').innerHTML = `<i class="bi bi-heart-fill" style="font-size:0.75rem;"></i> ${isLiked ? currentLikes - 1 : currentLikes + 1}`;
+                                        }
+                                    } catch (err) {
+                                        console.error(err);
+                                        // Revert
+                                        if (isLiked) {
+                                            this.classList.remove('bi-heart');
+                                            this.classList.add('bi-heart-fill', 'text-accent');
+                                        } else {
+                                            this.classList.remove('bi-heart-fill', 'text-accent');
+                                            this.classList.add('bi-heart');
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            // Xử lý nút Thêm vào Playlist (Dropdown)
+                            const btnAddToPlaylist = document.getElementById('btn-add-to-playlist');
+                            const playlistDropdown = document.getElementById('playlist-dropdown-menu');
+                            
+                            if (btnAddToPlaylist && playlistDropdown) {
+                                btnAddToPlaylist.addEventListener('click', async function(e) {
+                                    e.stopPropagation();
+                                    
+                                    const isShowing = playlistDropdown.style.display === 'block';
+                                    if (isShowing) {
+                                        playlistDropdown.style.display = 'none';
+                                        return;
+                                    }
+                                    
+                                    playlistDropdown.style.display = 'block';
+                                    playlistDropdown.innerHTML = '<li class="text-center py-3 text-secondary small"><div class="spinner-border spinner-border-sm" role="status"></div></li>';
+                                    
+                                    try {
+                                        const res = await fetch('/api/v1/playlists/');
+                                        const data = await res.json();
+                                        
+                                        let html = '';
+                                        // Nút Tạo playlist mới và ô tìm kiếm
+                                        html += `
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white fw-bold hover-bg-secondary" href="#" id="btn-create-and-add">
+                                                    <i class="bi bi-plus-lg text-accent"></i> Tạo playlist mới
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider border-secondary opacity-25 my-1"></li>
+                                            <li class="px-2 pb-2" onclick="event.stopPropagation()">
+                                                <div class="search-bar position-relative" style="background: rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 10px; display: flex; align-items: center;">
+                                                    <i class="bi bi-search text-secondary" style="font-size: 0.85rem;"></i>
+                                                    <input type="text" id="playlist-search-input" placeholder="Tìm kiếm playlist..." class="text-white" style="background: none; border: none; outline: none; width: 100%; margin-left: 8px; font-size: 0.9rem;" onclick="event.stopPropagation()">
+                                                </div>
+                                            </li>
+                                        `;
+                                        
+                                        if (data.success && data.data && data.data.items && data.data.items.length > 0) {
+                                            data.data.items.forEach(pl => {
+                                                html += `
+                                                    <li class="playlist-dropdown-item">
+                                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white hover-bg-secondary add-to-existing-pl" href="#" data-playlist-id="${pl.id}">
+                                                            <i class="bi bi-music-note-list text-secondary"></i>
+                                                            <span class="text-truncate playlist-name-text">${pl.title}</span>
+                                                        </a>
+                                                    </li>
+                                                `;
+                                            });
+                                        } else {
+                                            html += `
+                                                <li class="text-center py-3 text-secondary small px-3">
+                                                    Bạn chưa có playlist nào.
+                                                </li>
+                                            `;
+                                        }
+                                        
+                                        playlistDropdown.innerHTML = html;
+                                        
+                                        // Xử lý tìm kiếm playlist
+                                        const searchInput = document.getElementById('playlist-search-input');
+                                        if (searchInput) {
+                                            searchInput.addEventListener('input', function(e) {
+                                                const searchTerm = e.target.value.toLowerCase().trim();
+                                                const items = playlistDropdown.querySelectorAll('.playlist-dropdown-item');
+                                                items.forEach(item => {
+                                                    const text = item.querySelector('.playlist-name-text').textContent.toLowerCase();
+                                                    if (text.includes(searchTerm)) {
+                                                        item.style.display = 'block';
+                                                    } else {
+                                                        item.style.display = 'none';
+                                                    }
+                                                });
+                                            });
+                                        }
+                                        
+                                        // Event: Tạo mới và thêm
+                                        const btnCreateAndAdd = document.getElementById('btn-create-and-add');
+                                        if (btnCreateAndAdd) {
+                                            btnCreateAndAdd.addEventListener('click', function(e) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                playlistDropdown.style.display = 'none';
+                                                window.pendingSongToAddToNewPlaylist = songId; // Lưu id bài hát
+                                                if (window.openCreatePlaylistModal) {
+                                                    window.openCreatePlaylistModal();
+                                                }
+                                            });
+                                        }
+                                        
+                                        // Event: Thêm vào playlist có sẵn
+                                        document.querySelectorAll('.add-to-existing-pl').forEach(item => {
+                                            item.addEventListener('click', async function(e) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const plId = this.getAttribute('data-playlist-id');
+                                                playlistDropdown.style.display = 'none';
+                                                
+                                                try {
+                                                    const addRes = await fetch(`/api/v1/playlists/${plId}/songs/`, {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'X-CSRFToken': getCookie('csrftoken')
+                                                        },
+                                                        body: JSON.stringify({ song_id: songId })
+                                                    });
+                                                    const addData = await addRes.json();
+                                                    
+                                                    if (addRes.ok && addData.success) {
+                                                        if (window.showToast) showToast('Đã thêm bài hát vào playlist', 'success');
+                                                    } else {
+                                                        if (window.showToast) showToast(addData.error?.message || 'Có lỗi xảy ra', 'error');
+                                                    }
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    if (window.showToast) showToast('Lỗi kết nối', 'error');
+                                                }
+                                            });
+                                        });
+                                        
+                                    } catch(err) {
+                                        console.error('Error fetching playlists', err);
+                                        playlistDropdown.innerHTML = '<li class="text-center py-2 text-danger small">Lỗi tải dữ liệu</li>';
+                                    }
+                                });
+                                
+                                // Đóng dropdown khi click ra ngoài
+                                document.addEventListener('click', function(e) {
+                                    if (playlistDropdown && !playlistDropdown.contains(e.target) && e.target !== btnAddToPlaylist) {
+                                        playlistDropdown.style.display = 'none';
+                                    }
+                                });
                             }
 
                             // Bind play button

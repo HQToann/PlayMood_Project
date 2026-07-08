@@ -699,10 +699,60 @@ body {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
 }
-/ *   C u s t o m   P l a y l i s t   G r i d   * /  
- . p l a y l i s t - g r i d   {   d i s p l a y :   g r i d ;   g r i d - t e m p l a t e - c o l u m n s :   3 0 p x   m i n m a x ( 2 0 0 p x ,   1 f r )   2 5 %   2 0 %   5 0 p x   3 0 p x   3 0 p x ;   a l i g n - i t e m s :   c e n t e r ;   g a p :   1 6 p x ;   w i d t h :   1 0 0 % ;   }  
- @ m e d i a   ( m a x - w i d t h :   9 9 1 p x )   {   . p l a y l i s t - g r i d   {   g r i d - t e m p l a t e - c o l u m n s :   3 0 p x   m i n m a x ( 2 0 0 p x ,   1 f r )   3 0 %   5 0 p x   3 0 p x   3 0 p x ;   }   . p l a y l i s t - g r i d   . h i d e - l g   {   d i s p l a y :   n o n e   ! i m p o r t a n t ;   }   }  
- @ m e d i a   ( m a x - w i d t h :   7 6 7 p x )   {   . p l a y l i s t - g r i d   {   g r i d - t e m p l a t e - c o l u m n s :   3 0 p x   m i n m a x ( 1 5 0 p x ,   1 f r )   5 0 p x   3 0 p x   3 0 p x ;   }   . p l a y l i s t - g r i d   . h i d e - m d   {   d i s p l a y :   n o n e   ! i m p o r t a n t ;   }   }  
- . p l a y l i s t - g r i d - r o w   {   t r a n s i t i o n :   b a c k g r o u n d - c o l o r   0 . 2 s ;   }  
- . p l a y l i s t - g r i d - r o w : h o v e r   {   b a c k g r o u n d - c o l o r :   r g b a ( 2 5 5 , 2 5 5 , 2 5 5 , 0 . 0 5 ) ;   }  
- 
+/* Custom Playlist Grid */
+.playlist-grid {
+    display: grid;
+    grid-template-columns: 30px minmax(200px, 1fr) 25% 20% 50px 30px 30px;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+@media (max-width: 991px) {
+    .playlist-grid {
+        grid-template-columns: 30px minmax(200px, 1fr) 30% 50px 30px 30px;
+    }
+
+    .playlist-grid .hide-lg {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .playlist-grid {
+        grid-template-columns: 30px minmax(150px, 1fr) 50px 30px 30px;
+    }
+
+    .playlist-grid .hide-md {
+        display: none !important;
+    }
+}
+
+.playlist-grid-row {
+    transition: background-color 0.2s;
+}
+
+.playlist-grid-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Global Play Button Large */
+.btn-play-large {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: #000;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-play-large:hover {
+    transform: scale(1.05);
+    background-color: #1ed760;
+}

@@ -17,7 +17,7 @@
             padding: 1rem 1.5rem;
             background: linear-gradient(135deg, rgba(40,30,80,0.8), rgba(20,20,40,0.9));
             border-radius: 12px;
-            margin: 1rem 2rem 2rem 2rem;
+            margin: -1rem 2rem 2rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -55,7 +55,7 @@
         <div class="main-wrapper">
             
             <!-- LEFT SIDEBAR -->
-            {% include 'includes/left_sidebar.html' %}
+            {% include 'includes/left_sidebar.html' with active_page='playlist' %}
             
             <!-- MAIN CONTENT -->
             <main class="main-content">
@@ -81,10 +81,12 @@
                         <div class="section-title-container">
                             <h2 class="section-title">Playlist của bạn</h2>
                         </div>
-                        <div class="horizontal-scroll-container">
-                            {% include 'components/card.html' with style='playlist' title='Nhạc Buồn' subtitle='Bởi Bạn' image='https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='Chill Cuối Tuần' subtitle='Bởi Bạn' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='Tập Gym' subtitle='Bởi Bạn' image='https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                        <div class="horizontal-scroll-container" id="myPlaylistsContainer">
+                            <div class="text-center py-4 w-100">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -129,11 +131,67 @@
         {% include 'includes/player_bar.html' %}
     </div>
 
-    <!-- Create Playlist Modal -->
-    {% include 'includes/create_playlist_modal.html' %}
+
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('myPlaylistsContainer');
+            if (!container) return;
+
+            if (typeof window.CURRENT_USER_AUTHENTICATED !== 'undefined' && !window.CURRENT_USER_AUTHENTICATED) {
+                container.innerHTML = '<div class="text-secondary w-100 text-center py-4">Vui lòng đăng nhập để xem playlist của bạn.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/v1/playlists/');
+                if (!res.ok) throw new Error('Network error');
+                
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error?.message || 'Có lỗi xảy ra');
+                
+                const playlists = data.data.items || [];
+                
+                if (playlists.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-secondary w-100 text-center py-4 d-flex flex-column align-items-center">
+                            <i class="bi bi-music-note-list mb-2" style="font-size: 2rem;"></i>
+                            <p>Bạn chưa có playlist nào.</p>
+                            <button type="button" class="btn btn-outline-light rounded-pill px-4 mt-2" onclick="openCreatePlaylistModal(event)">
+                                Tạo Playlist Ngay
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                playlists.forEach(pl => {
+                    const imgUrl = pl.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
+                    html += `
+                        <div class="playlist-card position-relative">
+                            <div class="card-image-wrapper">
+                                <img src="${imgUrl}" alt="${pl.title}">
+                                <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                            </div>
+                            <div class="card-title text-truncate" title="${pl.title}">${pl.title}</div>
+                            <div class="card-subtitle text-truncate">Bởi ${pl.owner.display_name}</div>
+                            <a href="/playlist/detail/?id=${pl.id}" class="stretched-link"></a>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = '<div class="text-danger w-100 text-center py-4">Không thể tải danh sách playlist.</div>';
+            }
+        });
+    </script>
 </body>
 </html>
