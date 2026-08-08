@@ -56,12 +56,12 @@ def search_artists(q='', viewer=None, page=1, page_size=20) -> dict:
     qs = ArtistProfile.objects.select_related('user').filter(user__is_active=True)
 
     if q:
-        qs = qs.filter(Q(stage_name__icontains=q) | Q(user__username__icontains=q))
+        qs = qs.filter(Q(stage_name__icontains=q) | Q(user__username__icontains=q) | Q(user__display_name__icontains=q))
 
     viewer_id = getattr(viewer, 'id', None)
     if viewer_id and getattr(viewer, 'is_authenticated', False):
         blocked_ids = BlockList.objects.filter(blocked_id=viewer_id).values_list('blocker_id', flat=True)
-        qs = qs.exclude(user_id__in=blocked_ids)
+        qs = qs.exclude(user_id__in=blocked_ids).exclude(user_id=viewer_id)
 
     qs = qs.order_by('-created_at')
     total = qs.count()

@@ -9,11 +9,12 @@ from music.views import (
     GenreListView, GenreDetailView,
     SongListView, SongTrendingView, SongDetailView,
     SongPublishView, SongHideView, SongAppealView, SongPlayView, SongDownloadView,
-    SongLikeView, SongRatingView,
+    SongLikeView, SongRatingView, UserLikedSongsView,
     SongCommentListView, CommentDetailView, CommentLikeView,
     ListenHistoryView,
     ReportCreateView, AdminReportListView, AdminReportResolveView,
     AdminSongTrendingView, AdminSongHideView, AdminCommentHideView,
+    AlbumListView, AlbumDetailView, AlbumPublishView, AlbumSongsView, ArtistAlbumsView,
 )
 
 urlpatterns = [
@@ -44,8 +45,18 @@ urlpatterns = [
     path('comments/<uuid:comment_id>/', CommentDetailView.as_view(), name='music-comment-detail'),
     path('comments/<uuid:comment_id>/like/', CommentLikeView.as_view(), name='music-comment-like'),
 
-    # Listen History
+    # Listen History & User Likes
     path('me/history/', ListenHistoryView.as_view(), name='music-history'),
+    path('users/<uuid:user_id>/likes/', UserLikedSongsView.as_view(), name='music-user-likes'),
+    path('users/<uuid:user_id>/albums/', ArtistAlbumsView.as_view(), name='music-artist-albums'),
+
+    # Albums
+    path('albums/', AlbumListView.as_view(), name='music-album-list'),
+    path('albums/<uuid:album_id>/', AlbumDetailView.as_view(), name='music-album-detail'),
+    path('albums/<uuid:album_id>/publish/', AlbumPublishView.as_view(), {'action': 'publish'}, name='music-album-publish'),
+    path('albums/<uuid:album_id>/unpublish/', AlbumPublishView.as_view(), {'action': 'unpublish'}, name='music-album-unpublish'),
+    path('albums/<uuid:album_id>/songs/', AlbumSongsView.as_view(), name='music-album-songs'),
+    path('albums/<uuid:album_id>/songs/<uuid:song_id>/', AlbumSongsView.as_view(), name='music-album-song-detail'),
 
     # Reports
     path('reports/', ReportCreateView.as_view(), name='music-report-create'),

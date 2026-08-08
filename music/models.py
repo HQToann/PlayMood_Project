@@ -10,6 +10,8 @@ Models cho app music:
   - CommentLike:   Yêu thích bình luận
   - ListenHistory: Lịch sử nghe
   - Report:        Báo cáo vi phạm
+  - Album:         Album nhạc của nghệ sĩ
+  - AlbumSong:     Bài hát trong album (quan hệ M2M có thứ tự)
 
 Tất cả PK là UUIDField
 """
@@ -589,3 +591,149 @@ class Report(models.Model):
             'resolved_note': self.resolved_note,
             'created_at': self.created_at.isoformat(),
         }
+
+
+class Album(models.Model):
+    """
+    Album nhạc của nghệ sĩ.
+
+    Workflow:
+        draft → published (qua endpoint /publish/)
+        published → draft (ẩn album)
+    """
+
+    STATUS_DRAFT = 'draft'
+    STATUS_PUBLISHED = 'published'
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, 'Bản nháp'),
+        (STATUS_PUBLISHED, 'Đã phát hành'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    title = models.CharField(
+        max_length=200,
+        verbose_name='Tên album',
+        db_index=True,
+    )
+
+    artist = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='albums',
+        verbose_name='Nghệ sĩ',
+    )
+
+    cover_image = models.ImageField(
+        upload_to='covers/albums/',
+        blank=True,
+        null=True,
+        verbose_name='Ảnh bìa album',
+    )
+
+    description = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Mô tả',
+    )
+
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default=STATUS_DRAFT,
+        verbose_name='Trạng thái',
+        db_index=True,
+    )
+
+    released_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Ngày phát hành',
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Cập nhật lần cuối')
+
+    class Meta:
+        db_table = 'music_album'
+        ordering = ['-created_at']
+        verbose_name = 'Album'
+        verbose_name_plural = 'Album'
+
+    def __str__(self):
+        return f'{self.title} - {self.artist.username}'
+
+    def to_dict(self, viewer=None):
+        songs = [
+            {
+                'order': asong.order,
+                'song': {
+                    'id': str(asong.song.id),
+                    'title': asong.song.title,
+                    'cover_image': asong.song.cover_image.url if asong.song.cover_image else None,
+                    'duration': asong.song.duration,
+                    'play_count': asong.song.play_count,
+                    'status': asong.song.status,
+                }
+            }
+            for asong in self.album_songs.select_related('song').order_by('order', 'added_at')
+        ]
+        # Fallback cover: dùng cover bài đầu tiên nếu album chưa có cover
+        cover_url = self.cover_image.url if self.cover_image else (
+            songs[0]['song']['cover_image'] if songs else None
+        )
+        return {
+            'id': str(self.id),
+            'title': self.title,
+            'description': self.description,
+            'status': self.status,
+            'cover_image': cover_url,
+            'released_at': self.released_at.isoformat() if self.released_at else None,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'artist': {
+                'id': str(self.artist_id),
+                'username': self.artist.username,
+                'display_name': self.artist.get_display_name(),
+                'avatar': self.artist.avatar.url if self.artist.avatar else None,
+            },
+            'song_count': len(songs),
+            'songs': songs,
+        }
+
+
+class AlbumSong(models.Model):
+    """Bài hát trong album — quan hệ M2M có thứ tự."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    album = models.ForeignKey(
+        Album,
+        on_delete=models.CASCADE,
+        related_name='album_songs',
+        verbose_name='Album',
+    )
+
+    song = models.ForeignKey(
+        Song,
+        on_delete=models.CASCADE,
+        related_name='in_albums',
+        verbose_name='Bài hát',
+    )
+
+    order = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name='Thứ tự',
+    )
+
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'music_album_song'
+        ordering = ['order', 'added_at']
+        unique_together = [('album', 'song')]
+        verbose_name = 'Bài hát trong album'
+        verbose_name_plural = 'Bài hát trong album'
+
+    def __str__(self):
+        return f'{self.album.title} / {self.song.title} (#{self.order})'

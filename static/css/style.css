@@ -230,7 +230,7 @@ body {
 .sidebar-right {
     width: var(--right-sidebar-width);
     background-color: var(--bg-app);
-    padding: 20px;
+    padding: 16px;
     border-left: 1px solid rgba(255, 255, 255, 0.05);
     overflow-y: auto;
 }

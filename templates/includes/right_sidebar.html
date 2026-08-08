@@ -6,7 +6,7 @@
                     {% if request.user.is_authenticated %}
                     <!-- User Mood Tag -->
                     <div id="myMoodBadge" class="badge rounded-pill px-3 py-2 shadow-sm me-auto" style="display: none; background: linear-gradient(135deg, #F8B4B4, #E99CBB); color: #121929; font-weight: 600; font-size: 0.8rem; cursor: pointer;" title="Tâm trạng hiện tại của bạn">
-                        <i class="bi bi-suit-heart-fill me-1"></i> Lãng Mạn
+                        <i class="bi bi-heart-fill me-1 text-accent"></i> Lãng Mạn
                     </div>
                     
                     <a href="{% url 'notifications_page' %}" class="btn-icon text-decoration-none" style="display: inline-flex; align-items: center; justify-content: center; color: inherit;">
@@ -17,7 +17,11 @@
                     </a>
                     <div class="dropdown">
                         <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="avatar" class="user-avatar" id="headerUserAvatar">
+                            {% if request.user.avatar %}
+                            <img src="{{ request.user.avatar.url }}" alt="avatar" class="user-avatar" id="headerUserAvatar" style="object-fit: cover;">
+                            {% else %}
+                            <img src="https://ui-avatars.com/api/?name={{ request.user.display_name|default:request.user.username|urlencode }}&background=random" alt="avatar" class="user-avatar" id="headerUserAvatar" style="object-fit: cover;">
+                            {% endif %}
                             <span style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                                 <span style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.display_name|default:request.user.username }}</span>
                                 <i class="bi bi-chevron-down small"></i>

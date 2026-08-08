@@ -37,7 +37,7 @@
     <div class="text-secondary hide-md text-truncate">{{ album|default:'' }}</div>
     <div class="text-secondary hide-lg text-truncate">{{ date_added|default:'' }}</div>
     <div class="text-secondary">{{ duration|default:'' }}</div>
-    <div class="text-secondary text-center"><i class="bi {% if is_favorite %}bi-suit-heart-fill text-danger{% else %}bi-suit-heart hover-text-white{% endif %} position-relative" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
+    <div class="text-secondary text-center"><i class="bi {% if is_favorite %}bi-heart-fill text-accent{% else %}bi-heart hover-text-white{% endif %} position-relative" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
     <div class="text-secondary text-center"><i class="bi bi-three-dots position-relative hover-text-white" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i></div>
     {% if url %}
     <a href="{{ url }}" class="stretched-link"></a>

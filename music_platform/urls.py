@@ -123,6 +123,8 @@ urlpatterns = [
     path('profile/<uuid:user_id>/', user_profile_routing_view, name='user_profile_page'),
     path('settings/', login_required_view('settings/settings.html'), name='settings_page'),
     path('notifications/', login_required_view('notifications/notifications.html'), name='notifications_page'),
+    path('explore/', login_required_view('explore/explore.html'), name='explore_page'),
+    path('search/', login_required_view('search/search_results.html'), name='search_page'),
     path('mood/', login_required_view('social/mood.html'), name='mood_page'),
     path('playlist/', login_required_view('playlists/playlist.html'), name='playlist_page'),
     path('playlist/detail/', login_required_view('playlists/playlist_detail.html'), name='playlist_detail_page'),
@@ -131,6 +133,7 @@ urlpatterns = [
     path('library/favorites/', login_required_view('library/favorites.html'), name='library_favorites_page'),
     path('library/recent/', login_required_view('library/recent.html'), name='library_recent_page'),
     path('library/downloaded/', login_required_view('library/downloaded.html'), name='library_downloaded_page'),
+    path('library/albums/', login_required_view('library/albums.html'), name='library_albums_page'),
 
     path('song/', TemplateView.as_view(template_name='song/song.html'), name='song_page'),
 

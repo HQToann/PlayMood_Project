@@ -69,3 +69,18 @@ class InvalidParentComment(AppException):
     """Parent comment không hợp lệ (khác bài hát hoặc reply) - HTTP 400."""
     def __init__(self, message='Bình luận cha không hợp'):
         super().__init__(message, error_code='INVALID_PARENT')
+
+class AlbumNotFound(AppException):
+    """Album không tồn tại - HTTP 404."""
+    def __init__(self, message='Album không tồn tại'):
+        super().__init__(message, error_code='NOT_FOUND')
+
+class NotAlbumOwner(AppException):
+    """Không phải chủ album - HTTP 403."""
+    def __init__(self, message='Bạn không có quyền thực hiện hành động này với album này'):
+        super().__init__(message, error_code='PERMISSION_DENIED')
+
+class SongAlreadyInAlbum(AppException):
+    """Bài hát đã có trong album - HTTP 400."""
+    def __init__(self, message='Bài hát đã có trong album này'):
+        super().__init__(message, error_code='ALREADY_EXISTS')

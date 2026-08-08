@@ -8,6 +8,8 @@ from music.models import (
     Comment,
     ListenHistory,
     Report,
+    Album,
+    AlbumSong,
 )
 from music.exceptions import (
     SongNotFound,
@@ -241,36 +243,53 @@ def get_comment_by_id(comment_id) -> Comment:
 
 #lịch sử nghe của user, kèm thông tin bài hát
 def list_listen_history(user, page=1, page_size=20) -> dict:
-    qs = (
+    # Lấy lần nghe gần nhất cho mỗi bài hát (dedup theo song_id)
+    from django.db.models import Max
+    latest_per_song = (
         ListenHistory.objects
         .filter(user=user)
-        .select_related('song__artist', 'song__genre')
-        .order_by('-listened_at')
+        .values('song_id')
+        .annotate(last_listened=Max('listened_at'))
     )
 
-    total = qs.count()
+    # Lấy set id (song_id, last_listened) rồi query lại
+    song_ids_ordered = [item['song_id'] for item in latest_per_song.order_by('-last_listened')]
+    listened_at_map = {item['song_id']: item['last_listened'] for item in latest_per_song}
+
+    total = len(song_ids_ordered)
     start = (page - 1) * page_size
+    paged_ids = song_ids_ordered[start:start + page_size]
+
+    # Fetch song details
+    from .models import Song as SongModel
+    songs_qs = SongModel.objects.filter(id__in=paged_ids).select_related('artist', 'genre')
+    songs_map = {s.id: s for s in songs_qs}
+
     items = []
-    for h in qs[start:start + page_size]:
+    for song_id in paged_ids:
+        song = songs_map.get(song_id)
+        if not song:
+            continue
         items.append({
             'song': {
-                'id': str(h.song_id),
-                'title': h.song.title,
-                'artist': {'display_name': h.song.artist.get_display_name()},
-                'cover_image': h.song.cover_image.url if h.song.cover_image else None,
-                'duration': h.song.duration,
+                'id': str(song.id),
+                'title': song.title,
+                'artist': {'display_name': song.artist.get_display_name()} if song.artist else None,
+                'genre': {'name': song.genre.name} if song.genre else None,
+                'cover_image': song.cover_image.url if song.cover_image else None,
+                'duration': song.duration,
+                'is_liked': song.likes.filter(user=user).exists() if user.is_authenticated else False
             },
-            'listened_at': h.listened_at.isoformat(),
+            'listened_at': listened_at_map[song_id].isoformat(),
         })
 
-    
     return {
         'items': items,
         'pagination': {
             'page': page,
             'page_size': page_size,
             'total': total,
-            'total_pages': math.ceil(total/page_size) if total > 0 else 1,
+            'total_pages': math.ceil(total / page_size) if total > 0 else 1,
         },
     }
 
@@ -308,3 +327,64 @@ def get_report_by_id(report_id) -> Report:
         return Report.objects.get(id=report_id)
     except Report.DoesNotExist:
         raise ReportNotFound()
+
+
+#lấy danh sách bài hát yêu thích của user
+def list_user_liked_songs(target_user_id, viewer=None, limit=5) -> list:
+    qs = (
+        Like.objects.filter(user_id=target_user_id)
+        .select_related('song', 'song__artist', 'song__genre')
+        .order_by('-created_at')
+    )
+    
+    viewer_id = getattr(viewer, 'id', None)
+    viewer_is_auth = bool(viewer_id and getattr(viewer, 'is_authenticated', False))
+    
+    items = []
+    for like in qs:
+        song = like.song
+        
+        # Chỉ hiển thị bài hát public, trừ khi viewer là admin hoặc tác giả
+        if song.status != Song.STATUS_PUBLISHED:
+            if not viewer_is_auth:
+                continue
+            is_admin = getattr(viewer, 'role', '') == 'admin' or getattr(viewer, 'is_staff', False)
+            is_author = str(viewer_id) == str(song.artist_id)
+            if song.status == Song.STATUS_HIDDEN and not (is_admin or is_author):
+                continue
+            if song.status == Song.STATUS_DRAFT and not is_author:
+                continue
+                
+        # Kiểm tra block
+        if viewer_is_auth and is_blocked(viewer_id, song.artist_id):
+            continue
+            
+        song_dict = song.to_dict(viewer=viewer, include_stats=True)
+        song_dict['liked_at'] = like.created_at.isoformat()
+        items.append(song_dict)
+        if len(items) >= limit:
+            break
+            
+    return items
+
+
+# ALBUM
+def list_albums(artist=None, status=None, include_songs=True) -> list:
+    """
+    Liệt kê album, có thể lọc theo artist và/hoặc status.
+    """
+    qs = Album.objects.select_related('artist').prefetch_related('album_songs__song')
+    if artist is not None:
+        qs = qs.filter(artist=artist)
+    if status is not None:
+        qs = qs.filter(status=status)
+    return [album.to_dict() for album in qs]
+
+
+def get_album_by_id(album_id) -> Album:
+    """Lấy album theo id, raise AlbumNotFound nếu không tìm thấy."""
+    from music.exceptions import AlbumNotFound
+    try:
+        return Album.objects.select_related('artist').prefetch_related('album_songs__song').get(id=album_id)
+    except Album.DoesNotExist:
+        raise AlbumNotFound()

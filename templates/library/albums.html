@@ -1,0 +1,639 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood – Album của tôi</title>
+    <meta name="description" content="Quản lý và phát hành album nhạc của bạn trên PlayMood.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════════
+           DESIGN TOKENS
+        ══════════════════════════════════════ */
+        :root {
+            --pm-purple:        #a855f7;
+            --pm-purple-dk:     #7c3aed;
+            --pm-purple-bg:     rgba(168,85,247,0.08);
+            --pm-purple-border: rgba(168,85,247,0.3);
+            --pm-green:         #1db954;
+            --pm-amber:         #f59e0b;
+            --pm-red:           #ef4444;
+            --pm-card:          rgba(255,255,255,0.04);
+            --pm-card-hover:    rgba(255,255,255,0.07);
+            --pm-border:        rgba(255,255,255,0.08);
+            --pm-muted:         rgba(255,255,255,0.45);
+            --pm-radius:        16px;
+            --pm-radius-sm:     10px;
+            --transition:       0.22s cubic-bezier(.4,0,.2,1);
+        }
+
+        /* ══════════════════════════════════════
+           HERO BANNER
+        ══════════════════════════════════════ */
+        .hero-library {
+            margin: 1.25rem 2rem 0;
+            padding: 1.5rem 1.75rem;
+            background: linear-gradient(135deg,
+                rgba(124,58,237,.55) 0%,
+                rgba(30,10,60,.85) 60%,
+                rgba(10,5,30,.9) 100%);
+            border: 1px solid var(--pm-border);
+            border-radius: var(--pm-radius);
+            display: flex; align-items: center; gap: 1.25rem;
+            backdrop-filter: blur(12px);
+            position: relative; overflow: hidden;
+        }
+        .hero-library::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 60% 80% at 0% 50%,
+                rgba(168,85,247,.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-icon {
+            width: 76px; height: 76px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--pm-purple), var(--pm-purple-dk));
+            border-radius: var(--pm-radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.4rem; color: #fff;
+            box-shadow: 0 8px 24px rgba(124,58,237,.45);
+        }
+        .hero-info h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 2rem; font-weight: 800; margin: 0 0 .25rem;
+            background: linear-gradient(120deg, #fff 40%, var(--pm-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-label {
+            font-size: .72rem; font-weight: 700; letter-spacing: 2.5px;
+            text-transform: uppercase; color: var(--pm-muted); margin-bottom: .3rem;
+        }
+        .hero-meta { font-size: .9rem; color: rgba(255,255,255,.75); }
+        .hero-meta b { color: #fff; }
+        #albumCountBadge {
+            display: inline-flex; align-items: center;
+            background: var(--pm-purple-bg);
+            border: 1px solid var(--pm-purple-border);
+            border-radius: 20px; padding: 1px 10px;
+            font-size: .78rem; font-weight: 600;
+            color: var(--pm-purple); margin-left: .5rem; vertical-align: middle;
+        }
+
+        /* ══════════════════════════════════════
+           TOOLBAR
+        ══════════════════════════════════════ */
+        .albums-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: .75rem;
+            padding: 0 2rem; margin-top: 1.5rem;
+        }
+        .section-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem; font-weight: 700;
+            color: rgba(255,255,255,.85); letter-spacing: .5px;
+        }
+        .btn-create-album {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: linear-gradient(135deg, var(--pm-purple), var(--pm-purple-dk));
+            color: #fff; border: none; border-radius: 30px;
+            padding: .5rem 1.25rem; font-size: .85rem; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+            box-shadow: 0 4px 14px rgba(124,58,237,.35);
+        }
+        .btn-create-album:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(124,58,237,.5);
+        }
+
+        /* ══════════════════════════════════════
+           ALBUM GRID
+        ══════════════════════════════════════ */
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+            gap: 1.1rem;
+            padding: 0 2rem 5rem;
+            margin-top: 1rem;
+        }
+
+        /* ── Card: add new ── */
+        .album-card-new {
+            background: var(--pm-purple-bg);
+            border: 2px dashed var(--pm-purple-border);
+            border-radius: var(--pm-radius);
+            aspect-ratio: 1 / 1.18;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: .55rem;
+            cursor: pointer; transition: var(--transition);
+        }
+        .album-card-new:hover {
+            background: rgba(168,85,247,.15);
+            border-color: rgba(168,85,247,.7);
+            transform: translateY(-3px);
+        }
+        .album-card-new .new-icon {
+            width: 48px; height: 48px;
+            background: rgba(168,85,247,.15); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: var(--pm-purple);
+            transition: var(--transition);
+        }
+        .album-card-new:hover .new-icon {
+            background: rgba(168,85,247,.28); transform: scale(1.08);
+        }
+        .album-card-new span { font-size: .78rem; font-weight: 600; color: var(--pm-muted); }
+
+        /* ── Card: album ── */
+        .album-card {
+            background: var(--pm-card);
+            border: 1px solid var(--pm-border);
+            border-radius: var(--pm-radius);
+            overflow: hidden; cursor: pointer;
+            transition: var(--transition); position: relative;
+        }
+        .album-card:hover {
+            background: var(--pm-card-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 14px 36px rgba(0,0,0,.4);
+            border-color: rgba(255,255,255,.14);
+        }
+        .album-card:hover .album-cover-img { transform: scale(1.04); }
+
+        .album-cover-wrap {
+            width: 100%; aspect-ratio: 1;
+            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #2a1060, #110830);
+        }
+        .album-cover-placeholder {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: rgba(255,255,255,.18);
+        }
+        .album-cover-img {
+            width: 100%; height: 100%; object-fit: cover;
+            display: block; transition: transform .4s ease;
+        }
+        /* ── Nút 3 chấm & dropdown ── */
+        .card-menu-btn {
+            position: absolute; top: 8px; right: 8px;
+            width: 32px; height: 32px;
+            border-radius: 50%; border: none;
+            background: rgba(0,0,0,.55);
+            backdrop-filter: blur(6px);
+            color: #fff; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: var(--transition);
+            z-index: 10;
+        }
+        .card-menu-btn:hover { background: rgba(168,85,247,.7); }
+
+        .card-menu-dropdown {
+            position: absolute; top: 44px; right: 8px;
+            background: #1e1a38;
+            border: 1px solid var(--pm-border);
+            border-radius: 12px;
+            padding: 4px;
+            min-width: 165px;
+            box-shadow: 0 8px 28px rgba(0,0,0,.55);
+            z-index: 20;
+            opacity: 0; transform: scale(.9) translateY(-6px);
+            pointer-events: none;
+            transform-origin: top right;
+            transition: opacity .18s ease, transform .18s ease;
+        }
+        .card-menu-dropdown.open {
+            opacity: 1; transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+        .card-menu-item {
+            display: flex; align-items: center; gap: .6rem;
+            padding: .5rem .75rem; border-radius: 8px;
+            font-size: .82rem; font-weight: 500; color: rgba(255,255,255,.85);
+            cursor: pointer; transition: background var(--transition);
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .card-menu-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .card-menu-item.danger { color: #f87171; }
+        .card-menu-item.danger:hover { background: rgba(239,68,68,.12); }
+        .card-menu-item i { width: 16px; text-align: center; font-size: .88rem; }
+        .card-menu-divider { height: 1px; background: var(--pm-border); margin: 4px 0; }
+
+        .album-body { padding: .7rem .75rem .75rem; }
+        .album-name {
+            font-size: .9rem; font-weight: 700; color: #fff;
+            margin: 0 0 .3rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .album-meta {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: .4rem;
+        }
+        .album-song-count { font-size: .72rem; color: var(--pm-muted); }
+        .badge-status {
+            display: inline-flex; align-items: center; gap: 3px;
+            font-size: .62rem; font-weight: 700;
+            border-radius: 20px; padding: 2px 9px;
+            text-transform: uppercase; letter-spacing: .8px;
+        }
+        .badge-published {
+            background: rgba(29,185,84,.15); color: var(--pm-green);
+            border: 1px solid rgba(29,185,84,.3);
+        }
+        .badge-draft {
+            background: rgba(245,158,11,.12); color: var(--pm-amber);
+            border: 1px solid rgba(245,158,11,.25);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 4rem 2rem; color: var(--pm-muted);
+        }
+        .empty-state i { font-size: 3.5rem; opacity: .25; }
+        .empty-state p { margin-top: .75rem; font-size: .9rem; }
+
+        /* ══════════════════════════════════════
+           MODALS – shared
+        ══════════════════════════════════════ */
+        .pm-modal .modal-content {
+            background: #13102a;
+            border: 1px solid var(--pm-border);
+            border-radius: var(--pm-radius); overflow: hidden;
+        }
+        .pm-modal .modal-header {
+            border-bottom: 1px solid var(--pm-border);
+            padding: 1.25rem 1.5rem 1rem;
+        }
+        .pm-modal .modal-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.05rem; font-weight: 700;
+        }
+        .pm-modal .modal-body  { padding: 1.25rem 1.5rem; }
+        .pm-modal .modal-footer {
+            border-top: 1px solid var(--pm-border);
+            padding: 1rem 1.5rem;
+        }
+
+        /* Form */
+        .pm-label {
+            font-size: .78rem; font-weight: 600;
+            color: var(--pm-muted);
+            text-transform: uppercase; letter-spacing: .8px;
+            margin-bottom: .45rem; display: block;
+        }
+        .pm-input {
+            width: 100%;
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 10px;
+            color: #fff; font-size: .9rem;
+            padding: .6rem .9rem;
+            transition: border-color var(--transition);
+            outline: none;
+        }
+        .pm-input:focus {
+            border-color: var(--pm-purple);
+            box-shadow: 0 0 0 3px rgba(168,85,247,.12);
+        }
+        .pm-input::placeholder { color: rgba(255,255,255,.25); }
+        textarea.pm-input { resize: none; }
+
+        .cover-preview-box {
+            width: 84px; height: 84px; flex-shrink: 0;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2a1060, #0f0820);
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--pm-border);
+        }
+        .cover-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+        .cover-preview-box i  { font-size: 1.6rem; color: rgba(255,255,255,.2); }
+
+        /* Song rows */
+        .song-row {
+            display: flex; align-items: center; gap: .75rem;
+            padding: .5rem .6rem; border-radius: 10px;
+            transition: background var(--transition);
+        }
+        .song-row:hover { background: rgba(255,255,255,.05); }
+        .song-num {
+            width: 20px; text-align: center;
+            font-size: .75rem; color: var(--pm-muted); flex-shrink: 0;
+        }
+        .song-thumb {
+            width: 38px; height: 38px; flex-shrink: 0;
+            border-radius: 7px; object-fit: cover; background: #1a0a3a;
+        }
+        .song-thumb-ph {
+            width: 38px; height: 38px; flex-shrink: 0;
+            border-radius: 7px; background: #1a0a3a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .9rem; color: rgba(255,255,255,.2);
+        }
+        .song-info { flex: 1; min-width: 0; }
+        .song-title-sm {
+            font-size: .875rem; font-weight: 600; color: #fff;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .song-dur { font-size: .72rem; color: var(--pm-muted); }
+        .btn-rm-song {
+            background: none; border: none;
+            color: rgba(239,68,68,.6);
+            padding: 4px 7px; border-radius: 6px;
+            cursor: pointer; transition: var(--transition);
+        }
+        .btn-rm-song:hover { color: var(--pm-red); background: rgba(239,68,68,.1); }
+
+        #songSearchResults { max-height: 180px; overflow-y: auto; }
+        #songSearchResults::-webkit-scrollbar { width: 4px; }
+        #songSearchResults::-webkit-scrollbar-thumb {
+            background: var(--pm-purple-border); border-radius: 4px;
+        }
+        #songSearchResults .song-row { cursor: pointer; }
+        #songSearchResults .song-row:hover { background: rgba(168,85,247,.1); }
+
+        /* Buttons */
+        .btn-pm-primary {
+            background: linear-gradient(135deg, var(--pm-purple), var(--pm-purple-dk));
+            color: #fff; border: none; border-radius: 30px;
+            padding: .5rem 1.5rem; font-size: .88rem; font-weight: 700;
+            cursor: pointer; transition: var(--transition);
+        }
+        .btn-pm-primary:disabled { opacity: .6; cursor: not-allowed; }
+        .btn-pm-primary:not(:disabled):hover {
+            box-shadow: 0 6px 18px rgba(124,58,237,.45); transform: translateY(-1px);
+        }
+        .btn-pm-outline {
+            background: transparent;
+            color: rgba(255,255,255,.7);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 30px; padding: .5rem 1.25rem;
+            font-size: .88rem; font-weight: 500; cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-pm-outline:hover { background: rgba(255,255,255,.06); color: #fff; }
+        .btn-pm-success {
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            color: #fff; border: none; border-radius: 30px;
+            padding: .45rem 1.25rem; font-size: .82rem; font-weight: 700;
+            cursor: pointer; transition: var(--transition);
+        }
+        .btn-pm-success:hover {
+            box-shadow: 0 4px 14px rgba(34,197,94,.35); transform: translateY(-1px);
+        }
+        .btn-pm-amber {
+            background: rgba(245,158,11,.12); color: var(--pm-amber);
+            border: 1px solid rgba(245,158,11,.28);
+            border-radius: 30px; padding: .45rem 1.1rem; font-size: .82rem; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+        }
+        .btn-pm-amber:hover { background: rgba(245,158,11,.22); }
+        .btn-pm-edit {
+            background: rgba(168,85,247,.12); color: var(--pm-purple);
+            border: 1px solid var(--pm-purple-border);
+            border-radius: 30px; padding: .45rem 1.1rem; font-size: .82rem; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+        }
+        .btn-pm-edit:hover { background: rgba(168,85,247,.22); }
+
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg,
+                rgba(255,255,255,.05) 25%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body data-bs-theme="dark">
+<div class="layout-container">
+    <div class="main-wrapper">
+        {% include 'includes/left_sidebar.html' %}
+        <main class="main-content">
+            {% include 'includes/top_header.html' %}
+            <div class="content-scroll pb-5">
+
+                <!-- ── Hero Banner ── -->
+                <div class="hero-library">
+                    <div class="hero-icon">
+                        <i class="bi bi-vinyl-fill"></i>
+                    </div>
+                    <div class="hero-info">
+                        <div class="hero-label">Thư viện</div>
+                        <h1>Album của tôi</h1>
+                        <div class="hero-meta">
+                            <b>{{ request.user.get_display_name }}</b>
+                            <span id="albumCountBadge">…</span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if request.user.role == 'artist' %}
+
+                <!-- ── Toolbar ── -->
+                <div class="albums-toolbar">
+                    <span class="section-title">
+                        <i class="bi bi-collection me-1" style="color:var(--pm-purple)"></i>
+                        Tất cả album
+                    </span>
+                    <button class="btn-create-album" onclick="openCreateAlbumModal()">
+                        <i class="bi bi-plus-lg"></i> Tạo Album mới
+                    </button>
+                </div>
+
+                <!-- ── Grid ── -->
+                <div class="album-grid" id="albumGrid">
+                    <!-- Skeleton placeholders -->
+                    <div class="skeleton" style="border-radius:16px;aspect-ratio:1/.85;"></div>
+                    <div class="skeleton" style="border-radius:16px;aspect-ratio:1/.85;"></div>
+                    <div class="skeleton" style="border-radius:16px;aspect-ratio:1/.85;"></div>
+                </div>
+
+                <!-- Empty state (hidden) -->
+                <div class="empty-state d-none" id="noAlbumsMsg">
+                    <i class="bi bi-vinyl"></i>
+                    <p>Bạn chưa có album nào.<br>Hãy tạo album đầu tiên!</p>
+                </div>
+
+                {% else %}
+                <div class="empty-state mt-4">
+                    <i class="bi bi-vinyl"></i>
+                    <p>Chức năng album chỉ dành cho nghệ sĩ.</p>
+                </div>
+                {% endif %}
+
+            </div>
+        </main>
+        {% include 'includes/right_sidebar.html' %}
+    </div>
+    {% include 'includes/player_bar.html' %}
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL: Tạo / Chỉnh sửa Album
+══════════════════════════════════════════════ -->
+<div class="modal fade pm-modal" id="albumFormModal" tabindex="-1"
+    data-bs-backdrop="static" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:470px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="albumFormTitle">Tạo Album mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editAlbumId" value="">
+
+                <!-- Cover -->
+                <div class="mb-4">
+                    <label class="pm-label">Ảnh bìa Album</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="cover-preview-box" id="coverPreviewBox">
+                            <i class="bi bi-image"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <input type="file" class="pm-input" id="albumCoverInput"
+                                accept="image/*" style="padding:.45rem .7rem;cursor:pointer;">
+                            <small class="text-secondary d-block mt-1" style="font-size:.72rem;">
+                                JPG, PNG, WEBP · khuyến nghị 500×500 px
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div class="mb-3">
+                    <label for="albumTitleInput" class="pm-label">
+                        Tên Album <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="pm-input" id="albumTitleInput"
+                        maxlength="200" placeholder="Nhập tên album…">
+                </div>
+
+                <!-- Description -->
+                <div class="mb-1">
+                    <label for="albumDescInput" class="pm-label">Mô tả</label>
+                    <textarea class="pm-input" id="albumDescInput" rows="3"
+                        placeholder="Mô tả ngắn về album…"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between gap-2">
+                <div id="editAlbumStatusActions"></div>
+                <div class="d-flex gap-2">
+                    <button class="btn-pm-outline" data-bs-dismiss="modal">Huỷ</button>
+                    <button class="btn-pm-primary" id="saveAlbumBtn" onclick="saveAlbum()">
+                        <i class="bi bi-check2 me-1"></i>Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL: Quản lý bài hát trong Album
+══════════════════════════════════════════════ -->
+<div class="modal fade pm-modal" id="albumSongsModal" tabindex="-1"
+    data-bs-backdrop="static" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+        style="max-width:540px;">
+        <div class="modal-content" style="max-height:85vh;">
+            <div class="modal-header">
+                <div class="flex-grow-1 me-3">
+                    <h5 class="modal-title mb-0" id="albumSongsTitle">Bài hát</h5>
+                    <div class="d-flex align-items-center gap-2 mt-1 flex-wrap"
+                        id="albumSongsMeta"></div>
+                </div>
+                <button type="button" class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="overflow-y:auto;">
+
+                <!-- Search / add -->
+                <div class="mb-3">
+                    <label class="pm-label">Thêm bài hát của bạn</label>
+                    <div style="position:relative;">
+                        <i class="bi bi-search"
+                            style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);
+                            color:var(--pm-muted);pointer-events:none;font-size:.85rem;"></i>
+                        <input type="text" id="songSearchInput" placeholder="Tìm bài hát…"
+                            class="pm-input" style="padding-left:2.2rem;"
+                            oninput="debouncedSearch(this.value)" autocomplete="off">
+                    </div>
+                    <div id="songSearchResults" class="mt-1"></div>
+                </div>
+
+                <hr style="border-color:var(--pm-border);margin:.5rem 0 .9rem;">
+
+                <!-- List -->
+                <div class="d-flex align-items-center justify-content-between mb-2 px-1">
+                    <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1px;color:var(--pm-muted);">Trong album</span>
+                    <span style="font-size:.75rem;color:var(--pm-muted);"
+                        id="albumSongCount"></span>
+                </div>
+                <div id="albumSongsListContainer"></div>
+
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div id="albumStatusActions"></div>
+                <div class="d-flex gap-2">
+                    <button class="btn-pm-outline" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL: Xác nhận xoá Album
+══════════════════════════════════════════════ -->
+<div class="modal fade pm-modal" id="deleteAlbumModal" tabindex="-1" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:360px;">
+        <div class="modal-content text-center">
+            <div class="modal-body py-4 px-4">
+                <div style="width:60px;height:60px;border-radius:50%;background:rgba(239,68,68,.12);
+                    display:flex;align-items:center;justify-content:center;margin:0 auto .9rem;">
+                    <i class="bi bi-trash3-fill text-danger" style="font-size:1.6rem;"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Xoá Album?</h5>
+                <p class="text-secondary small mb-0">
+                    Album <strong id="deleteAlbumName" class="text-white"></strong>
+                    sẽ bị xoá vĩnh viễn.<br>
+                    <span style="font-size:.75rem;">Các bài hát trong album sẽ không bị ảnh hưởng.</span>
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center gap-3 border-0 pt-0 pb-4">
+                <button class="btn-pm-outline" data-bs-dismiss="modal">Huỷ</button>
+                <button class="btn btn-danger rounded-pill px-4 fw-bold"
+                    id="confirmDeleteBtn" onclick="confirmDeleteAlbum()">Xoá</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+/* Biến cấu hình từ Django – đọc bởi albums.js */
+window.ALBUM_CONFIG = {
+    userId:   '{{ request.user.id }}',
+    isArtist: {{ request.user.role|yesno:'true,false,false'|default:'false' }},
+};
+</script>
+<script src="{% static 'js/albums.js' %}"></script>
+
+</body>
+</html>

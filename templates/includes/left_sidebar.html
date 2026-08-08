@@ -12,7 +12,7 @@
             <a href="/" class="nav-link-custom {% if active_page == 'home' %}active{% endif %}">
                 <i class="bi bi-house-door"></i> Trang chủ
             </a>
-            <a href="#" class="nav-link-custom {% if active_page == 'explore' %}active{% endif %}">
+            <a href="{% url 'explore_page' %}" class="nav-link-custom {% if active_page == 'explore' %}active{% endif %}">
                 <i class="bi bi-search"></i> Khám phá
             </a>
             <a href="{% url 'mood_page' %}" class="nav-link-custom {% if active_page == 'mood' %}active{% endif %}">
@@ -36,6 +36,11 @@
             <a href="/library/recent/" class="nav-link-custom {% if request.path == '/library/recent/' %}active{% endif %}">
                 <i class="bi bi-clock-history"></i> Nghe gần đây
             </a>
+            {% if request.user.role == 'artist' %}
+            <a href="/library/albums/" class="nav-link-custom {% if request.path == '/library/albums/' %}active{% endif %}">
+                <i class="bi bi-vinyl"></i> Album
+            </a>
+            {% endif %}
         </div>
 
         <div class="nav-section-title mt-4">PLAYLIST CỦA BẠN</div>

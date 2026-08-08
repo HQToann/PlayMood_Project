@@ -185,7 +185,7 @@
                         <button id="btn-play-playlist" class="btn-play-large">
                             <i class="bi bi-play-fill" style="margin-left: 2px;"></i>
                         </button>
-                        <i class="bi bi-heart action-icon position-relative" id="btn-like-playlist" style="z-index: 2; cursor: pointer;"></i>
+                        <i class="bi bi-heart action-icon position-relative hover-text-white" id="btn-like-playlist" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i>
                         <div class="position-relative" id="playlist-menu-wrapper" style="display: none;">
                             <div class="custom-dropdown-toggle" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
                                 <i class="bi bi-three-dots-vertical action-icon"></i>
@@ -455,7 +455,7 @@
                                 if (playlist.is_liked) {
                                     btnLikePlaylist.className = 'bi bi-heart-fill action-icon position-relative text-accent';
                                 } else {
-                                    btnLikePlaylist.className = 'bi bi-heart action-icon position-relative';
+                                    btnLikePlaylist.className = 'bi bi-heart action-icon position-relative hover-text-white';
                                 }
                             }
                             
@@ -656,8 +656,8 @@
                             <div class="text-secondary hide-md text-truncate">Bài hát đơn</div>
                             <div class="text-secondary hide-lg text-truncate">${formatDate(item.added_at)}</div>
                             <div class="text-secondary">${formatDuration(song.duration || 0)}</div>
-                            <div class="position-relative btn-like" data-song-id="${song.id}" style="z-index: 2;" onclick="event.stopPropagation()">
-                                <i class="bi bi-heart${song.is_liked ? '-fill text-accent' : ''} action-icon" style="font-size: 1.2rem;"></i>
+                            <div class="text-secondary text-center position-relative btn-like" data-song-id="${song.id}" style="z-index: 2;" onclick="event.stopPropagation()">
+                                <i class="bi ${song.is_liked ? 'bi-heart-fill text-accent' : 'bi-heart hover-text-white'} position-relative" style="cursor: pointer; transition: color 0.2s; font-size: 1.2rem;"></i>
                             </div>
                             <div class="position-relative">
                                 <div class="custom-dropdown-toggle" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
@@ -684,9 +684,9 @@
                         // Optimistic UI update
                         const isCurrentlyLiked = icon.classList.contains('bi-heart-fill');
                         if (isCurrentlyLiked) {
-                            icon.className = 'bi bi-heart action-icon';
+                            icon.className = 'bi bi-heart position-relative hover-text-white';
                         } else {
-                            icon.className = 'bi bi-heart-fill action-icon text-accent';
+                            icon.className = 'bi bi-heart-fill position-relative text-accent';
                         }
                         
                         try {
@@ -700,18 +700,18 @@
                             if (!res.ok || !data.success) {
                                 // Revert on API failure
                                 if (isCurrentlyLiked) {
-                                    icon.className = 'bi bi-heart-fill action-icon text-accent';
+                                    icon.className = 'bi bi-heart-fill position-relative text-accent';
                                 } else {
-                                    icon.className = 'bi bi-heart action-icon';
+                                    icon.className = 'bi bi-heart position-relative hover-text-white';
                                 }
                                 console.error('Lỗi khi thả tim:', data.error?.message);
                             }
                         } catch (err) {
                             // Revert on network failure
                             if (isCurrentlyLiked) {
-                                icon.className = 'bi bi-heart-fill action-icon text-accent';
+                                icon.className = 'bi bi-heart-fill position-relative text-accent';
                             } else {
-                                icon.className = 'bi bi-heart action-icon';
+                                icon.className = 'bi bi-heart position-relative hover-text-white';
                             }
                             console.error('Lỗi mạng khi thả tim:', err);
                         }
@@ -834,7 +834,7 @@
                     
                     // Optimistic update UI
                     if (isLiked) {
-                        this.className = 'bi bi-heart action-icon position-relative';
+                        this.className = 'bi bi-heart action-icon position-relative hover-text-white';
                     } else {
                         this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
                     }
@@ -852,7 +852,7 @@
                             if (isLiked) {
                                 this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
                             } else {
-                                this.className = 'bi bi-heart action-icon position-relative';
+                                this.className = 'bi bi-heart action-icon position-relative hover-text-white';
                             }
                             if (window.showToast) showToast('Lỗi xử lý', 'error');
                         } else {
@@ -867,7 +867,7 @@
                         if (isLiked) {
                             this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
                         } else {
-                            this.className = 'bi bi-heart action-icon position-relative';
+                            this.className = 'bi bi-heart action-icon position-relative hover-text-white';
                         }
                         if (window.showToast) showToast('Lỗi mạng', 'error');
                     }

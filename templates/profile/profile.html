@@ -148,20 +148,25 @@
                     <div class="profile-tabs">
                         <div class="profile-tab active">Tổng quan</div>
                         <div class="profile-tab">Playlist</div>
+                        {% if is_own_profile %}
                         <div class="profile-tab">Yêu thích</div>
                         <div class="profile-tab">Đã tải</div>
                         <div class="profile-tab">Nghe gần đây</div>
+                        {% endif %}
                     </div>
 
                     <!-- Profile Content: Top Tracks (Danh sách) -->
+                    {% if is_own_profile %}
                     <div class="home-section mb-5">
                         <h2 class="profile-section-title">Bài hát yêu thích gần đây</h2>
-                        <div class="song-list-container">
-                            {% include 'components/card.html' with style='list' index='1' title='Chạy Ngay Đi' subtitle='Sơn Tùng M-TP' album='Album M-TP' duration='4:02' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&w=40&h=40&fit=crop' url='#' %}
-                            {% include 'components/card.html' with style='list' index='2' title='Waiting For You' subtitle='MONO, Onionn' album='22' duration='4:25' image='https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&w=40&h=40&fit=crop' url='#' %}
-                            {% include 'components/card.html' with style='list' index='3' title='See Tình' subtitle='Hoàng Thuỳ Linh' album='LINK' duration='3:10' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop' url='#' %}
+                        <div class="horizontal-scroll-container" id="likedSongsContainer">
+                            <div class="text-center text-muted-custom py-4 w-100">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                <span class="ms-2 small">Đang tải...</span>
+                            </div>
                         </div>
                     </div>
+                    {% endif %}
 
                     <!-- Profile Content: User Playlists -->
                     <div class="home-section mb-5">
@@ -545,8 +550,43 @@
                 console.error("Lỗi khi tải thống kê", e);
             }
         }
+        
+        async function loadLikedSongs() {
+            const container = document.getElementById('likedSongsContainer');
+            if (!container) return;
+            const targetUserId = "{{ target_user.id|default:request.user.id }}";
+            try {
+                const res = await fetch(`/api/v1/music/users/${targetUserId}/likes/?limit=5`);
+                const data = await res.json();
+                if (data.success && data.data.length > 0) {
+                    container.innerHTML = '';
+                    data.data.forEach((song) => {
+                        const html = `
+                            <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
+                                <div class="card-image-wrapper">
+                                    <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
+                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                </div>
+                                <div class="card-title">${song.title}</div>
+                                <div class="card-subtitle">${song.artist.display_name}</div>
+                                <a href="/song/?id=${song.id}" class="stretched-link"></a>
+                            </div>
+                        `;
+                        container.innerHTML += html;
+                    });
+                } else {
+                    container.innerHTML = '<div class="text-secondary py-3 text-center small w-100">Chưa có bài hát yêu thích nào</div>';
+                }
+            } catch (e) {
+                console.error("Lỗi khi tải bài hát yêu thích", e);
+                container.innerHTML = '<div class="text-danger py-3 text-center small">Lỗi khi tải bài hát</div>';
+            }
+        }
 
-        document.addEventListener("DOMContentLoaded", loadStats);
+        document.addEventListener("DOMContentLoaded", () => {
+            loadStats();
+            loadLikedSongs();
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

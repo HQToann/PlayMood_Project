@@ -454,6 +454,17 @@ class SongDownloadView(View):
         
 from music.models import Song
 
+class UserLikedSongsView(View):
+    """GET /api/v1/music/users/<uuid:user_id>/likes/"""
+    def get(self, request, user_id):
+        try:
+            from music.selectors import list_user_liked_songs
+            limit = int(request.GET.get('limit', 5))
+            items = list_user_liked_songs(user_id, viewer=request.user, limit=limit)
+            return JsonResponse({'success': True, 'data': items})
+        except Exception as e:
+            return handle_exception(e)
+
 class SongLikeView(View):
     """
     GET /api/v1/music/songs/<id>/likes/ - Public
@@ -742,5 +753,209 @@ class AdminCommentHideView(View):
                     }
                 }
             )
+        except Exception as e:
+            return handle_exception(e)
+
+
+# ─────────────── ALBUM VIEWS ───────────────
+
+class AlbumListView(View):
+    """
+    GET  /api/v1/music/albums/         - List album (public: chỉ published, artist: cả draft)
+    POST /api/v1/music/albums/         - Tạo album mới (artist only)
+    """
+
+    def get(self, request):
+        from music.selectors import list_albums
+        try:
+            artist_id = request.GET.get('artist_id')
+            status_filter = request.GET.get('status')
+
+            artist = None
+            if artist_id:
+                from accounts.models import User
+                try:
+                    artist = User.objects.get(id=artist_id)
+                except User.DoesNotExist:
+                    pass
+
+            # Chỉ nghệ sĩ mới xem được draft của chính mình
+            if status_filter == 'draft':
+                if not request.user.is_authenticated or (artist and str(request.user.id) != str(artist.id)):
+                    status_filter = 'published'
+
+            albums = list_albums(artist=artist, status=status_filter)
+            return JsonResponse({'success': True, 'data': {'items': albums, 'total': len(albums)}})
+        except Exception as e:
+            return handle_exception(e)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def post(self, request):
+        from music.services import create_album
+        try:
+            data = parse_json_body(request)
+            album = create_album(artist=request.user, data=data)
+            return JsonResponse({'success': True, 'data': album.to_dict()}, status=201)
+        except Exception as e:
+            return handle_exception(e)
+
+
+class AlbumDetailView(View):
+    """
+    GET    /api/v1/music/albums/<album_id>/   - Lấy chi tiết album
+    PATCH  /api/v1/music/albums/<album_id>/   - Cập nhật album (artist owner)
+    DELETE /api/v1/music/albums/<album_id>/   - Xoá album (artist owner)
+    """
+
+    def get(self, request, album_id):
+        from music.selectors import get_album_by_id
+        from music.exceptions import AlbumNotFound
+        try:
+            album = get_album_by_id(album_id)
+            # Chỉ owner mới xem được draft
+            if album.status == 'draft':
+                if not request.user.is_authenticated or str(request.user.id) != str(album.artist_id):
+                    return JsonResponse({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Album không tồn tại'}}, status=404)
+            return JsonResponse({'success': True, 'data': album.to_dict(viewer=request.user)})
+        except Exception as e:
+            return handle_exception(e)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def patch(self, request, album_id):
+        from music.selectors import get_album_by_id
+        from music.services import update_album
+        try:
+            album = get_album_by_id(album_id)
+            data = parse_json_body(request)
+            cover_image = request.FILES.get('cover_image')
+            album = update_album(album=album, artist=request.user, data=data, cover_image=cover_image)
+            return JsonResponse({'success': True, 'data': album.to_dict()})
+        except Exception as e:
+            return handle_exception(e)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def post(self, request, album_id):
+        # Dùng POST để upload multipart/form-data (Django không tự parse request.FILES cho PATCH)
+        from music.selectors import get_album_by_id
+        from music.services import update_album
+        try:
+            album = get_album_by_id(album_id)
+            data = request.POST.dict()
+            cover_image = request.FILES.get('cover_image')
+            album = update_album(album=album, artist=request.user, data=data, cover_image=cover_image)
+            return JsonResponse({'success': True, 'data': album.to_dict()})
+        except Exception as e:
+            return handle_exception(e)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def delete(self, request, album_id):
+        from music.selectors import get_album_by_id
+        from music.services import delete_album
+        try:
+            album = get_album_by_id(album_id)
+            result = delete_album(album=album, artist=request.user)
+            return JsonResponse({'success': True, 'data': result})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class AlbumPublishView(View):
+    """
+    POST /api/v1/music/albums/<album_id>/publish/  - Phát hành album
+    POST /api/v1/music/albums/<album_id>/unpublish/ - Ẩn album
+    """
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def post(self, request, album_id, action='publish'):
+        from music.selectors import get_album_by_id
+        from music.services import publish_album, unpublish_album
+        try:
+            album = get_album_by_id(album_id)
+            if action == 'publish':
+                album = publish_album(album=album, artist=request.user)
+            else:
+                album = unpublish_album(album=album, artist=request.user)
+            return JsonResponse({'success': True, 'data': album.to_dict()})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class AlbumSongsView(View):
+    """
+    GET    /api/v1/music/albums/<album_id>/songs/            - Danh sách bài hát trong album
+    POST   /api/v1/music/albums/<album_id>/songs/            - Thêm bài hát vào album
+    DELETE /api/v1/music/albums/<album_id>/songs/<song_id>/  - Xoá bài hát khỏi album
+    """
+
+    def get(self, request, album_id):
+        from music.selectors import get_album_by_id
+        try:
+            album = get_album_by_id(album_id)
+            songs = [
+                {'order': asong.order, 'song': asong.song.to_dict(viewer=request.user, include_stats=False)}
+                for asong in album.album_songs.select_related('song').order_by('order', 'added_at')
+            ]
+            return JsonResponse({'success': True, 'data': {'items': songs, 'total': len(songs)}})
+        except Exception as e:
+            return handle_exception(e)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def post(self, request, album_id):
+        from music.selectors import get_album_by_id, get_song_by_id
+        from music.services import add_song_to_album
+        try:
+            album = get_album_by_id(album_id)
+            data = parse_json_body(request)
+            song_id = data.get('song_id')
+            if not song_id:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'song_id là bắt buộc'}}, status=400)
+            song = get_song_by_id(song_id)
+            album_song = add_song_to_album(album=album, song=song, artist=request.user)
+            return JsonResponse({'success': True, 'data': {'order': album_song.order, 'song_id': str(song.id)}}, status=201)
+        except Exception as e:
+            return handle_exception(e)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(require_artist)
+    def delete(self, request, album_id, song_id):
+        from music.selectors import get_album_by_id, get_song_by_id
+        from music.services import remove_song_from_album
+        try:
+            album = get_album_by_id(album_id)
+            song = get_song_by_id(song_id)
+            result = remove_song_from_album(album=album, song=song, artist=request.user)
+            return JsonResponse({'success': True, 'data': result})
+        except Exception as e:
+            return handle_exception(e)
+
+
+class ArtistAlbumsView(View):
+    """
+    GET /api/v1/music/users/<user_id>/albums/ - Album của một nghệ sĩ cụ thể (chỉ published)
+    """
+
+    def get(self, request, user_id):
+        from music.selectors import list_albums
+        from music.models import Album
+        try:
+            from accounts.models import User
+            try:
+                artist = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return JsonResponse({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Nghệ sĩ không tồn tại'}}, status=404)
+
+            # Owner xem được cả draft
+            if request.user.is_authenticated and str(request.user.id) == str(user_id):
+                albums = list_albums(artist=artist)
+            else:
+                albums = list_albums(artist=artist, status=Album.STATUS_PUBLISHED)
+
+            return JsonResponse({'success': True, 'data': {'items': albums, 'total': len(albums)}})
         except Exception as e:
             return handle_exception(e)

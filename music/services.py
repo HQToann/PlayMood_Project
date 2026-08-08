@@ -402,3 +402,120 @@ def resolve_report(report: Report, admin, action: str, note: str='') -> Report:
         'resolved_note'
     ])
     return report
+
+
+# ALBUM SERVICES
+def create_album(artist, data: dict):
+    """Tạo album mới (draft) cho nghệ sĩ."""
+    from music.models import Album
+    from accounts.exceptions import ValidationError
+
+    title = data.get('title', '').strip()
+    if not title:
+        raise ValidationError('Tên album không được để trống', fields={'title': ['Bắt buộc']})
+
+    album = Album.objects.create(
+        title=title,
+        artist=artist,
+        description=data.get('description', ''),
+        status=Album.STATUS_DRAFT,
+    )
+    logger.info('Album created: %s by %s', album.title, artist.username)
+    return album
+
+
+def update_album(album, artist, data: dict, cover_image=None):
+    """Cập nhật thông tin album."""
+    from music.exceptions import NotAlbumOwner
+    from accounts.exceptions import ValidationError
+
+    if str(album.artist_id) != str(artist.id):
+        raise NotAlbumOwner()
+
+    title = data.get('title', album.title).strip()
+    if not title:
+        raise ValidationError('Tên album không được để trống', fields={'title': ['Bắt buộc']})
+
+    album.title = title
+    album.description = data.get('description', album.description)
+
+    if cover_image:
+        album.cover_image = cover_image
+
+    album.save()
+    logger.info('Album updated: %s', album.id)
+    return album
+
+
+def publish_album(album, artist):
+    """Phát hành album (draft → published)."""
+    from music.exceptions import NotAlbumOwner
+    from django.utils import timezone
+
+    if str(album.artist_id) != str(artist.id):
+        raise NotAlbumOwner()
+
+    album.status = album.STATUS_PUBLISHED
+    album.released_at = timezone.now()
+    album.save(update_fields=['status', 'released_at'])
+    logger.info('Album published: %s', album.id)
+    return album
+
+
+def unpublish_album(album, artist):
+    """Ẩn album (published → draft)."""
+    from music.exceptions import NotAlbumOwner
+
+    if str(album.artist_id) != str(artist.id):
+        raise NotAlbumOwner()
+
+    album.status = album.STATUS_DRAFT
+    album.save(update_fields=['status'])
+    return album
+
+
+def delete_album(album, artist):
+    """Xoá album."""
+    from music.exceptions import NotAlbumOwner
+
+    if str(album.artist_id) != str(artist.id):
+        raise NotAlbumOwner()
+
+    album_id = str(album.id)
+    album.delete()
+    logger.info('Album deleted: %s', album_id)
+    return {'deleted': album_id}
+
+
+def add_song_to_album(album, song, artist):
+    """Thêm bài hát vào album."""
+    from music.models import AlbumSong
+    from music.exceptions import NotAlbumOwner, SongAlreadyInAlbum, NotSongOwner
+
+    if str(album.artist_id) != str(artist.id):
+        raise NotAlbumOwner()
+
+    if str(song.artist_id) != str(artist.id):
+        raise NotSongOwner()
+
+    if AlbumSong.objects.filter(album=album, song=song).exists():
+        raise SongAlreadyInAlbum()
+
+    # Thứ tự = cuối danh sách
+    max_order = album.album_songs.count()
+    album_song = AlbumSong.objects.create(album=album, song=song, order=max_order)
+    logger.info('Song %s added to album %s', song.id, album.id)
+    return album_song
+
+
+def remove_song_from_album(album, song, artist):
+    """Xoá bài hát khỏi album."""
+    from music.models import AlbumSong
+    from music.exceptions import NotAlbumOwner
+
+    if str(album.artist_id) != str(artist.id):
+        raise NotAlbumOwner()
+
+    deleted, _ = AlbumSong.objects.filter(album=album, song=song).delete()
+    logger.info('Song %s removed from album %s', song.id, album.id)
+    return {'removed': deleted > 0}
