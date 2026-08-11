@@ -96,11 +96,12 @@
                             <h2 class="section-title">Top Playlist Nổi Bật</h2>
                             <a href="#" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="horizontal-scroll-container">
-                            {% include 'components/card.html' with style='playlist' title='Top 50 Việt Nam' subtitle='Các bài hát hàng đầu' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='Top 100 Global' subtitle='Bảng xếp hạng toàn cầu' image='https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='US-UK Hits' subtitle='Nhạc Âu Mỹ thịnh hành' image='https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='K-Pop Daebak' subtitle='Âm nhạc Hàn Quốc' image='https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                        <div class="horizontal-scroll-container" id="topPlaylistsContainer">
+                            <div class="text-center py-4 w-100">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -110,12 +111,12 @@
                             <h2 class="section-title">Playlist Phù Hợp Dành Cho Bạn</h2>
                             <a href="#" class="section-more-btn">Xem thêm</a>
                         </div>
-                        <div class="horizontal-scroll-container">
-                            {% include 'components/card.html' with style='playlist' title='Acoustic Thư Giãn' subtitle='Nhạc nhẹ nhàng dễ ngủ' image='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='Lái Xe Đêm' subtitle='Nhịp điệu cuốn hút' image='https://images.unsplash.com/photo-1465847899084-d164df4dedc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='Cà Phê Sáng' subtitle='Bắt đầu ngày mới' image='https://images.unsplash.com/photo-1445282768818-728615cd2cbc?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='Lofi Chill' subtitle='Giai điệu tập trung' image='https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
-                            {% include 'components/card.html' with style='playlist' title='Indie Vibes' subtitle='Nhạc độc lập chất lượng' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='/playlist/detail/' %}
+                        <div class="horizontal-scroll-container" id="recommendedPlaylistsContainer">
+                            <div class="text-center py-4 w-100">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -138,60 +139,8 @@
     <script src="{% static 'js/main.js' %}"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const container = document.getElementById('myPlaylistsContainer');
-            if (!container) return;
-
-            if (typeof window.CURRENT_USER_AUTHENTICATED !== 'undefined' && !window.CURRENT_USER_AUTHENTICATED) {
-                container.innerHTML = '<div class="text-secondary w-100 text-center py-4">Vui lòng đăng nhập để xem playlist của bạn.</div>';
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/v1/playlists/');
-                if (!res.ok) throw new Error('Network error');
-                
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error?.message || 'Có lỗi xảy ra');
-                
-                const playlists = data.data.items || [];
-                
-                if (playlists.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-secondary w-100 text-center py-4 d-flex flex-column align-items-center">
-                            <i class="bi bi-music-note-list mb-2" style="font-size: 2rem;"></i>
-                            <p>Bạn chưa có playlist nào.</p>
-                            <button type="button" class="btn btn-outline-light rounded-pill px-4 mt-2" onclick="openCreatePlaylistModal(event)">
-                                Tạo Playlist Ngay
-                            </button>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = '';
-                playlists.forEach(pl => {
-                    const imgUrl = pl.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
-                    html += `
-                        <div class="playlist-card position-relative">
-                            <div class="card-image-wrapper">
-                                <img src="${imgUrl}" alt="${pl.title}">
-                                <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                            </div>
-                            <div class="card-title text-truncate" title="${pl.title}">${pl.title}</div>
-                            <div class="card-subtitle text-truncate">Bởi ${pl.owner.display_name}</div>
-                            <a href="/playlist/detail/?id=${pl.id}" class="stretched-link"></a>
-                        </div>
-                    `;
-                });
-                
-                container.innerHTML = html;
-                
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = '<div class="text-danger w-100 text-center py-4">Không thể tải danh sách playlist.</div>';
-            }
-        });
+        window.CURRENT_USER_AUTHENTICATED = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
     </script>
+    <script src="{% static 'js/playlist.js' %}?v=1"></script>
 </body>
 </html>

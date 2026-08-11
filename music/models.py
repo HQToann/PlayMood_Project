@@ -415,9 +415,9 @@ class Comment(models.Model):
             'created_at': self.created_at.isoformat(), 
         }
         if viewer and hasattr(viewer, 'id') and viewer.is_authenticated:
-            data['is_likes'] = self.comment_likes.filter(user=viewer).exists()
+            data['is_liked_by_viewer'] = self.comment_likes.filter(user=viewer).exists()
         else:
-            data['is_liked'] = False
+            data['is_liked_by_viewer'] = False
         if include_replies:
             data['replies'] = [
                 r.to_dict(viewer=viewer)

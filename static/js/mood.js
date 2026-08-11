@@ -1,295 +1,493 @@
 // ============================================
-                        // Fetch data từ API
-                        // ============================================
-                        let MOOD_THEMES = [];
-                        let MOOD_TYPES = [];
+// Fetch data từ API
+// ============================================
+let MOOD_THEMES = [];
+let MOOD_TYPES = [];
 
-                        let selectedMoodId = null;
-                        let selectedThemeId = null;
+let selectedMoodId = null;
+let selectedThemeId = null;
 
-                        function renderThemes() {
-                            const picker = document.getElementById('themeColorPicker');
-                            picker.innerHTML = '';
-                            MOOD_THEMES.forEach(theme => {
-                                const div = document.createElement('div');
-                                div.className = 'color-swatch';
-                                if (theme.id === selectedThemeId) div.classList.add('selected');
-                                div.dataset.id = theme.id;
-                                div.style.width = '24px';
-                                div.style.height = '24px';
-                                div.style.borderRadius = '50%';
-                                div.style.background = `linear-gradient(135deg, ${theme.gradient_from}, ${theme.gradient_to})`;
-                                div.style.cursor = 'pointer';
-                                div.style.display = 'flex';
-                                div.style.alignItems = 'center';
-                                div.style.justifyContent = 'center';
-                                div.style.fontSize = '0.7rem';
-                                div.style.color = '#fff';
-                                if (theme.id === selectedThemeId) {
-                                    div.innerHTML = '✓';
-                                    document.getElementById('theme_id_input').value = theme.id;
-                                }
+function renderThemes() {
+    const picker = document.getElementById('themeColorPicker');
+    picker.innerHTML = '';
+    MOOD_THEMES.forEach(theme => {
+        const div = document.createElement('div');
+        div.className = 'color-swatch';
+        if (theme.id === selectedThemeId) div.classList.add('selected');
+        div.dataset.id = theme.id;
+        div.style.width = '24px';
+        div.style.height = '24px';
+        div.style.borderRadius = '50%';
+        div.style.background = `linear-gradient(135deg, ${theme.gradient_from}, ${theme.gradient_to})`;
+        div.style.cursor = 'pointer';
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.justifyContent = 'center';
+        div.style.fontSize = '0.7rem';
+        div.style.color = '#fff';
+        if (theme.id === selectedThemeId) {
+            div.innerHTML = '✓';
+            document.getElementById('theme_id_input').value = theme.id;
+        }
 
-                                div.addEventListener('click', () => {
-                                    // Khi tự chọn theme, bỏ chọn tag cảm xúc
-                                    deselectMood();
-                                    selectTheme(theme.id);
-                                });
-                                picker.appendChild(div);
-                            });
-                        }
+        div.addEventListener('click', () => {
+            // Khi tự chọn theme, bỏ chọn tag cảm xúc
+            deselectMood();
+            selectTheme(theme.id);
+        });
+        picker.appendChild(div);
+    });
+}
 
-                        function selectTheme(themeId) {
-                            selectedThemeId = themeId;
-                            document.getElementById('theme_id_input').value = themeId;
-                            document.querySelectorAll('.color-swatch').forEach(s => {
-                                if (s.dataset.id === themeId) {
-                                    s.classList.add('selected');
-                                    s.innerHTML = '✓';
-                                    s.style.borderColor = 'rgba(255, 255, 255, 0.8)';
-                                } else {
-                                    s.classList.remove('selected');
-                                    s.innerHTML = '';
-                                    s.style.borderColor = 'transparent';
-                                }
-                            });
-                        }
+function selectTheme(themeId) {
+    selectedThemeId = themeId;
+    document.getElementById('theme_id_input').value = themeId;
+    document.querySelectorAll('.color-swatch').forEach(s => {
+        if (s.dataset.id === themeId) {
+            s.classList.add('selected');
+            s.innerHTML = '✓';
+            s.style.borderColor = 'rgba(255, 255, 255, 0.8)';
+        } else {
+            s.classList.remove('selected');
+            s.innerHTML = '';
+            s.style.borderColor = 'transparent';
+        }
+    });
+}
 
-                        function renderMoodTypes(moodTypes) {
-                            const grid = document.getElementById('moodTypeGrid');
-                            grid.innerHTML = '';
-                            moodTypes.forEach(mt => {
-                                const div = document.createElement('div');
-                                div.className = 'mood-card-item';
-                                div.dataset.id = mt.id;
-                                div.innerHTML = `
+function renderMoodTypes(moodTypes) {
+    const grid = document.getElementById('moodTypeGrid');
+    grid.innerHTML = '';
+    moodTypes.forEach(mt => {
+        const div = document.createElement('div');
+        div.className = 'mood-card-item';
+        div.dataset.id = mt.id;
+        div.innerHTML = `
                                 <div class="mood-name" style="color: ${mt.theme.color_hex}; transition: color 0.2s;">${mt.name}</div>`;
-                                div.addEventListener('click', () => selectMood(mt, div));
-                                grid.appendChild(div);
-                            });
-                        }
+        div.addEventListener('click', () => selectMood(mt, div));
+        grid.appendChild(div);
+    });
+}
 
-                        function deselectMood() {
-                            selectedMoodId = null;
-                            document.getElementById('mood_type_id').value = '';
-                            document.querySelectorAll('.mood-card-item').forEach(c => {
-                                c.classList.remove('selected');
-                                c.style.background = 'rgba(255, 255, 255, 0.08)';
-                                const nameDiv = c.querySelector('.mood-name');
-                                if (nameDiv) {
-                                    // Phục hồi lại màu chữ ban đầu từ data
-                                    const mtId = c.dataset.id;
-                                    const mt = MOOD_TYPES.find(m => m.id === mtId);
-                                    if (mt) nameDiv.style.color = mt.theme.color_hex;
-                                }
-                            });
-                            const label = document.getElementById('selectedMoodLabel');
-                            if (label) label.textContent = 'Chưa chọn cảm xúc';
-                        }
+function deselectMood() {
+    selectedMoodId = null;
+    document.getElementById('mood_type_id').value = '';
+    document.querySelectorAll('.mood-card-item').forEach(c => {
+        c.classList.remove('selected');
+        c.style.background = 'rgba(255, 255, 255, 0.08)';
+        const nameDiv = c.querySelector('.mood-name');
+        if (nameDiv) {
+            // Phục hồi lại màu chữ ban đầu từ data
+            const mtId = c.dataset.id;
+            const mt = MOOD_TYPES.find(m => m.id === mtId);
+            if (mt) nameDiv.style.color = mt.theme.color_hex;
+        }
+    });
+    const label = document.getElementById('selectedMoodLabel');
+    if (label) label.textContent = 'Chưa chọn cảm xúc';
+}
 
-                        function selectMood(mt, el) {
-                            deselectMood(); // Bỏ chọn các tag khác và phục hồi màu chữ
+function selectMood(mt, el) {
+    deselectMood(); // Bỏ chọn các tag khác và phục hồi màu chữ
 
-                            el.classList.add('selected');
-                            el.style.background = `linear-gradient(135deg, ${mt.theme.gradient_from}, ${mt.theme.gradient_to})`;
-                            const nameDiv = el.querySelector('.mood-name');
-                            if (nameDiv) {
-                                nameDiv.style.color = '#ffffff'; // Đổi màu chữ thành trắng khi được chọn để nổi bật trên nền gradient
-                            }
+    el.classList.add('selected');
+    el.style.background = `linear-gradient(135deg, ${mt.theme.gradient_from}, ${mt.theme.gradient_to})`;
+    const nameDiv = el.querySelector('.mood-name');
+    if (nameDiv) {
+        nameDiv.style.color = '#ffffff'; // Đổi màu chữ thành trắng khi được chọn để nổi bật trên nền gradient
+    }
 
-                            selectedMoodId = mt.id;
-                            document.getElementById('mood_type_id').value = mt.id;
-                            const label = document.getElementById('selectedMoodLabel');
-                            if (label) label.textContent = mt.name;
+    selectedMoodId = mt.id;
+    document.getElementById('mood_type_id').value = mt.id;
+    const label = document.getElementById('selectedMoodLabel');
+    if (label) label.textContent = mt.name;
 
-                            // Auto select the theme for this mood
-                            selectTheme(mt.theme.id);
+    // Auto select the theme for this mood
+    selectTheme(mt.theme.id);
 
-                            // Update playlist title
-                            document.getElementById('playlistSectionTitle').textContent = `Playlist gợi ý cho "${mt.name}"`;
-                        }
+    // Update section titles
+    const songsTitleEl = document.getElementById('songsSectionTitle');
+    if (songsTitleEl) songsTitleEl.textContent = `${mt.emoji} Nhạc Phù Hợp Với "${mt.name}"`;
+    document.getElementById('playlistSectionTitle').textContent = `${mt.emoji} Playlist Cho "${mt.name}"`;
 
-                        // Load data từ Backend
-                        async function loadMoodData() {
-                            try {
-                                const [themesRes, typesRes, myMoodRes] = await Promise.all([
-                                    fetch('/api/v1/social/mood-themes/').then(r => r.json()),
-                                    fetch('/api/v1/social/mood-types/').then(r => r.json()),
-                                    fetch('/api/v1/social/me/mood/').then(r => r.json()).catch(() => ({ success: false })) // Bỏ qua lỗi nếu chưa đăng nhập
-                                ]);
+    // Gọi API gợi ý theo tâm trạng
+    loadMoodRecommendations(mt.id, mt.name, mt.emoji);
+}
 
-                                if (themesRes.success) {
-                                    MOOD_THEMES = themesRes.data;
-                                    if (MOOD_THEMES.length > 0) {
-                                        selectedThemeId = MOOD_THEMES[0].id; // Mặc định chọn theme đầu tiên
-                                    }
-                                    renderThemes();
-                                }
+// ============================================
+// Load gợi ý theo tâm trạng
+// ============================================
+async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
+    const songsContainer = document.getElementById('moodSongsContainer');
+    const playlistContainer = document.getElementById('moodPlaylistsContainer');
+    const recoSection = document.getElementById('moodRecoSection');
+    const placeholder = document.getElementById('moodRecoPlaceholder');
+    if (!recoSection) return;
 
-                                if (typesRes.success) {
-                                    MOOD_TYPES = typesRes.data;
-                                    // Bản mood types API trả về cần có object theme lồng nhau để render
-                                    renderMoodTypes(MOOD_TYPES);
-                                }
+    // Hiện section và skeleton, ẩn placeholder
+    recoSection.style.display = 'block';
+    if (placeholder) placeholder.style.display = 'none';
 
-                                // Hiển thị Tâm trạng hiện tại
-                                const myMoodTag = document.getElementById('myMoodBadge');
-                                if (myMoodRes.success && myMoodRes.data) {
-                                    const mood = myMoodRes.data;
-                                    if (myMoodTag) {
-                                        myMoodTag.style.display = 'inline-block';
-                                        myMoodTag.style.background = `linear-gradient(135deg, ${mood.theme.gradient_from}, ${mood.theme.gradient_to})`;
-                                        myMoodTag.style.color = '#fff';
+    // Skeleton bài hát
+    if (songsContainer) {
+        songsContainer.innerHTML = Array(5).fill(`
+                                    <div style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;">
+                                        <div style="width:100%;aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,0.07);margin-bottom:0.75rem;animation:skeleton-pulse 1.5s infinite;"></div>
+                                        <div style="height:13px;border-radius:4px;background:rgba(255,255,255,0.07);width:80%;margin-bottom:8px;animation:skeleton-pulse 1.5s infinite;"></div>
+                                        <div style="height:11px;border-radius:4px;background:rgba(255,255,255,0.05);width:55%;animation:skeleton-pulse 1.5s infinite;"></div>
+                                    </div>`).join('');
+    }
+    if (playlistContainer) {
+        playlistContainer.innerHTML = Array(4).fill(`
+                                    <div style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;">
+                                        <div style="width:100%;aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,0.07);margin-bottom:0.75rem;animation:skeleton-pulse 1.5s infinite;"></div>
+                                        <div style="height:13px;border-radius:4px;background:rgba(255,255,255,0.07);width:75%;margin-bottom:8px;animation:skeleton-pulse 1.5s infinite;"></div>
+                                        <div style="height:11px;border-radius:4px;background:rgba(255,255,255,0.05);width:50%;animation:skeleton-pulse 1.5s infinite;"></div>
+                                    </div>`).join('');
+    }
 
-                                        let contentHtml = '';
-                                        if (mood.mood_type) {
-                                            contentHtml = `<span class="me-1">${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
-                                        } else {
-                                            contentHtml = `<i class="bi bi-chat-fill me-1"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
-                                        }
-                                        myMoodTag.innerHTML = contentHtml;
-                                        myMoodTag.title = mood.status_text || 'Tâm trạng hiện tại của bạn';
-                                    }
-                                } else {
-                                    if (myMoodTag) myMoodTag.style.display = 'none';
-                                }
-                            } catch (e) {
-                                console.error('Lỗi khi tải dữ liệu mood:', e);
-                            }
-                        }
+    // Gọi 2 API song song
+    try {
+        const [songsRes, playlistsRes] = await Promise.all([
+            fetch(`/api/v1/recommendations/mood/${moodTypeId}/songs/?limit=10`).then(r => r.json()),
+            fetch(`/api/v1/recommendations/mood/${moodTypeId}/playlists/?limit=8`).then(r => r.json()),
+        ]);
 
-                        // Init
-                        document.addEventListener('DOMContentLoaded', () => {
-                            loadMoodData();
-                        });
+        // Render bài hát
+        if (songsContainer) {
+            if (songsRes.success && songsRes.data && songsRes.data.items && songsRes.data.items.length > 0) {
+                songsContainer.innerHTML = songsRes.data.items.map(song => {
+                    const cover = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';
+                    const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
+                    return `
+                                                <div class="music-card" onclick="window.location.href='/song/?id=${song.id}'" style="cursor:pointer;min-width:160px;width:160px;">
+                                                    <div class="music-card-img-wrap">
+                                                        <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';">
+                                                        <button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong('${song.id}',event)">
+                                                            <i class="bi bi-play-fill"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="music-card-title">${song.title}</div>
+                                                    <div class="music-card-artist">${artist}</div>
+                                                </div>`;
+                }).join('');
+            } else {
+                songsContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Chưa có bài hát nào phù hợp với tâm trạng này.</div>';
+            }
+        }
 
-                        // Select expires hours
-                        function selectExpires(event, val, text) {
-                            event.preventDefault();
-                            document.getElementById('expires_hours_input').value = val;
-                            document.getElementById('selectedExpiresText').textContent = text;
+        // Render playlist
+        if (playlistContainer) {
+            if (playlistsRes.success && playlistsRes.data && playlistsRes.data.items && playlistsRes.data.items.length > 0) {
+                playlistContainer.innerHTML = playlistsRes.data.items.map(pl => {
+                    const cover = pl.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';
+                    const owner = pl.owner ? pl.owner.display_name : '';
+                    const songCount = pl.song_count ? ` • ${pl.song_count} bài` : '';
+                    return `
+                                                <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
+                                                    <div style="position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                                                        <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';">
+                                                        <button onclick="event.preventDefault();event.stopPropagation();if(window.playPlaylist)window.playPlaylist('${pl.id}',event)" style="position:absolute;bottom:8px;right:8px;width:36px;height:36px;border-radius:50%;background:var(--accent-color,#2dd4bf);color:#000;border:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:1rem;" onmouseover="this.style.opacity='1'" class="pl-play-btn"><i class="bi bi-play-fill"></i></button>
+                                                    </div>
+                                                    <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${pl.title}</div>
+                                                    <div style="color:rgba(255,255,255,0.5);font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bởi ${owner}${songCount}</div>
+                                                </a>`;
+                }).join('');
+            } else {
+                playlistContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Chưa có playlist nào phù hợp.</div>';
+            }
+        }
+    } catch (err) {
+        console.error('Lỗi tải gợi ý theo tâm trạng:', err);
+        if (songsContainer) songsContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Không thể tải dữ liệu.</div>';
+        if (playlistContainer) playlistContainer.innerHTML = '';
+    }
+}
 
-                            // Update active state
-                            const items = event.currentTarget.closest('.custom-dropdown-menu').querySelectorAll('.custom-dropdown-item');
-                            items.forEach(item => item.classList.remove('active'));
-                            event.currentTarget.classList.add('active');
-                        }
+// ============================================
+// Load gợi ý mặc định (khi chưa chọn mood)
+// ============================================
+async function loadDefaultRecommendations() {
+    const songsContainer = document.getElementById('moodSongsContainer');
+    const playlistContainer = document.getElementById('moodPlaylistsContainer');
 
-                        
+    // Skeleton bài hát
+    if (songsContainer) {
+        songsContainer.innerHTML = Array(5).fill(`
+                                    <div style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;">
+                                        <div style="width:100%;aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,0.07);margin-bottom:0.75rem;animation:skeleton-pulse 1.5s infinite;"></div>
+                                        <div style="height:13px;border-radius:4px;background:rgba(255,255,255,0.07);width:80%;margin-bottom:8px;animation:skeleton-pulse 1.5s infinite;"></div>
+                                        <div style="height:11px;border-radius:4px;background:rgba(255,255,255,0.05);width:55%;animation:skeleton-pulse 1.5s infinite;"></div>
+                                    </div>`).join('');
+    }
+    if (playlistContainer) {
+        playlistContainer.innerHTML = Array(4).fill(`
+                                    <div style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;">
+                                        <div style="width:100%;aspect-ratio:1;border-radius:8px;background:rgba(255,255,255,0.07);margin-bottom:0.75rem;animation:skeleton-pulse 1.5s infinite;"></div>
+                                        <div style="height:13px;border-radius:4px;background:rgba(255,255,255,0.07);width:75%;margin-bottom:8px;animation:skeleton-pulse 1.5s infinite;"></div>
+                                    </div>`).join('');
+    }
 
-                        // Handle form submit
-                        async function handlePostMood(event) {
-                            event.preventDefault();
+    try {
+        const [songsRes, playlistsRes] = await Promise.all([
+            fetch(`/api/v1/recommendations/for-you/?limit=10`).then(r => r.json()),
+            fetch(`/api/v1/recommendations/playlists/?limit=8`).then(r => r.json()),
+        ]);
 
-                            const btn = document.getElementById('submitBtn');
-                            const originalText = btn.innerHTML;
-                            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang đăng...';
-                            btn.disabled = true;
+        // Render bài hát
+        if (songsContainer) {
+            if (songsRes.success && songsRes.data && songsRes.data.items && songsRes.data.items.length > 0) {
+                songsContainer.innerHTML = songsRes.data.items.map(song => {
+                    const cover = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';
+                    const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
+                    return `
+                                                <div class="music-card" onclick="window.location.href='/song/?id=${song.id}'" style="cursor:pointer;min-width:160px;width:160px;">
+                                                    <div class="music-card-img-wrap">
+                                                        <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';">
+                                                        <button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong('${song.id}',event)">
+                                                            <i class="bi bi-play-fill"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="music-card-title">${song.title}</div>
+                                                    <div class="music-card-artist">${artist}</div>
+                                                </div>`;
+                }).join('');
+            } else {
+                songsContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Chưa có gợi ý bài hát.</div>';
+            }
+        }
 
-                            const moodTypeId = document.getElementById('mood_type_id').value;
-                            const themeId = document.getElementById('theme_id_input').value;
-                            const statusText = document.getElementById('status_text').value;
-                            const durationHours = parseInt(document.getElementById('expires_hours_input').value, 10);
+        // Render playlist
+        if (playlistContainer) {
+            if (playlistsRes.success && playlistsRes.data && playlistsRes.data.items && playlistsRes.data.items.length > 0) {
+                playlistContainer.innerHTML = playlistsRes.data.items.map(pl => {
+                    const cover = pl.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';
+                    const owner = pl.owner ? pl.owner.display_name : '';
+                    const songCount = pl.song_count ? ` • ${pl.song_count} bài` : '';
+                    return `
+                                                <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
+                                                    <div style="position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                                                        <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';">
+                                                        <button onclick="event.preventDefault();event.stopPropagation();if(window.playPlaylist)window.playPlaylist('${pl.id}',event)" style="position:absolute;bottom:8px;right:8px;width:36px;height:36px;border-radius:50%;background:var(--accent-color,#2dd4bf);color:#000;border:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:1rem;" onmouseover="this.style.opacity='1'" class="pl-play-btn"><i class="bi bi-play-fill"></i></button>
+                                                    </div>
+                                                    <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${pl.title}</div>
+                                                    <div style="color:rgba(255,255,255,0.5);font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bởi ${owner}${songCount}</div>
+                                                </a>`;
+                }).join('');
+            } else {
+                playlistContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Chưa có playlist nào.</div>';
+            }
+        }
+    } catch (err) {
+        console.error('Lỗi tải gợi ý mặc định:', err);
+        if (songsContainer) songsContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Không thể tải dữ liệu.</div>';
+        if (playlistContainer) playlistContainer.innerHTML = '';
+    }
+}
 
-                            const songId = document.getElementById('attached_song_id').value;
+// Load data từ Backend
+async function loadMoodData() {
+    try {
+        const [themesRes, typesRes, myMoodRes] = await Promise.all([
+            fetch('/api/v1/social/mood-themes/').then(r => r.json()),
+            fetch('/api/v1/social/mood-types/').then(r => r.json()),
+            fetch('/api/v1/social/me/mood/').then(r => r.json()).catch(() => ({ success: false })) // Bỏ qua lỗi nếu chưa đăng nhập
+        ]);
 
-                            const payload = {
-                                status_text: statusText,
-                                duration_hours: durationHours,
-                                theme_id: themeId || null
-                            };
-                            if (moodTypeId) payload.mood_type_id = moodTypeId;
-                            if (songId) payload.song_id = songId;
+        if (themesRes.success) {
+            MOOD_THEMES = themesRes.data;
+            if (MOOD_THEMES.length > 0) {
+                selectedThemeId = MOOD_THEMES[0].id; // Mặc định chọn theme đầu tiên
+            }
+            renderThemes();
+        }
 
-                            try {
-                                const csrfToken = getCookie('csrftoken') || '{{ csrf_token }}';
-                                const response = await fetch('/api/v1/social/me/mood/', {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRFToken': csrfToken,
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify(payload)
-                                });
+        if (typesRes.success) {
+            MOOD_TYPES = typesRes.data;
+            // Bản mood types API trả về cần có object theme lồng nhau để render
+            renderMoodTypes(MOOD_TYPES);
+        }
 
-                                const data = await response.json();
-                                if (response.ok && data.success) {
-                                    window.showToast('Đã đăng tâm trạng thành công!', true);
-                                    // Reset form
-                                    document.getElementById('status_text').value = '';
-                                    document.getElementById('charCount').textContent = '0';
-                                    document.getElementById('attached_song_id').value = '';
-                                    resetSongAttachmentUI();
-                                    deselectMood();
+        // Hiển thị Tâm trạng hiện tại
+        const myMoodTag = document.getElementById('myMoodBadge');
+        if (myMoodRes.success && myMoodRes.data) {
+            const mood = myMoodRes.data;
+            if (myMoodTag) {
+                myMoodTag.style.display = 'inline-block';
+                myMoodTag.style.background = `linear-gradient(135deg, ${mood.theme.gradient_from}, ${mood.theme.gradient_to})`;
+                myMoodTag.style.color = '#fff';
 
-                                    // Reload data to show new mood immediately
-                                    loadMoodData();
-                                } else {
-                                    window.showToast('Lỗi: ' + (data.error?.message || 'Không thể đăng tâm trạng.'), false);
-                                }
-                            } catch (e) {
-                                console.error('Lỗi khi đăng mood:', e);
-                                window.showToast('Lỗi kết nối, vui lòng thử lại.', false);
-                            } finally {
-                                btn.innerHTML = originalText;
-                                btn.disabled = false;
-                            }
-                        }
+                let contentHtml = '';
+                if (mood.mood_type) {
+                    contentHtml = `<span class="me-1">${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
+                } else {
+                    contentHtml = `<i class="bi bi-chat-fill me-1"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
+                }
+                myMoodTag.innerHTML = contentHtml;
+                myMoodTag.title = mood.status_text || 'Tâm trạng hiện tại của bạn';
+            }
 
-                        // Handle Search Music
-                        let searchTimeout = null;
+            // Nếu user đang có mood, tự động hiện gợi ý luôn
+            if (mood.mood_type) {
+                const songsTitleEl = document.getElementById('songsSectionTitle');
+                if (songsTitleEl) songsTitleEl.textContent = `${mood.mood_type.emoji} Nhạc Phù Hợp Với "${mood.mood_type.name}"`;
+                const plTitleEl = document.getElementById('playlistSectionTitle');
+                if (plTitleEl) plTitleEl.textContent = `${mood.mood_type.emoji} Playlist Cho "${mood.mood_type.name}"`;
 
-                        document.addEventListener('DOMContentLoaded', () => {
-                            const searchInput = document.getElementById('musicSearchInput');
-                            const searchResults = document.getElementById('searchResults');
+                loadMoodRecommendations(mood.mood_type.id, mood.mood_type.name, mood.mood_type.emoji);
+            } else {
+                loadDefaultRecommendations();
+            }
+        } else {
+            if (myMoodTag) myMoodTag.style.display = 'none';
+            loadDefaultRecommendations();
+        }
+    } catch (e) {
+        console.error('Lỗi khi tải dữ liệu mood:', e);
+    }
+}
 
-                            if (searchInput) {
-                                searchInput.addEventListener('input', (e) => {
-                                    clearTimeout(searchTimeout);
-                                    const query = e.target.value.trim();
-                                    if (!query) {
-                                        searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Nhập từ khóa để tìm kiếm bản nhạc bạn muốn đính kèm.</div>';
-                                        return;
-                                    }
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+    loadMoodData();
+});
 
-                                    searchTimeout = setTimeout(() => {
-                                        fetchSongs(query);
-                                    }, 500);
-                                });
-                            }
-                        });
+// Select expires hours
+function selectExpires(event, val, text) {
+    event.preventDefault();
+    document.getElementById('expires_hours_input').value = val;
+    document.getElementById('selectedExpiresText').textContent = text;
 
-                        async function fetchSongs(query) {
-                            const searchLoading = document.getElementById('searchLoading');
-                            const searchResults = document.getElementById('searchResults');
+    // Update active state
+    const items = event.currentTarget.closest('.custom-dropdown-menu').querySelectorAll('.custom-dropdown-item');
+    items.forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
 
-                            searchLoading.style.display = 'block';
-                            searchResults.innerHTML = '';
-                            try {
-                                const res = await fetch(`/api/v1/search/songs/?q=${encodeURIComponent(query)}`);
-                                const data = await res.json();
-                                searchLoading.style.display = 'none';
 
-                                if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                                    renderSearchResults(data.data.items, searchResults);
-                                } else {
-                                    searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Không tìm thấy kết quả nào.</div>';
-                                }
-                            } catch (err) {
-                                searchLoading.style.display = 'none';
-                                searchResults.innerHTML = '<div class="text-center text-danger py-4" style="font-size: 0.9rem;">Đã xảy ra lỗi, vui lòng thử lại sau.</div>';
-                            }
-                        }
 
-                        function renderSearchResults(songs, searchResultsEl) {
-                            let html = '';
-                            songs.forEach(song => {
-                                // Nếu cover_image null, dùng ảnh mặc định
-                                const cover = song.cover_image || 'https://via.placeholder.com/150?text=No+Cover';
-                                // Tên artist (dùng map lấy tên nếu trả về array)
-                                const artistNames = Array.isArray(song.artists) ? song.artists.map(a => a.name).join(', ') : 'Unknown Artist';
+// Handle form submit
+async function handlePostMood(event) {
+    event.preventDefault();
 
-                                html += `
+    const btn = document.getElementById('submitBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang đăng...';
+    btn.disabled = true;
+
+    const moodTypeId = document.getElementById('mood_type_id').value;
+    const themeId = document.getElementById('theme_id_input').value;
+    const statusText = document.getElementById('status_text').value;
+    const durationHours = parseInt(document.getElementById('expires_hours_input').value, 10);
+
+    const songId = document.getElementById('attached_song_id').value;
+
+    const payload = {
+        status_text: statusText,
+        duration_hours: durationHours,
+        theme_id: themeId || null
+    };
+    if (moodTypeId) payload.mood_type_id = moodTypeId;
+    if (songId) payload.song_id = songId;
+
+    try {
+        const csrfToken = getCookie('csrftoken') || '{{ csrf_token }}';
+        const response = await fetch('/api/v1/social/me/mood/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            window.showToast('Đã đăng tâm trạng thành công!', true);
+            // Reset form
+            document.getElementById('status_text').value = '';
+            document.getElementById('charCount').textContent = '0';
+            document.getElementById('attached_song_id').value = '';
+            resetSongAttachmentUI();
+
+            // Lưu lại moodTypeId trước khi deselectMood
+            const postedMoodId = selectedMoodId;
+            const postedMoodType = MOOD_TYPES.find(m => m.id === postedMoodId);
+            deselectMood();
+
+            // Reload data to show new mood immediately
+            loadMoodData();
+
+            // Tải lại gợi ý cho mood vừa đăng
+            if (postedMoodType) {
+                loadMoodRecommendations(postedMoodType.id, postedMoodType.name, postedMoodType.emoji);
+            }
+        } else {
+            window.showToast('Lỗi: ' + (data.error?.message || 'Không thể đăng tâm trạng.'), false);
+        }
+    } catch (e) {
+        console.error('Lỗi khi đăng mood:', e);
+        window.showToast('Lỗi kết nối, vui lòng thử lại.', false);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Handle Search Music
+let searchTimeout = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('musicSearchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            if (!query) {
+                searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Nhập từ khóa để tìm kiếm bản nhạc bạn muốn đính kèm.</div>';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetchSongs(query);
+            }, 500);
+        });
+    }
+});
+
+async function fetchSongs(query) {
+    const searchLoading = document.getElementById('searchLoading');
+    const searchResults = document.getElementById('searchResults');
+
+    searchLoading.style.display = 'block';
+    searchResults.innerHTML = '';
+    try {
+        const res = await fetch(`/api/v1/search/songs/?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        searchLoading.style.display = 'none';
+
+        if (data.success && data.data && data.data.items && data.data.items.length > 0) {
+            renderSearchResults(data.data.items, searchResults);
+        } else {
+            searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Không tìm thấy kết quả nào.</div>';
+        }
+    } catch (err) {
+        searchLoading.style.display = 'none';
+        searchResults.innerHTML = '<div class="text-center text-danger py-4" style="font-size: 0.9rem;">Đã xảy ra lỗi, vui lòng thử lại sau.</div>';
+    }
+}
+
+function renderSearchResults(songs, searchResultsEl) {
+    let html = '';
+    songs.forEach(song => {
+        // Nếu cover_image null, dùng ảnh mặc định
+        const cover = song.cover_image || 'https://via.placeholder.com/150?text=No+Cover';
+        // Tên artist (dùng map lấy tên nếu trả về array)
+        const artistNames = Array.isArray(song.artists) ? song.artists.map(a => a.name).join(', ') : 'Unknown Artist';
+
+        html += `
                                     <div class="d-flex align-items-center gap-3 p-2 rounded" style="cursor: pointer; transition: background 0.2s;" 
                                          onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
                                          onmouseout="this.style.background='transparent'"
@@ -301,21 +499,21 @@
                                         </div>
                                     </div>
                                 `;
-                            });
+    });
 
-                            const target = searchResultsEl || document.getElementById('searchResults');
-                            if (target) {
-                                target.innerHTML = html;
-                            }
-                        }
+    const target = searchResultsEl || document.getElementById('searchResults');
+    if (target) {
+        target.innerHTML = html;
+    }
+}
 
-                        function selectSong(id, title, artist, cover) {
-                            // Update input
-                            document.getElementById('attached_song_id').value = id;
+function selectSong(id, title, artist, cover) {
+    // Update input
+    document.getElementById('attached_song_id').value = id;
 
-                            // Update UI
-                            const area = document.getElementById('songAttachmentArea');
-                            area.innerHTML = `
+    // Update UI
+    const area = document.getElementById('songAttachmentArea');
+    area.innerHTML = `
                                 <img src="${cover}" alt="cover" style="width: 46px; height: 46px; border-radius: 12px; object-fit: cover; flex-shrink: 0;">
                                 <div style="flex:1; min-width:0;">
                                     <div style="color: #fff; font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title}</div>
@@ -330,16 +528,16 @@
                                 </button>
                             `;
 
-                            // Đóng modal
-                            const modalEl = document.getElementById('searchMusicModal');
-                            const modal = bootstrap.Modal.getInstance(modalEl);
-                            if (modal) modal.hide();
-                        }
+    // Đóng modal
+    const modalEl = document.getElementById('searchMusicModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+}
 
-                        function resetSongAttachmentUI() {
-                            document.getElementById('attached_song_id').value = '';
-                            const area = document.getElementById('songAttachmentArea');
-                            area.innerHTML = `
+function resetSongAttachmentUI() {
+    document.getElementById('attached_song_id').value = '';
+    const area = document.getElementById('songAttachmentArea');
+    area.innerHTML = `
                                 <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 1.1rem; flex-shrink: 0;">
                                     🎵</div>
                                 <div style="flex:1; min-width:0;">
@@ -354,4 +552,4 @@
                                     <i class="bi bi-search me-1"></i> Tìm nhạc
                                 </button>
                             `;
-                        }
+}

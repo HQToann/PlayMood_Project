@@ -72,6 +72,23 @@
     color: rgba(255, 255, 255, 0.4);
     font-size: 1.1rem;
     transition: color 0.3s;
+    pointer-events: none;
+}
+
+/* Icon toggle show/hide password — nằm bên phải */
+.auth-form-group .toggle-password {
+    left: auto;
+    right: 15px;
+    cursor: pointer;
+    pointer-events: auto;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.4);
+    transition: color 0.2s;
+    z-index: 2;
+}
+
+.auth-form-group .toggle-password:hover {
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .auth-input {

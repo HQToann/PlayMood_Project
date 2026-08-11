@@ -43,6 +43,8 @@ from accounts.services import (
     submit_verification,
     approve_verification,
     reject_verification,
+    request_password_reset,
+    confirm_password_reset,
 )
 from accounts.selectors import (
     get_public_profile,
@@ -238,8 +240,41 @@ class ChangePasswordView(View):
             })
         except Exception as e:
             return _handle_exception(e)
-        
-# Account Profile Views
+
+@method_decorator(csrf_protect, name='dispatch')
+class PasswordResetRequestView(View):
+    """POST /api/v1/auth/password/reset/request/ — Gửi email đặt lại mật khẩu."""
+
+    def post(self, request):
+        try:
+            data = _json_body(request)
+            validated = validate_password_reset_request(data)
+            request_password_reset(validated)
+            # Luôn trả thành công (không tiết lộ email có tồn tại hay không)
+            return JsonResponse({
+                'success': True,
+                'message': 'Nếu email tồn tại, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.'
+            })
+        except Exception as e:
+            return _handle_exception(e)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class PasswordResetConfirmView(View):
+    """POST /api/v1/auth/password/reset/confirm/ — Đặt lại mật khẩu bằng token."""
+
+    def post(self, request):
+        try:
+            data = _json_body(request)
+            validated = validate_password_reset_confirm(data)
+            confirm_password_reset(validated)
+            return JsonResponse({
+                'success': True,
+                'message': 'Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.'
+            })
+        except Exception as e:
+            return _handle_exception(e)
+
 class MyProfileView(View):
     """
     GET /api/v1/accounts/me/ - Xem thông tin cá nhân

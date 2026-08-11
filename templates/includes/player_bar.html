@@ -1,24 +1,59 @@
 {% load static %}
         <!-- PLAYER BAR -->
-        <footer class="player-bar" id="globalPlayerBar">
+        <style>
+            /* Idle state (no song selected) */
+            #globalPlayerBar.pb-idle .player-cover {
+                opacity: 0.25;
+                filter: grayscale(1);
+            }
+            #globalPlayerBar.pb-idle #pbTitle {
+                color: rgba(255,255,255,0.3);
+                font-style: italic;
+            }
+            #globalPlayerBar.pb-idle #pbArtist {
+                color: rgba(255,255,255,0.2);
+            }
+            #globalPlayerBar.pb-idle .player-controls .btn-play {
+                opacity: 0.4;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+            #globalPlayerBar.pb-idle #pbShuffleBtn,
+            #globalPlayerBar.pb-idle #pbPrevBtn,
+            #globalPlayerBar.pb-idle #pbNextBtn,
+            #globalPlayerBar.pb-idle #pbRepeatBtn,
+            #globalPlayerBar.pb-idle #pbHeartBtn {
+                opacity: 0.25;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+            #globalPlayerBar.pb-idle .progress-bar-bg {
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+            #globalPlayerBar.pb-idle .progress-bar-fill {
+                display: none;
+            }
+        </style>
+        <footer class="player-bar pb-idle" id="globalPlayerBar">
             <!-- Info -->
             <div class="player-info">
-                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Cover" class="player-cover" id="pbCover">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='6' fill='%23222'/%3E%3Ctext x='50%25' y='54%25' font-size='22' text-anchor='middle' dominant-baseline='middle' fill='%23555'%3E%E2%99%AA%3C/text%3E%3C/svg%3E" alt="Cover" class="player-cover" id="pbCover" style="border-radius: 6px;">
                 <div class="player-text">
-                    <div class="player-title" id="pbTitle">Có Chắc Yêu Là Đây</div>
-                    <div class="text-muted-custom player-artist" id="pbArtist">Sơn Tùng M-TP</div>
+                    <div class="player-title" id="pbTitle">Chưa có bài nào</div>
+                    <div class="text-muted-custom player-artist" id="pbArtist">Chọn một bài hát để bắt đầu</div>
                 </div>
-                <button class="btn-icon ms-2 heart-btn"><i class="bi bi-heart"></i></button>
+                <button class="btn-icon ms-2" id="pbHeartBtn" title="Yêu thích"><i class="bi bi-heart" id="pbHeartIcon"></i></button>
             </div>
             
             <!-- Controls -->
             <div class="player-controls-container">
                 <div class="player-controls">
-                    <button class="btn-icon"><i class="bi bi-shuffle fs-6"></i></button>
-                    <button class="btn-icon"><i class="bi bi-skip-start-fill fs-5"></i></button>
+                    <button class="btn-icon" id="pbShuffleBtn" title="Phát ngẫu nhiên"><i class="bi bi-shuffle fs-6"></i></button>
+                    <button class="btn-icon" id="pbPrevBtn" title="Bài trước"><i class="bi bi-skip-start-fill fs-5"></i></button>
                     <button class="btn-play" id="pbPlayBtn"><i class="bi bi-play-fill ms-1" id="pbPlayIcon"></i></button>
-                    <button class="btn-icon"><i class="bi bi-skip-end-fill fs-5"></i></button>
-                    <button class="btn-icon"><i class="bi bi-repeat fs-6"></i></button>
+                    <button class="btn-icon" id="pbNextBtn" title="Bài tiếp theo"><i class="bi bi-skip-end-fill fs-5"></i></button>
+                    <button class="btn-icon" id="pbRepeatBtn" title="Lặp lại"><i class="bi bi-repeat fs-6" id="pbRepeatIcon"></i></button>
                 </div>
                 <div class="progress-container">
                     <span id="pbCurrentTime">0:00</span>
@@ -31,17 +66,163 @@
             
             <!-- Actions -->
             <div class="player-actions">
-                <button class="btn-icon"><i class="bi bi-mic"></i></button>
-                <button class="btn-icon"><i class="bi bi-music-note-list"></i></button>
-                <button class="btn-icon"><i class="bi bi-speaker"></i></button>
+                <button type="button" class="btn-icon" id="pbLyricsBtn" title="Lời bài hát"><i class="bi bi-mic"></i></button>
+                <button type="button" class="btn-icon" onclick="toggleQueuePanel()"><i class="bi bi-music-note-list"></i></button>
+                <button type="button" class="btn-icon" id="pbDeviceBtn" onclick="toggleDevicePanel()" title="Kết nối thiết bị"><i class="bi bi-speaker"></i></button>
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn-icon" id="pbMuteBtn"><i class="bi bi-volume-up" id="pbMuteIcon"></i></button>
+                    <button type="button" class="btn-icon" id="pbMuteBtn"><i class="bi bi-volume-up" id="pbMuteIcon"></i></button>
                     <div class="volume-bar" id="pbVolumeBg" style="cursor: pointer;">
                         <div class="volume-fill" id="pbVolumeFill" style="width: 100%;"></div>
                     </div>
                 </div>
             </div>
+        <!-- Device Panel Wrapper (clips the sliding panel, same as Queue Panel) -->
+        <div id="devicePanelWrapper" style="
+            position: fixed;
+            right: 0;
+            bottom: var(--player-height, 90px);
+            width: var(--right-sidebar-width, 320px);
+            height: calc(100vh - var(--player-height, 90px));
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        ">
+            <!-- Inner Device Panel (slides inside wrapper) -->
+            <div id="devicePanel" style="
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-color: var(--bg-app);
+                border-left: 1px solid rgba(255,255,255,0.08);
+                box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+                transform: translateY(calc(100% + 50px));
+                transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+                pointer-events: all;
+                display: flex;
+                flex-direction: column;
+            ">
+                <!-- Header -->
+                <div style="padding: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 4px;">Kết nối thiết bị</div>
+                        <div style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">Đầu ra âm thanh hiện tại</div>
+                    </div>
+                    <button class="btn-icon" onclick="toggleDevicePanel()" style="background: rgba(255,255,255,0.05); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-x-lg" style="font-size: 1rem;"></i>
+                    </button>
+                </div>
+                
+                <!-- Content -->
+                <div id="deviceList" style="
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                ">
+                    <div style="color: rgba(255,255,255,0.5); font-size: 0.9rem; text-align: center; margin-top: 40px;">Đang tải thiết bị...</div>
+                </div>
+            </div>
+        </div>
         </footer>
+
+        <!-- Lyrics Panel (Covers main content only, between sidebars) -->
+        <div id="lyricsPanel" style="
+            position: fixed;
+            top: 100vh; /* Hidden initially */
+            left: var(--sidebar-width, 320px);
+            right: var(--right-sidebar-width, 320px);
+            bottom: var(--player-height, 90px);
+            background: linear-gradient(180deg, #0a3366 0%, #041224 100%);
+            z-index: 9998; /* Below queue panel, below player bar */
+            transition: top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        ">
+            <!-- Header -->
+            <div style="padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: white;">Lời bài hát</div>
+                <button onclick="toggleLyricsPanel()" style="background: rgba(0,0,0,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.4)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+            </div>
+            
+            <!-- Lyrics Content -->
+            <div id="lyricsPanelBody" style="
+                flex: 1;
+                overflow-y: auto;
+                padding: 0 40px 100px 40px;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            ">
+                <div id="lyricsContentText" style="
+                    max-width: 800px;
+                    width: 100%;
+                    font-size: 2.2rem;
+                    font-weight: 700;
+                    line-height: 1.6;
+                    color: rgba(255,255,255,0.5);
+                    text-align: left;
+                    white-space: pre-line;
+                    word-break: break-word;
+                    overflow-wrap: break-word;
+                    transition: all 0.3s ease;
+                ">
+                    Đang tải lời bài hát...
+                </div>
+            </div>
+        </div>
+
+        <!-- Queue Panel Wrapper (clips the sliding panel) -->
+        <div id="queuePanelWrapper" style="
+            position: fixed;
+            right: 0;
+            bottom: var(--player-height, 90px);
+            width: var(--right-sidebar-width, 320px);
+            height: calc(100vh - var(--player-height, 90px));
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 9999;
+        ">
+            <!-- Inner Queue Panel (slides inside wrapper) -->
+            <div id="queuePanel" style="
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-color: var(--bg-app);
+                border-left: 1px solid rgba(255,255,255,0.08);
+                box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+                transform: translateY(calc(100% + 50px));
+                transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+                pointer-events: all;
+                display: flex;
+                flex-direction: column;
+            ">
+                <!-- Header -->
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 16px 16px 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;">
+                    <div>
+                        <div style="font-weight: 700; color: white; font-size: 1rem;">Danh sách phát</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">Hàng chờ phát</div>
+                    </div>
+                    <button onclick="hideQueuePanel()" style="background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.7); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <!-- Body -->
+                <div id="queuePanelBody" style="flex: 1; overflow-y: auto; padding: 16px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.35); text-align: center;">
+                        <i class="bi bi-music-note-list" style="font-size: 2.5rem; margin-bottom: 12px;"></i>
+                        <p style="font-size: 0.9rem; margin-bottom: 6px; color: rgba(255,255,255,0.5);">Danh sách chờ đang trống</p>
+                        <p style="font-size: 0.8rem; margin: 0;">Chọn một bài hát để bắt đầu</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
         <div style="display:none;">{% csrf_token %}</div>
         
         <!-- Create Playlist Modal -->

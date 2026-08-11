@@ -413,6 +413,7 @@ body {
     background-color: var(--text-primary);
     border-radius: 2px;
     width: 30%;
+    position: relative;
     /* Demo */
 }
 
@@ -429,6 +430,9 @@ body {
     height: 4px;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .volume-fill {
@@ -436,6 +440,41 @@ body {
     background-color: var(--accent-color);
     width: 60%;
     border-radius: 2px;
+    position: relative;
+}
+
+/* --- Thêm nút tròn (knob) cho thanh kéo (volume & progress) --- */
+.progress-bar-bg, .volume-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.progress-bar-fill::after, .volume-fill::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    transition: opacity 0.1s;
+    pointer-events: none;
+}
+
+/* Hiện nút tròn khi hover vào nguyên thanh */
+.progress-bar-bg:hover .progress-bar-fill::after,
+.volume-bar:hover .volume-fill::after {
+    opacity: 1;
+}
+
+/* Đổi màu progress khi hover */
+.progress-bar-bg:hover .progress-bar-fill {
+    background-color: var(--accent-color);
 }
 
 /* Scrollbar styling */

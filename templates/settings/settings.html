@@ -585,21 +585,21 @@
                         <div class="mb-3">
                             <label for="websiteInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-globe2"></i> Website</label>
                             <input type="url" class="form-control text-light shadow-none" id="websiteInput"
-                                value="{{ request.user.astist_profile.website_url|default:'' }}"
+                                value="{{ request.user.artist_profile.website_url|default:'' }}"
                                 placeholder="https://..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
                         <div class="mb-3">
                             <label for="facebookInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-facebook"></i> Facebook</label>
                             <input type="url" class="form-control text-light shadow-none" id="facebookInput"
-                                value="{{ request.user.astist_profile.facebook_url|default:'' }}"
+                                value="{{ request.user.artist_profile.facebook_url|default:'' }}"
                                 placeholder="https://facebook.com/..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
                         <div class="mb-3">
                             <label for="youtubeInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-youtube"></i> YouTube</label>
                             <input type="url" class="form-control text-light shadow-none" id="youtubeInput"
-                                value="{{ request.user.astist_profile.youtube_url|default:'' }}"
+                                value="{{ request.user.artist_profile.youtube_url|default:'' }}"
                                 placeholder="https://youtube.com/..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
@@ -615,43 +615,6 @@
         </div>
     </div>
 
-    <script>
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-
-        async function saveSocials() {
-            const website = document.getElementById('websiteInput').value.trim();
-            const facebook = document.getElementById('facebookInput').value.trim();
-            const youtube = document.getElementById('youtubeInput').value.trim();
-
-            try {
-                const res = await fetch('/api/v1/artists/me/', {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        website_url: website,
-                        facebook_url: facebook,
-                        youtube_url: youtube
-                    })
-                });
-                const json = await res.json();
-                if (json.success || res.ok) {
-                    if (window.showToast) showToast('Đã cập nhật liên kết thành công!', 'success');
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật liên kết', 'error');
-                }
-            } catch (e) {
-                if (window.showToast) showToast('Lỗi kết nối', 'error');
-            }
-        }
-    </script>
 
     <script src="{% static 'js/settings.js' %}?v=1.3"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

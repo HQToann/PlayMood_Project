@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'social',
     'notifications',
     'search',
+    'recommendations',
 
 ]
 

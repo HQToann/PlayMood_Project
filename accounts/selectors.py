@@ -91,3 +91,11 @@ def has_pending_verification(user: User) -> bool:
         user=user,
         status=ArtistVerification.STATUS_PENDING,
     ).exists()
+
+def get_reset_token_by_value(token: str):
+    """Lấy PasswordResetToken theo giá trị token. Trả None nếu không tìm thấy."""
+    from accounts.models import PasswordResetToken
+    try:
+        return PasswordResetToken.objects.select_related('user').get(token=token)
+    except PasswordResetToken.DoesNotExist:
+        return None

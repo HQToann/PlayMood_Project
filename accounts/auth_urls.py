@@ -9,6 +9,8 @@ from accounts.views import (
     LogoutView,
     MeAuthView,
     ChangePasswordView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
 )
 
 urlpatterns = [
@@ -25,5 +27,8 @@ urlpatterns = [
 
     #đổi mật khẩu
     path('password/change/', ChangePasswordView.as_view(), name='auth-password-change'),
-]
 
+    #đặt lại mật khẩu (quên mật khẩu)
+    path('password/reset/request/', PasswordResetRequestView.as_view(), name='auth-password-reset-request'),
+    path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='auth-password-reset-confirm'),
+]

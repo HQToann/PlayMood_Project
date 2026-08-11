@@ -13,6 +13,7 @@
     <!-- Custom CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/explore.css' %}" rel="stylesheet">
 </head>
 
 <body>
@@ -167,27 +168,35 @@
                             </form>
                         </div>
 
-                        <!-- Playlist suggestion section -->
-                        <div class="mt-5">
-                            <div class="d-flex align-items-center justify-content-between mb-3">
-                                <div>
-                                    <p class="mb-0"
-                                        style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">
-                                        GỢI Ý CHO BẠN</p>
-                                    <h5 class="fw-bold text-white mb-0 mt-1" id="playlistSectionTitle">Playlist phù hợp
-                                        với tâm trạng</h5>
+                        <!-- Mood Recommendation Section -->
+                        <div id="moodRecoSection" style="margin-top: 2.5rem;">
+
+                            <!-- Bài Hát Theo Tâm Trạng -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div>
+                                        <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
+                                        <h5 class="fw-bold text-white mb-0 mt-1" id="songsSectionTitle">Dành Riêng Cho Bạn</h5>
+                                    </div>
                                 </div>
-                                <a href="#"
-                                    style="color: rgba(255,255,255,0.4); font-size: 0.82rem; text-decoration: none; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;"
-                                    onmouseover="this.style.color='#fff'"
-                                    onmouseout="this.style.color='rgba(255,255,255,0.4)'">Xem tất cả</a>
+                                <div id="moodSongsContainer" class="d-flex gap-3" style="overflow-x: auto; padding-bottom: 0.75rem; scrollbar-width: none;">
+                                    <!-- Sẽ được JS điền vào -->
+                                </div>
                             </div>
-                            <div class="horizontal-scroll-container pb-3">
-                                {% include 'components/card.html' with style='song' title='Tình Yêu Màu Hồng' subtitle='Various Artists' image='https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                                {% include 'components/card.html' with style='song' title='Giai Điệu Tình Yêu' subtitle='Sâu lắng' image='https://images.unsplash.com/photo-1494774157365-9e04c6720e47?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                                {% include 'components/card.html' with style='song' title='Love Songs 2024' subtitle='Hot Hits' image='https://images.unsplash.com/photo-1525286102434-29759c288926?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                                {% include 'components/card.html' with style='song' title='Acoustic Love' subtitle='Guitar & Vocals' image='https://images.unsplash.com/photo-1460500063983-994d4c27756c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
+
+                            <!-- Playlist Theo Tâm Trạng -->
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <div>
+                                        <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
+                                        <h5 class="fw-bold text-white mb-0 mt-1" id="playlistSectionTitle">Tuyển Tập Playlist Đặc Biệt</h5>
+                                    </div>
+                                </div>
+                                <div id="moodPlaylistsContainer" class="d-flex gap-3" style="overflow-x: auto; padding-bottom: 0.75rem; scrollbar-width: none;">
+                                    <!-- Sẽ được JS điền vào -->
+                                </div>
                             </div>
+
                         </div>
 
                     </div>
@@ -294,7 +303,7 @@
                     </style>
 
     <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/mood.js' %}"></script>
+    <script src="{% static 'js/mood.js' %}?v=5"></script>
 
                 </div>
             </main>

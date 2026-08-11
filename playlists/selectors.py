@@ -119,6 +119,35 @@ def list_public_playlists(filters: dict, viewer=None) -> dict:
         },
     }
 
+def list_user_public_playlists(user_id, filters: dict, viewer=None) -> dict:
+    """
+    Danh sách playlist công khai của một user cụ thể, có phân trang.
+    """
+    qs = Playlist.objects.filter(owner_id=user_id, is_public=True).select_related('owner')
+
+    if filters.get('q'):
+        qs = qs.filter(title__icontains=filters['q'])
+    
+    qs = qs.order_by('-created_at')
+
+    page = filters.get('page', 1)
+    page_size = filters.get('page_size', 20)
+    total = qs.count()
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    items = [p.to_dict(viewer=viewer) for p in qs[start:end]]
+
+    return {
+        'items': items,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'total_page': math.ceil(total / page_size) if total > 0 else 1,
+        },
+    }
+
 def list_playlist_songs(playlist_id, viewer=None, page=1, page_size=50) -> dict:
     """
     Danh sách bài hát trong playlist, sắp xếp theo order.

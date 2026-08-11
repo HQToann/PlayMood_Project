@@ -43,35 +43,65 @@
                             </div>
                         </div>
                     </div>
+
+                    {% if user.is_authenticated %}
+                    <!-- Gợi ý cho bạn Section -->
+                    <div class="home-section" id="recommendations-section" style="display: none;">
+                        <div class="section-title-container">
+                            <h2 class="section-title">Gợi ý cho bạn</h2>
+                            <a href="#" class="section-more-btn">Xem tất cả</a>
+                        </div>
+                        <div class="horizontal-scroll-container" id="foryou-songs-container">
+                            <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                     
-                    <!-- Bảng Xếp Hạng Section -->
+                    {% if user.is_authenticated %}
+                    <!-- Nghệ sĩ đề xuất Section -->
+                    <div class="home-section" id="artists-section" style="display: none;">
+                        <div class="section-title-container">
+                            <h2 class="section-title">Nghệ sĩ đề xuất</h2>
+                        </div>
+                        <div class="horizontal-scroll-container" id="recommended-artists-container">
+                            <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Playlist đề xuất Section -->
+                    <div class="home-section" id="playlists-section" style="display: none;">
+                        <div class="section-title-container">
+                            <h2 class="section-title">Playlist gợi ý</h2>
+                        </div>
+                        <div class="horizontal-scroll-container" id="recommended-playlists-container">
+                            <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                <div class="spinner-border text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Bảng Xếp Hạng Section (static for guests) -->
                     <div class="home-section">
                         <div class="section-title-container">
                             <h2 class="section-title">Bảng xếp hạng</h2>
-                            <a href="#" class="section-more-btn">Xem thêm</a>
                         </div>
                         <div class="horizontal-scroll-container">
                             {% include 'components/card.html' with style='playlist' title='Trending 20 Việt Nam' subtitle='20 video thịnh hành tại Việt Nam' image='https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='playlist' title='Daily Top 100 Việt Nam' subtitle='Các bài hát hàng đầu trong ngày - Việt Nam' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
+                            {% include 'components/card.html' with style='playlist' title='Daily Top 100' subtitle='Các bài hát hàng đầu trong ngày' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
                             {% include 'components/card.html' with style='playlist' title='Global Top 100' subtitle='100 bài hát hàng đầu trên thế giới' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='playlist' title='Top 50 Nhạc Trẻ' subtitle='Bảng xếp hạng nhạc trẻ hàng tuần' image='https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='playlist' title='US-UK Top Hits' subtitle='Những ca khúc tiếng Anh hot nhất' image='https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
                         </div>
                     </div>
-                    
-                    <!-- Danh sách phát thịnh hành Section -->
-                    <div class="home-section">
-                        <div class="section-title-container">
-                            <h2 class="section-title">Danh sách phát thịnh hành</h2>
-                        </div>
-                        <div class="horizontal-scroll-container">
-                            {% include 'components/card.html' with style='circle' title='Năng lượng EDM' subtitle='Tiếp lửa cho ngày dài' image='https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='circle' title='Góc Quán Quen' subtitle='Acoustic nhẹ nhàng' image='https://images.unsplash.com/photo-1465847899084-d164df4dedc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='circle' title='Tiệc Tùng Bất Tận' subtitle='Quẩy hết mình' image='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='circle' title='Tập Trung Làm Việc' subtitle='Lofi & Instrumental' image='https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='circle' title='Đốt Cháy Mỡ Thừa' subtitle='Nhạc tập gym cực bốc' image='https://images.unsplash.com/photo-1619983081563-430f63602796?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                        </div>
-                    </div>
+                    {% endif %}
                     
                 </div>
             </main>
@@ -165,42 +195,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fetch Trending Songs
-            fetch('/api/v1/music/songs/trending/')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data && data.data.items) {
-                        const container = document.getElementById('trending-songs-container');
-                        container.innerHTML = ''; // Xoá loading spinner
-                        
-                        data.data.items.forEach(song => {
-                            const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-                            const coverImg = song.cover_image ? song.cover_image : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
-                            
-                            // HTML của Thẻ Bài hát (Card component style='song')
-                            const cardHTML = `
-                            <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                                <div class="card-image-wrapper">
-                                    <img src="${coverImg}" alt="${song.title}">
-                                    <div class="card-play-btn" onclick="playSong('${song.id}', event)" style="position: relative; z-index: 2;"><i class="bi bi-play-fill"></i></div>
-                                </div>
-                                <div class="card-title" title="${song.title}">${song.title}</div>
-                                <div class="card-subtitle" title="${artistName}">${artistName}</div>
-                                <a href="/song/?id=${song.id}" class="stretched-link"></a>
-                            </div>
-                            `;
-                            container.insertAdjacentHTML('beforeend', cardHTML);
-                        });
-                        
-                        // Nếu không có bài nào
-                        if(data.data.items.length === 0) {
-                            container.innerHTML = '<div class="text-secondary p-3">Chưa có bài hát thịnh hành nào.</div>';
-                        }
-                    }
-                })
-                .catch(error => console.error('Lỗi khi tải bài hát thịnh hành:', error));
-        });
+        window.USER_IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
     </script>
+    <script src="{% static 'js/home.js' %}"></script>
 </body>
 </html>

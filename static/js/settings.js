@@ -227,3 +227,33 @@
                 }
             });
         }
+
+        async function saveSocials() {
+            const website = document.getElementById('websiteInput').value.trim();
+            const facebook = document.getElementById('facebookInput').value.trim();
+            const youtube = document.getElementById('youtubeInput').value.trim();
+
+            try {
+                const res = await fetch('/api/v1/artists/me/', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        website_url: website,
+                        facebook_url: facebook,
+                        youtube_url: youtube
+                    })
+                });
+                const json = await res.json();
+                if (json.success || res.ok) {
+                    if (window.showToast) showToast('Đã cập nhật liên kết thành công!', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật liên kết', 'error');
+                }
+            } catch (e) {
+                if (window.showToast) showToast('Lỗi kết nối', 'error');
+            }
+        }

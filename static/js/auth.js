@@ -1,3 +1,69 @@
+// ===== QUÊN MẬT KHẨU =====
+function openForgotPassword() {
+    const overlay = document.getElementById('forgotPasswordOverlay');
+    overlay.style.display = 'flex';
+    document.getElementById('forgotStep1').style.display = 'block';
+    document.getElementById('forgotStep2').style.display = 'none';
+    document.getElementById('forgotError').style.display = 'none';
+    document.getElementById('forgotEmail').value = '';
+    document.getElementById('forgotEmail').focus();
+}
+
+function closeForgotPassword() {
+    document.getElementById('forgotPasswordOverlay').style.display = 'none';
+}
+
+async function submitForgotPassword() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    const errorDiv = document.getElementById('forgotError');
+    const btn = document.getElementById('forgotSubmitBtn');
+
+    errorDiv.style.display = 'none';
+
+    if (!email) {
+        errorDiv.innerText = 'Vui lòng nhập email.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = 'Đang gửi...';
+
+    try {
+        await fetch('/api/v1/auth/csrf/');
+        const csrfToken = getCookie('csrftoken');
+
+        const response = await fetch('/api/v1/auth/password/reset/request/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ email })
+        });
+
+        // Luôn hiển thị bước 2 dù email có tồn tại hay không (bảo mật)
+        document.getElementById('forgotEmailDisplay').innerText = email;
+        document.getElementById('forgotStep1').style.display = 'none';
+        document.getElementById('forgotStep2').style.display = 'block';
+
+    } catch (error) {
+        errorDiv.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        errorDiv.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Gửi link đặt lại';
+    }
+}
+
+// Đóng modal khi click ra ngoài
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('forgotPasswordOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeForgotPassword();
+    });
+});
+
+// ===== TOGGLE AUTH =====
 function toggleAuth(isRegister) {
             const container = document.getElementById('authContainer');
             const subtitle = document.getElementById('authSubtitle');

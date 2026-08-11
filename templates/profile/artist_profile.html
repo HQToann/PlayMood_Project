@@ -113,7 +113,7 @@
                                 </div>
                                 <h1 class="fw-bold mb-0 text-white"
                                     style="font-size: 4rem; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px; margin-top: -4px;">
-                                    {{ target_user.astist_profile.get_display_name|default:target_user.get_display_name }}</h1>
+                                    {{ target_user.artist_profile.get_display_name|default:target_user.get_display_name }}</h1>
                                 <div class="profile-handle text-secondary mb-2 mt-1 fs-6">@{{ target_user.username }}
                                 </div>
 
@@ -166,24 +166,24 @@
 
                             <!-- Mạng xã hội -->
                             <div class="social-links d-flex gap-2 align-items-center">
-                                {% if target_user.astist_profile.website_url %}
-                                <a href="{{ target_user.astist_profile.website_url }}" target="_blank"
+                                {% if target_user.artist_profile.website_url %}
+                                <a href="{{ target_user.artist_profile.website_url }}" target="_blank"
                                     class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
                                     title="Website">
                                     <i class="bi bi-globe2 text-white"></i>
                                 </a>
                                 {% endif %}
-                                {% if target_user.astist_profile.facebook_url %}
-                                <a href="{{ target_user.astist_profile.facebook_url }}" target="_blank"
+                                {% if target_user.artist_profile.facebook_url %}
+                                <a href="{{ target_user.artist_profile.facebook_url }}" target="_blank"
                                     class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
                                     title="Facebook">
                                     <i class="bi bi-facebook text-white"></i>
                                 </a>
                                 {% endif %}
-                                {% if target_user.astist_profile.youtube_url %}
-                                <a href="{{ target_user.astist_profile.youtube_url }}" target="_blank"
+                                {% if target_user.artist_profile.youtube_url %}
+                                <a href="{{ target_user.artist_profile.youtube_url }}" target="_blank"
                                     class="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 40px; height: 40px; background-color: rgba(255,255,255,0.05); border: none;"
                                     title="YouTube">
@@ -197,48 +197,109 @@
 
                     <!-- Profile Tabs -->
                     <div class="profile-tabs">
-                        <div class="profile-tab active">Tổng quan</div>
-                        <div class="profile-tab">Album</div>
-                        <div class="profile-tab">Playlist</div>
+                        <div class="profile-tab active" data-tab="overview">Tổng quan</div>
+                        <div class="profile-tab" data-tab="albums">Album</div>
+                        <div class="profile-tab" data-tab="playlists">Playlist</div>
                         {% if is_own_profile %}
-                        <div class="profile-tab">Yêu thích</div>
-                        <div class="profile-tab">Đã tải</div>
-                        <div class="profile-tab">Nghe gần đây</div>
+                        <div class="profile-tab" data-tab="liked">Yêu thích</div>
+                        <div class="profile-tab" data-tab="recent">Nghe gần đây</div>
                         {% endif %}
                     </div>
 
-                    <!-- Profile Content: Top Tracks (Danh sách) -->
+                    <!-- TAB: Tổng quan -->
+                    <div id="tab-overview" class="tab-section">
+                        {% if is_own_profile %}
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Bài hát yêu thích gần đây</h2>
+                            <div class="horizontal-scroll-container" id="likedSongsContainer">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Album nổi bật</h2>
+                            <div class="horizontal-scroll-container" id="albumsContainer">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Playlist
+                                <span class="text-secondary fw-normal fs-6" style="margin-left:8px;" id="overviewPlaylistCount"></span>
+                            </h2>
+                            <div class="horizontal-scroll-container" id="overviewPlaylistContainer">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if is_own_profile %}
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Nghe gần đây</h2>
+                            <div class="horizontal-scroll-container" id="recentSongsContainerOverview">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- TAB: Album -->
+                    <div id="tab-albums" class="tab-section" style="display:none;">
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Tất cả Album</h2>
+                            <div class="horizontal-scroll-container" id="allAlbumsContainer">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Playlist -->
+                    <div id="tab-playlists" class="tab-section" style="display:none;">
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Tất cả Playlist</h2>
+                            <div class="horizontal-scroll-container" id="allPlaylistContainer">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {% if is_own_profile %}
-                    <div class="home-section mb-5">
-                        <h2 class="profile-section-title">Bài hát yêu thích gần đây</h2>
-                        <div class="horizontal-scroll-container" id="likedSongsContainer">
-                            <div class="text-center text-muted-custom py-4 w-100">
-                                <div class="spinner-border spinner-border-sm" role="status"></div>
-                                <span class="ms-2 small">Đang tải...</span>
+                    <!-- TAB: Yêu thích -->
+                    <div id="tab-liked" class="tab-section" style="display:none;">
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Bài hát yêu thích</h2>
+                            <div class="horizontal-scroll-container" id="allLikedSongsContainer">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Nghe gần đây -->
+                    <div id="tab-recent" class="tab-section" style="display:none;">
+                        <div class="home-section mb-5">
+                            <h2 class="profile-section-title">Lịch sử nghe</h2>
+                            <div class="horizontal-scroll-container" id="allRecentContainer">
+                                <div class="d-flex justify-content-center align-items-center w-100 py-4">
+                                    <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     {% endif %}
-
-                    <!-- Profile Content: Albums -->
-                    <div class="home-section mb-5">
-                        <h2 class="profile-section-title">Album nổi bật</h2>
-                        <div class="horizontal-scroll-container" id="albumsContainer">
-                            <div class="text-center text-muted-custom py-4 w-100">
-                                <div class="spinner-border spinner-border-sm" role="status"></div>
-                                <span class="ms-2 small">Đang tải...</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Profile Content: User Playlists -->
-                    <div class="home-section mb-5">
-                        <h2 class="profile-section-title">Playlist của Thành Nhân</h2>
-                        <div class="horizontal-scroll-container">
-                            {% include 'components/card.html' with style='playlist' title='Chill Buổi Tối' subtitle='25 bài hát' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='playlist' title='Chữa Lành Tâm Hồn' subtitle='30 bài hát' image='https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                        </div>
-                    </div>
 
                 </div>
             </main>
@@ -500,21 +561,21 @@
                         <div class="mb-3">
                             <label for="websiteInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-globe2"></i> Website</label>
                             <input type="url" class="form-control text-light shadow-none" id="websiteInput"
-                                value="{{ target_user.astist_profile.website_url|default:'' }}"
+                                value="{{ target_user.artist_profile.website_url|default:'' }}"
                                 placeholder="https://..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
                         <div class="mb-3">
                             <label for="facebookInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-facebook"></i> Facebook</label>
                             <input type="url" class="form-control text-light shadow-none" id="facebookInput"
-                                value="{{ target_user.astist_profile.facebook_url|default:'' }}"
+                                value="{{ target_user.artist_profile.facebook_url|default:'' }}"
                                 placeholder="https://facebook.com/..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
                         <div class="mb-3">
                             <label for="youtubeInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-youtube"></i> YouTube</label>
                             <input type="url" class="form-control text-light shadow-none" id="youtubeInput"
-                                value="{{ target_user.astist_profile.youtube_url|default:'' }}"
+                                value="{{ target_user.artist_profile.youtube_url|default:'' }}"
                                 placeholder="https://youtube.com/..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
@@ -565,233 +626,9 @@
     <script src="{% static 'js/main.js' %}"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const bioInput = document.getElementById('bioInput');
-            const bioCharCount = document.getElementById('bioCharCount');
-            if (bioInput && bioCharCount) {
-                const updateCount = () => {
-                    bioCharCount.textContent = bioInput.value.length;
-                };
-                bioInput.addEventListener('input', updateCount);
-                updateCount();
-            }
-        });
-
-        async function saveBio() {
-            const bio = document.getElementById('bioInput').value.trim();
-            try {
-                const res = await fetch('/api/v1/accounts/me/', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                    body: JSON.stringify({ bio })
-                });
-
-                if (res.ok) {
-                    document.getElementById('bioText').textContent = bio || 'Thêm tiểu sử...';
-                    if (window.showToast) showToast('Đã cập nhật tiểu sử!', 'success');
-                } else {
-                    const json = await res.json().catch(() => ({}));
-                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật', 'error');
-                }
-            } catch (e) {
-                if (window.showToast) showToast('Lỗi kết nối', 'error');
-            }
-        }
-
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-
-        // Preview avatar
-        document.getElementById('avatarInput')?.addEventListener('change', function (e) {
-            if (e.target.files && e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('avatarPreview').src = e.target.result;
-                }
-                reader.readAsDataURL(e.target.files[0]);
-            }
-        });
-
-        // Preview cover
-        document.getElementById('coverInput')?.addEventListener('change', function (e) {
-            if (e.target.files && e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('coverPreview').src = e.target.result;
-                }
-                reader.readAsDataURL(e.target.files[0]);
-            }
-        });
-
-        async function saveImages() {
-            const avatarFile = document.getElementById('avatarInput')?.files[0];
-            const coverFile = document.getElementById('coverInput')?.files[0];
-
-            if (!avatarFile && !coverFile) {
-                if (window.showToast) showToast('Chưa chọn ảnh nào để cập nhật', 'info');
-                return;
-            }
-
-            const formData = new FormData();
-            if (avatarFile) formData.append('avatar', avatarFile);
-            if (coverFile) formData.append('cover', coverFile);
-
-            try {
-                const res = await fetch('/api/v1/accounts/me/images/', {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': getCookie('csrftoken') },
-                    body: formData
-                });
-                const json = await res.json();
-                if (json.success || res.ok) {
-                    if (window.showToast) showToast('Đã cập nhật ảnh thành công!', 'success');
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật ảnh', 'error');
-                }
-            } catch (e) {
-                if (window.showToast) showToast('Lỗi kết nối', 'error');
-            }
-        }
-
-        async function saveSocials() {
-            const website = document.getElementById('websiteInput').value.trim();
-            const facebook = document.getElementById('facebookInput').value.trim();
-            const youtube = document.getElementById('youtubeInput').value.trim();
-
-            try {
-                const res = await fetch('/api/v1/artists/me/', {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        website_url: website,
-                        facebook_url: facebook,
-                        youtube_url: youtube
-                    })
-                });
-                const json = await res.json();
-                if (json.success || res.ok) {
-                    if (window.showToast) showToast('Đã cập nhật liên kết thành công!', 'success');
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật liên kết', 'error');
-                }
-            } catch (e) {
-                if (window.showToast) showToast('Lỗi kết nối', 'error');
-            }
-        }
-
-        function formatNumber(num) {
-            if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1).replace('.0', '') + 'K';
-            return num.toString();
-        }
-
-        async function loadStats() {
-            try {
-                const targetUserId = "{{ target_user.id|default:request.user.id }}";
-                
-                // Load follow stats
-                const followRes = await fetch(`/api/v1/social/users/${targetUserId}/follow-status/`);
-                const followData = await followRes.json();
-                if (followData.success) {
-                    const followersEl = document.getElementById('followersCount');
-                    const followingEl = document.getElementById('followingCount');
-                    if (followersEl) followersEl.innerText = formatNumber(followData.data.followers_count || 0);
-                    if (followingEl) followingEl.innerText = formatNumber(followData.data.following_count || 0);
-                }
-                
-                // Lấy tổng like của artist
-                const statsRes = await fetch('/api/v1/artists/me/stats/');
-                if (statsRes.ok) {
-                    const statsData = await statsRes.json();
-                    if (statsData.success) {
-                        const likesEl = document.getElementById('totalLikesCount');
-                        if (likesEl) likesEl.innerText = formatNumber(statsData.data.total_likes || 0);
-                    }
-                }
-            } catch (e) {
-                console.error("Lỗi khi tải thống kê", e);
-            }
-        }
-
-        async function loadLikedSongs() {
-            const container = document.getElementById('likedSongsContainer');
-            if (!container) return;
-            const targetUserId = "{{ target_user.id|default:request.user.id }}";
-            try {
-                const res = await fetch(`/api/v1/music/users/${targetUserId}/likes/?limit=5`);
-                const data = await res.json();
-                if (data.success && data.data.length > 0) {
-                    container.innerHTML = '';
-                    data.data.forEach((song) => {
-                        const html = `
-                            <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                                <div class="card-image-wrapper">
-                                    <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
-                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                </div>
-                                <div class="card-title">${song.title}</div>
-                                <div class="card-subtitle">${song.artist.display_name}</div>
-                                <a href="/song/?id=${song.id}" class="stretched-link"></a>
-                            </div>
-                        `;
-                        container.innerHTML += html;
-                    });
-                } else {
-                    container.innerHTML = '<div class="text-secondary py-3 text-center small w-100">Chưa có bài hát yêu thích nào</div>';
-                }
-            } catch (e) {
-                console.error("Lỗi khi tải bài hát yêu thích", e);
-                container.innerHTML = '<div class="text-danger py-3 text-center small">Lỗi khi tải bài hát</div>';
-            }
-        }
-
-        async function loadAlbums() {
-            const container = document.getElementById('albumsContainer');
-            if (!container) return;
-            const targetUserId = "{{ target_user.id|default:request.user.id }}";
-            try {
-                const res = await fetch(`/api/v1/music/users/${targetUserId}/albums/`);
-                const data = await res.json();
-                if (data.success && data.data.items && data.data.items.length > 0) {
-                    container.innerHTML = '';
-                    data.data.items.forEach((album) => {
-                        const cover = album.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
-                        const html = `
-                            <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                                <div class="card-image-wrapper">
-                                    <img src="${cover}" alt="${album.title}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
-                                </div>
-                                <div class="card-title">${album.title}</div>
-                                <div class="card-subtitle text-secondary small">${album.song_count} bài hát</div>
-                                <!-- TODO: link tới trang chi tiết album khi có -->
-                            </div>
-                        `;
-                        container.innerHTML += html;
-                    });
-                } else {
-                    container.innerHTML = '<div class="text-secondary py-3 text-center small w-100">Chưa có album nào</div>';
-                }
-            } catch (e) {
-                console.error("Lỗi khi tải album", e);
-                container.innerHTML = '<div class="text-danger py-3 text-center small w-100">Lỗi khi tải album</div>';
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            loadStats();
-            loadLikedSongs();
-            loadAlbums();
-        });
+        window.TARGET_USER_ID = "{{ target_user.id|default:request.user.id }}";
     </script>
+    <script src="{% static 'js/profile.js' %}?v=1"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -103,11 +103,11 @@
                     
                     <!-- Filters -->
                     <div class="search-filters d-flex gap-2 mb-4">
-                        <button class="filter-chip active">Tất cả</button>
-                        <button class="filter-chip">Bài hát</button>
-                        <button class="filter-chip">Playlist</button>
-                        <button class="filter-chip">Album</button>
-                        <button class="filter-chip">Nghệ sĩ</button>
+                        <button class="filter-chip active" data-type="all" onclick="applyFilter('all')">Tất cả</button>
+                        <button class="filter-chip" data-type="songs" onclick="applyFilter('songs')">Bài hát</button>
+                        <button class="filter-chip" data-type="playlists" onclick="applyFilter('playlists')">Playlist</button>
+                        <button class="filter-chip" data-type="albums" onclick="applyFilter('albums')">Album</button>
+                        <button class="filter-chip" data-type="artists" onclick="applyFilter('artists')">Nghệ sĩ</button>
                     </div>
 
                     <div id="loadingIndicator" class="text-center py-5">
@@ -124,7 +124,7 @@
                     <div id="searchResultsArea" style="display: none;">
                         <div class="row">
                             <!-- Top Result -->
-                            <div class="col-lg-5 mb-4 mb-lg-0">
+                            <div class="col-lg-5 mb-4 mb-lg-0" id="topResultCol">
                                 <h4 class="fw-bold text-white mb-3">Kết quả hàng đầu</h4>
                                 <div id="topResultContainer">
                                     <!-- Rendered by JS -->
@@ -132,8 +132,8 @@
                             </div>
                             
                             <!-- Songs List -->
-                            <div class="col-lg-7">
-                                <h4 class="fw-bold text-white mb-3">Bài hát</h4>
+                            <div class="col-lg-7" id="listCol">
+                                <h4 class="fw-bold text-white mb-3" id="listTitle">Bài hát</h4>
                                 <div id="songsListContainer" class="d-flex flex-column gap-1">
                                     <!-- Rendered by JS -->
                                 </div>
@@ -159,164 +159,6 @@
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const q = urlParams.get('q') || '';
-            
-            if (q) {
-                // Update header search input to reflect current query
-                const searchInput = document.getElementById('topSearchInput');
-                if (searchInput) searchInput.value = q;
-                
-                document.getElementById('keywordDisplayError').textContent = q;
-                await performSearch(q);
-            } else {
-                document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('noResults').style.display = 'block';
-                document.getElementById('keywordDisplayError').textContent = '...';
-            }
-        });
-
-        async function performSearch(query) {
-            try {
-                const res = await fetch(`/api/v1/search/?q=${encodeURIComponent(query)}&limit=10`);
-                const data = await res.json();
-                
-                document.getElementById('loadingIndicator').style.display = 'none';
-                
-                if (data.success && data.data) {
-                    const songs = data.data.songs || [];
-                    const artists = data.data.artists || [];
-                    const playlists = data.data.playlists || [];
-                    const users = data.data.users || [];
-                    
-                    if (songs.length > 0 || artists.length > 0 || playlists.length > 0 || users.length > 0) {
-                        renderResults(songs, artists, playlists, users);
-                        document.getElementById('searchResultsArea').style.display = 'block';
-                    } else {
-                        document.getElementById('noResults').style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('noResults').style.display = 'block';
-                }
-            } catch (err) {
-                console.error('Search API error:', err);
-                document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('noResults').style.display = 'block';
-            }
-        }
-
-        function renderResults(songs, artists, playlists, users) {
-            // Gộp artists và users, lọc trùng lặp theo user.id hoặc id
-            let combinedUsers = [...artists, ...users];
-            let uniqueUsers = [];
-            let seenUserIds = new Set();
-            combinedUsers.forEach(u => {
-                let uid = u.user ? u.user.id : u.id;
-                if (!seenUserIds.has(uid)) {
-                    seenUserIds.add(uid);
-                    uniqueUsers.push(u);
-                }
-            });
-
-            // Xác định Top Result: Ưu tiên nghệ sĩ/user nếu có, sau đó đến bài hát
-            let topItem = null;
-            let topType = '';
-            
-            if (uniqueUsers.length > 0) {
-                topItem = uniqueUsers[0];
-                topType = 'artist';
-            } else if (songs.length > 0) {
-                topItem = songs[0];
-                topType = 'song';
-            } else if (playlists.length > 0) {
-                topItem = playlists[0];
-                topType = 'playlist';
-            }
-
-            if (topItem) {
-                let topHtml = '';
-                if (topType === 'artist') {
-                    const avatar = topItem.avatar || (topItem.user && topItem.user.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80';
-                    const name = topItem.display_name || topItem.username || 'Người dùng';
-                    const isArtist = (topItem.stage_name !== undefined) || (topItem.role === 'artist');
-                    const subtitle = isArtist ? 'Nghệ sĩ' : 'Người dùng';
-                    const profileLink = topItem.user ? `/profile/${topItem.user.id}` : `/profile/${topItem.id}`;
-                    
-                    topHtml = `
-                        <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='${profileLink}'">
-                            <img src="${avatar}" alt="Avatar" class="rounded-circle mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
-                            <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${name}</h2>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">${subtitle}</span>
-                            </div>
-                            
-                            <button class="btn btn-outline-light rounded-pill fw-bold position-absolute px-4 py-2" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation();">
-                                Theo dõi
-                            </button>
-                        </div>
-                    `;
-                } else if (topType === 'song') {
-                    const img = topItem.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&q=80';
-                    const artistName = topItem.artist ? topItem.artist.display_name : 'Nghệ sĩ';
-                    topHtml = `
-                        <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='/song/?id=${topItem.id}'">
-                            <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
-                            <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-muted-custom fw-semibold">${artistName}</span>
-                            </div>
-                            
-                            <button class="btn-play-circle position-absolute" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); window.location.href='/song/?id=${topItem.id}'">
-                                <i class="bi bi-play-fill fs-3" style="margin-left: 3px;"></i>
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    // Placeholder cho playlist nếu cần
-                    topHtml = `<div class="top-result-card p-4 rounded-4" style="background-color: var(--bg-card);"><h2 class="text-white">${topItem.title}</h2></div>`;
-                }
-                document.getElementById('topResultContainer').innerHTML = topHtml;
-            }
-
-            // Render Song List (up to 4 songs)
-            const listSongs = songs.slice(0, 4);
-            let listHtml = '';
-            
-            if (listSongs.length > 0) {
-                listSongs.forEach(song => {
-                    const img = song.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
-                    const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
-                    
-                    listHtml += `
-                        <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.location.href='/song/?id=${song.id}'">
-                            <div class="d-flex align-items-center gap-3 w-100">
-                                <div class="song-cover-container">
-                                    <img src="${img}" alt="cover" class="w-100 h-100 rounded" style="object-fit: cover;">
-                                    <div class="play-icon-overlay">
-                                        <i class="bi bi-play-fill"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1 text-truncate pe-3">
-                                    <div class="text-white fw-semibold text-truncate" style="font-size: 1rem;">${song.title}</div>
-                                    <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">${artist}</div>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center gap-3">
-                                <button class="btn btn-link text-muted-custom p-0 text-decoration-none" style="font-size: 1.2rem;" onclick="event.stopPropagation();">
-                                    <i class="bi bi-plus-circle"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                listHtml = '<div class="text-muted-custom">Không có bài hát nào khớp.</div>';
-            }
-            
-            document.getElementById('songsListContainer').innerHTML = listHtml;
-        }
-    </script>
+    <script src="{% static 'js/search.js' %}"></script>
 </body>
 </html>

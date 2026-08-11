@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('youtube_url', models.CharField(blank=True, default='', max_length=255, verbose_name='Youtube')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='astist_profile', to=settings.AUTH_USER_MODEL, verbose_name='Nghệ sĩ')),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='artist_profile', to=settings.AUTH_USER_MODEL, verbose_name='Nghệ sĩ')),
             ],
             options={
                 'verbose_name': 'Hồ sơ nghệ sĩ',

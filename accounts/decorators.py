@@ -106,7 +106,7 @@ def require_artist(view_func):
 
 
 def require_admin(view_func):
-    #kiểm tra quyền admin
+    #kiểm tra quyền admin — chấp nhận cả role='admin' lẫn is_superuser Django
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -129,7 +129,8 @@ def require_admin(view_func):
                     },
                 }, status=403,
             )
-        if request.user.role != 'admin':
+        # Dùng is_admin property (= role=='admin' OR is_superuser)
+        if not request.user.is_admin:
             return JsonResponse(
                 {
                     'success': False,
@@ -143,4 +144,4 @@ def require_admin(view_func):
         return view_func(request, *args, **kwargs)
     
     
-    return wrapper
+    return wrapper

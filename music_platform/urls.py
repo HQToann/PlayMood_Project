@@ -117,6 +117,7 @@ urlpatterns = [
     # Frontend Routes - Yêu cầu đăng nhập
     path('', home_view, name='home'),
     path('auth/login/', TemplateView.as_view(template_name='auth/login.html'), name='login_page'),
+    path('auth/reset-password/', TemplateView.as_view(template_name='auth/reset_password.html'), name='reset_password_page'),
     path('profile/', profile_routing_view, name='profile_page'),
     path('profile/upload/', login_required_view('profile/artist_upload.html'), name='artist_upload_page'),
     path('profile/manage/', login_required_view('profile/artist_manage_songs.html'), name='artist_manage_page'),
@@ -163,6 +164,9 @@ urlpatterns = [
 
     # tuần 5 - search
     path('api/v1/search/', include('search.urls')),
+
+    # recommendations
+    path('api/v1/recommendations/', include('recommendations.urls')),
 
 ]
 

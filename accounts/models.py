@@ -10,8 +10,11 @@ Tất cả PK là UUIDField theo quy ước chung của hệ thống (§12.1).
 """
 
 import uuid
+import secrets
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+from datetime import timedelta
 
 class User(AbstractUser):
     """
@@ -119,10 +122,31 @@ class User(AbstractUser):
     
     def __str__(self):
         return f'{self.username} ({self.email})'
-    
+
+    @property
+    def is_admin(self) -> bool:
+        """True nếu là quản trị viên (role='admin' hoặc is_superuser)."""
+        return self.role == self.ROLE_ADMIN or self.is_superuser
+
+    def save(self, *args, **kwargs):
+        """
+        Đồng bộ role='admin' ↔ is_superuser + is_staff (2 chiều):
+          - role='admin'      → is_superuser=True, is_staff=True
+          - is_superuser=True → role='admin',      is_staff=True
+        Đảm bảo Django Admin panel và hệ thống nghiệp vụ luôn nhất quán.
+        """
+        if self.role == self.ROLE_ADMIN:
+            self.is_superuser = True
+            self.is_staff = True
+        elif self.is_superuser:
+            self.role = self.ROLE_ADMIN
+            self.is_staff = True
+        super().save(*args, **kwargs)
+
     def get_display_name(self):
         """Trả tên hiển thị, fallback về username nếu chưa đặt."""
         return self.display_name or self.username
+
     
     def to_dict(self, include_private=False):
         """
@@ -283,3 +307,61 @@ class BlockList(models.Model):
 
     def __str__(self):
         return f'{self.blocker.username} -> block -> {self.blocked.username}'
+
+class PasswordResetToken(models.Model):
+    """
+    Token đặt lại mật khẩu qua email.
+
+    Flow:
+    1. User gửi POST /api/v1/auth/password/reset/request/ với email
+    2. Hệ thống tạo token ngẫu nhiên, lưu vào bảng này, gửi link qua email
+    3. User click link → POST /api/v1/auth/password/reset/confirm/ với token + new_password
+    4. Token bị xóa sau khi dùng hoặc hết hạn
+
+    Bảo mật:
+    - Token dài 64 ký tự hex (256-bit entropy)
+    - Hết hạn sau EXPIRE_HOURS giờ
+    - Mỗi user chỉ có 1 token active (tạo mới sẽ xóa cũ)
+    """
+
+    EXPIRE_HOURS = 1  # Token hết hạn sau 1 giờ
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.OneToOneField(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='password_reset_token',
+        verbose_name='Người dùng',
+    )
+
+    token = models.CharField(
+        max_length=128,
+        unique=True,
+        verbose_name='Token',
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày tạo',
+    )
+
+    class Meta:
+        db_table = 'accounts_password_reset_token'
+        verbose_name = 'Token đặt lại mật khẩu'
+        verbose_name_plural = 'Token đặt lại mật khẩu'
+
+    def __str__(self):
+        return f'ResetToken({self.user.email})'
+
+    @classmethod
+    def generate_for(cls, user: 'User') -> 'PasswordResetToken':
+        """Tạo (hoặc thay thế) token cho user."""
+        cls.objects.filter(user=user).delete()
+        token_str = secrets.token_hex(32)  # 64 ký tự hex
+        return cls.objects.create(user=user, token=token_str)
+
+    def is_expired(self) -> bool:
+        """Kiểm tra token đã hết hạn chưa."""
+        expiry = self.created_at + timedelta(hours=self.EXPIRE_HOURS)
+        return timezone.now() > expiry

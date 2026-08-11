@@ -30,7 +30,7 @@ class Playlist(models.Model):
 
     #ảnh bìa được lưu trên Cloudinary với path: covers/playlists/<uuid>.<ext>
     cover_image = models.ImageField(
-        upload_to='covers/playlists',
+        upload_to='covers/playlists/',
         blank=True,
         null=True,
         verbose_name='Ảnh bìa',

@@ -227,7 +227,7 @@
                                 <li class="text-center py-3 text-secondary small"><div class="spinner-border spinner-border-sm" role="status"></div></li>
                             </ul>
                         </div>
-                        <i class="bi bi-arrow-down-circle action-icon" title="Tải xuống"></i>
+                        <i id="detail-download-btn" class="bi bi-arrow-down-circle action-icon" title="Tải xuống"></i>
                         <i class="bi bi-three-dots action-icon"></i>
                     </div>
 
@@ -267,41 +267,10 @@
                             <a href="#" class="text-secondary text-decoration-none hover-text-white"
                                 style="font-size: 0.875rem; font-weight: 600;">XEM TẤT CẢ</a>
                         </div>
-                        <div class="d-flex flex-column gap-2">
-                            <!-- Card component usage mockup (normally generated dynamically) -->
-                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded position-relative"
-                                style="transition: background-color 0.2s;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-secondary" style="width: 20px;">1</div>
-                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
-                                        class="rounded" alt="cover" style="width: 40px; height: 40px;">
-                                    <div>
-                                        <div class="fw-semibold">See Tình</div>
-                                        <div class="small text-secondary">Hoàng Thuỳ Linh</div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-4 text-secondary">
-                                    <span class="d-none d-md-block">LINK</span>
-                                    <span>3:10</span>
-                                    <i class="bi bi-heart"></i>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded position-relative"
-                                style="transition: background-color 0.2s;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-secondary" style="width: 20px;">2</div>
-                                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
-                                        class="rounded" alt="cover" style="width: 40px; height: 40px;">
-                                    <div>
-                                        <div class="fw-semibold">Waiting For You</div>
-                                        <div class="small text-secondary">MONO, Onionn</div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center gap-4 text-secondary">
-                                    <span class="d-none d-md-block">22</span>
-                                    <span>4:25</span>
-                                    <i class="bi bi-heart"></i>
+                        <div class="d-flex flex-column gap-2" id="similar-songs-container">
+                            <div class="d-flex justify-content-center align-items-center w-100 py-3">
+                                <div class="spinner-border text-secondary" role="status" style="width: 1.5rem; height: 1.5rem;">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
                         </div>
@@ -310,152 +279,27 @@
                     <!-- Comments Section -->
                     <div class="px-4 mt-5 mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="fw-bold mb-0">Bình luận <span class="text-secondary fs-6 fw-normal">(128)</span>
+                            <h4 class="fw-bold mb-0">Bình luận <span class="text-secondary fs-6 fw-normal" id="commentCountDisplay">(0)</span>
                             </h4>
                         </div>
 
                         <!-- Comment Input -->
                         <div class="d-flex gap-3 mb-4 align-items-center">
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&q=80"
+                            <img src="{% if user.is_authenticated and user.avatar %}{{ user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|default:'U' }}&background=random{% endif %}"
                                 alt="User Avatar" class="rounded-circle object-fit-cover"
                                 style="width: 40px; height: 40px;">
                             <div class="flex-grow-1 d-flex gap-2">
-                                <input type="text"
+                                <input type="text" id="commentInput"
                                     class="form-control bg-transparent text-white border-secondary border-opacity-50"
                                     placeholder="Viết bình luận của bạn..." style="border-radius: 20px;">
-                                <button class="btn btn-sm rounded-pill px-4 fw-bold text-dark flex-shrink-0"
+                                <button id="commentSubmitBtn" class="btn btn-sm rounded-pill px-4 fw-bold text-dark flex-shrink-0"
                                     style="background-color: var(--accent-color); border: none;">Bình luận</button>
                             </div>
                         </div>
 
-                        <!-- Comment List -->
-                        <div class="d-flex flex-column gap-4">
-                            <!-- Comment 1 -->
-                            <div class="d-flex gap-3">
-                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
-                                    class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-baseline justify-content-between mb-1">
-                                        <div class="d-flex align-items-baseline gap-2">
-                                            <span class="fw-bold">Ngọc Yến</span>
-                                            <span class="text-secondary" style="font-size: 0.75rem;">2 giờ trước</span>
-                                        </div>
-                                        <div class="dropdown">
-                                            <i class="bi bi-three-dots text-secondary"
-                                                style="cursor: pointer; padding: 0 8px;" data-bs-toggle="dropdown"
-                                                aria-expanded="false"
-                                                onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                                onmouseout="this.classList.replace('text-white', 'text-secondary')"></i>
-                                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow"
-                                                style="background-color: var(--bg-card); min-width: 120px; font-size: 0.85rem;">
-                                                <li><a class="dropdown-item py-2 text-danger" href="#"><i
-                                                            class="bi bi-flag me-2"></i> Báo cáo</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="text-light" style="font-size: 0.9rem;">
-                                        Bài hát hay quá, giai điệu nghe rất bắt tai, lặp đi lặp lại mãi trong đầu. 😭
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3 mt-2 text-secondary"
-                                        style="font-size: 0.85rem;">
-                                        <div class="d-flex align-items-center gap-1" style="cursor: pointer;"
-                                            onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                            onmouseout="this.classList.replace('text-white', 'text-secondary')">
-                                            <i class="bi bi-heart"></i> 45
-                                        </div>
-                                        <div style="cursor: pointer;"
-                                            onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                            onmouseout="this.classList.replace('text-white', 'text-secondary')">
-                                            Phản hồi
-                                        </div>
-                                    </div>
-
-                                    <!-- Nested Reply -->
-                                    <div class="d-flex gap-3 mt-3">
-                                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&w=30&h=30&fit=crop"
-                                            class="rounded-circle object-fit-cover" style="width: 30px; height: 30px;">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex align-items-baseline justify-content-between mb-1">
-                                                <div class="d-flex align-items-baseline gap-2">
-                                                    <span class="fw-bold" style="font-size: 0.9rem;">Thanh Tuấn</span>
-                                                    <span class="text-secondary" style="font-size: 0.7rem;">1 giờ
-                                                        trước</span>
-                                                </div>
-                                                <div class="dropdown">
-                                                    <i class="bi bi-three-dots text-secondary"
-                                                        style="cursor: pointer; padding: 0 8px;"
-                                                        data-bs-toggle="dropdown" aria-expanded="false"
-                                                        onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                                        onmouseout="this.classList.replace('text-white', 'text-secondary')"></i>
-                                                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow"
-                                                        style="background-color: var(--bg-card); min-width: 120px; font-size: 0.85rem;">
-                                                        <li><a class="dropdown-item py-2 text-danger" href="#"><i
-                                                                    class="bi bi-flag me-2"></i> Báo cáo</a></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div class="text-light" style="font-size: 0.85rem;">
-                                                Công nhận nha bạn ơi! Mình nghe đi nghe lại chục lần rồi kkk 😂
-                                            </div>
-                                            <div class="d-flex align-items-center gap-3 mt-2 text-secondary"
-                                                style="font-size: 0.8rem;">
-                                                <div class="d-flex align-items-center gap-1" style="cursor: pointer;"
-                                                    onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                                    onmouseout="this.classList.replace('text-white', 'text-secondary')">
-                                                    <i class="bi bi-heart"></i> 12
-                                                </div>
-                                                <div style="cursor: pointer;"
-                                                    onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                                    onmouseout="this.classList.replace('text-white', 'text-secondary')">
-                                                    Phản hồi
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Comment 2 -->
-                            <div class="d-flex gap-3">
-                                <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&w=40&h=40&fit=crop"
-                                    class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-baseline justify-content-between mb-1">
-                                        <div class="d-flex align-items-baseline gap-2">
-                                            <span class="fw-bold">Hoàng Nam</span>
-                                            <span class="text-secondary" style="font-size: 0.75rem;">5 giờ trước</span>
-                                        </div>
-                                        <div class="dropdown">
-                                            <i class="bi bi-three-dots text-secondary"
-                                                style="cursor: pointer; padding: 0 8px;" data-bs-toggle="dropdown"
-                                                aria-expanded="false"
-                                                onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                                onmouseout="this.classList.replace('text-white', 'text-secondary')"></i>
-                                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow"
-                                                style="background-color: var(--bg-card); min-width: 120px; font-size: 0.85rem;">
-                                                <li><a class="dropdown-item py-2 text-danger" href="#"><i
-                                                            class="bi bi-flag me-2"></i> Báo cáo</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="text-light" style="font-size: 0.9rem;">
-                                        Sếp Tùng mãi đỉnh! Vẫn nhớ cái cảm giác thức đêm chờ ra mắt MV này. Quá tuyệt
-                                        vời!
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3 mt-2 text-secondary"
-                                        style="font-size: 0.85rem;">
-                                        <div class="d-flex align-items-center gap-1 text-accent"
-                                            style="cursor: pointer;">
-                                            <i class="bi bi-heart-fill"></i> 124
-                                        </div>
-                                        <div style="cursor: pointer;"
-                                            onmouseover="this.classList.replace('text-secondary', 'text-white')"
-                                            onmouseout="this.classList.replace('text-white', 'text-secondary')">
-                                            Phản hồi
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Comment List Container -->
+                        <div id="commentsListContainer" class="d-flex flex-column gap-4">
+                            <div class="text-center text-secondary py-3">Đang tải bình luận...</div>
                         </div>
                     </div>
                 </div>
@@ -574,301 +418,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Lấy ID bài hát từ URL (?id=...)
-            const urlParams = new URLSearchParams(window.location.search);
-            const songId = urlParams.get('id');
-
-            if (songId) {
-                // Gọi API backend
-                fetch(`/api/v1/music/songs/${songId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.data) {
-                            const song = data.data;
-
-                            // Hàm format duration từ giây sang mm:ss
-                            const formatDuration = (seconds) => {
-                                const m = Math.floor(seconds / 60);
-                                const s = seconds % 60;
-                                return `${m}:${s < 10 ? '0' : ''}${s}`;
-                            };
-
-                            // Cập nhật giao diện Header
-                            const coverUrl = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
-
-                            const imgEl = document.getElementById('detail-cover');
-                            imgEl.crossOrigin = "Anonymous";
-
-                            // Lấy màu nền khi ảnh đã tải xong
-                            imgEl.addEventListener('load', function () {
-                                try {
-                                    const colorThief = new ColorThief();
-                                    const color = colorThief.getColor(imgEl);
-                                    if (color) {
-                                        const songHeader = document.querySelector('.song-header');
-                                        // Đổi nền gradient với màu của ảnh (có độ trong suốt 0.4 để màu tối hơn)
-                                        songHeader.style.background = `linear-gradient(to bottom, rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.4), var(--bg-app))`;
-                                    }
-                                } catch (e) {
-                                    console.warn('Không thể lấy màu nền từ ảnh do lỗi CORS hoặc thư viện.', e);
-                                }
-                            });
-
-                            imgEl.src = coverUrl;
-
-                            document.getElementById('detail-title').textContent = song.title;
-
-                            const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-                            const artistAvatar = (song.artist && song.artist.avatar) ? song.artist.avatar : 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80';
-
-                            const artistNameEl = document.getElementById('detail-artist-name');
-                            artistNameEl.textContent = artistName;
-                            if (song.artist) {
-                                artistNameEl.href = `/profile/${song.artist.id}/`;
-                            }
-                            
-                            document.getElementById('detail-artist-img').src = artistAvatar;
-                            
-                            const releaseYear = song.released_at ? new Date(song.released_at).getFullYear() : (song.created_at ? new Date(song.created_at).getFullYear() : '2023');
-                            document.getElementById('detail-year').textContent = releaseYear;
-                            document.getElementById('detail-duration').textContent = formatDuration(song.duration);
-                            document.getElementById('detail-plays').textContent = `${(song.play_count || 0).toLocaleString('vi-VN')} lượt nghe`;
-                            document.getElementById('detail-likes').innerHTML = `<i class="bi bi-heart-fill" style="font-size:0.75rem;"></i> ${(song.like_count || 0).toLocaleString('vi-VN')}`;
-
-                            // Cập nhật Lyrics
-                            if (song.lyrics) {
-                                document.getElementById('detail-lyrics').textContent = song.lyrics;
-                            } else {
-                                document.getElementById('detail-lyrics').textContent = "Bài hát này chưa có lời.";
-                            }
-
-                            // Cập nhật Artist Section
-                            document.getElementById('detail-artist-avatar').src = artistAvatar;
-                            document.getElementById('detail-artist-name-2').textContent = artistName;
-                            
-                            const monthlyListeners = (song.artist && song.artist.monthly_listeners !== undefined) 
-                                ? song.artist.monthly_listeners 
-                                : 0;
-                            document.getElementById('detail-artist-followers').textContent = `${monthlyListeners.toLocaleString('vi-VN')} người nghe hàng tháng`;
-                            
-                            const artistLink = document.getElementById('detail-artist-link');
-                            if (artistLink && song.artist) {
-                                artistLink.href = `/profile/${song.artist.id}/`;
-                            }
-
-                            // Cập nhật nút Like
-                            const likeBtn = document.getElementById('detail-like-btn');
-                            if (likeBtn) {
-                                if (song.is_liked) {
-                                    likeBtn.classList.remove('bi-heart');
-                                    likeBtn.classList.add('bi-heart-fill', 'text-accent');
-                                }
-                                
-                                likeBtn.addEventListener('click', async function () {
-                                    const isLiked = this.classList.contains('bi-heart-fill');
-                                    if (isLiked) {
-                                        this.classList.remove('bi-heart-fill', 'text-accent');
-                                        this.classList.add('bi-heart');
-                                    } else {
-                                        this.classList.remove('bi-heart');
-                                        this.classList.add('bi-heart-fill', 'text-accent');
-                                    }
-
-                                    try {
-                                        const res = await fetch(`/api/v1/music/songs/${songId}/like/`, {
-                                            method: 'POST',
-                                            headers: {
-                                                'X-CSRFToken': getCookie('csrftoken')
-                                            }
-                                        });
-                                        const data = await res.json();
-                                        if (!res.ok || !data.success) {
-                                            // Revert
-                                            if (isLiked) {
-                                                this.classList.remove('bi-heart');
-                                                this.classList.add('bi-heart-fill', 'text-accent');
-                                            } else {
-                                                this.classList.remove('bi-heart-fill', 'text-accent');
-                                                this.classList.add('bi-heart');
-                                            }
-                                        } else {
-                                            // Cập nhật số lượt thích UI
-                                            const currentLikes = parseInt(document.getElementById('detail-likes').innerText.trim()) || 0;
-                                            document.getElementById('detail-likes').innerHTML = `<i class="bi bi-heart-fill" style="font-size:0.75rem;"></i> ${isLiked ? currentLikes - 1 : currentLikes + 1}`;
-                                        }
-                                    } catch (err) {
-                                        console.error(err);
-                                        // Revert
-                                        if (isLiked) {
-                                            this.classList.remove('bi-heart');
-                                            this.classList.add('bi-heart-fill', 'text-accent');
-                                        } else {
-                                            this.classList.remove('bi-heart-fill', 'text-accent');
-                                            this.classList.add('bi-heart');
-                                        }
-                                    }
-                                });
-                            }
-                            
-                            // Xử lý nút Thêm vào Playlist (Dropdown)
-                            const btnAddToPlaylist = document.getElementById('btn-add-to-playlist');
-                            const playlistDropdown = document.getElementById('playlist-dropdown-menu');
-                            
-                            if (btnAddToPlaylist && playlistDropdown) {
-                                btnAddToPlaylist.addEventListener('click', async function(e) {
-                                    e.stopPropagation();
-                                    
-                                    const isShowing = playlistDropdown.style.display === 'block';
-                                    if (isShowing) {
-                                        playlistDropdown.style.display = 'none';
-                                        return;
-                                    }
-                                    
-                                    playlistDropdown.style.display = 'block';
-                                    playlistDropdown.innerHTML = '<li class="text-center py-3 text-secondary small"><div class="spinner-border spinner-border-sm" role="status"></div></li>';
-                                    
-                                    try {
-                                        const res = await fetch('/api/v1/playlists/');
-                                        const data = await res.json();
-                                        
-                                        let html = '';
-                                        // Nút Tạo playlist mới và ô tìm kiếm
-                                        html += `
-                                            <li>
-                                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white fw-bold hover-bg-secondary" href="#" id="btn-create-and-add">
-                                                    <i class="bi bi-plus-lg text-accent"></i> Tạo playlist mới
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider border-secondary opacity-25 my-1"></li>
-                                            <li class="px-2 pb-2" onclick="event.stopPropagation()">
-                                                <div class="search-bar position-relative" style="background: rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 10px; display: flex; align-items: center;">
-                                                    <i class="bi bi-search text-secondary" style="font-size: 0.85rem;"></i>
-                                                    <input type="text" id="playlist-search-input" placeholder="Tìm kiếm playlist..." class="text-white" style="background: none; border: none; outline: none; width: 100%; margin-left: 8px; font-size: 0.9rem;" onclick="event.stopPropagation()">
-                                                </div>
-                                            </li>
-                                        `;
-                                        
-                                        if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                                            data.data.items.forEach(pl => {
-                                                html += `
-                                                    <li class="playlist-dropdown-item">
-                                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white hover-bg-secondary add-to-existing-pl" href="#" data-playlist-id="${pl.id}">
-                                                            <i class="bi bi-music-note-list text-secondary"></i>
-                                                            <span class="text-truncate playlist-name-text">${pl.title}</span>
-                                                        </a>
-                                                    </li>
-                                                `;
-                                            });
-                                        } else {
-                                            html += `
-                                                <li class="text-center py-3 text-secondary small px-3">
-                                                    Bạn chưa có playlist nào.
-                                                </li>
-                                            `;
-                                        }
-                                        
-                                        playlistDropdown.innerHTML = html;
-                                        
-                                        // Xử lý tìm kiếm playlist
-                                        const searchInput = document.getElementById('playlist-search-input');
-                                        if (searchInput) {
-                                            searchInput.addEventListener('input', function(e) {
-                                                const searchTerm = e.target.value.toLowerCase().trim();
-                                                const items = playlistDropdown.querySelectorAll('.playlist-dropdown-item');
-                                                items.forEach(item => {
-                                                    const text = item.querySelector('.playlist-name-text').textContent.toLowerCase();
-                                                    if (text.includes(searchTerm)) {
-                                                        item.style.display = 'block';
-                                                    } else {
-                                                        item.style.display = 'none';
-                                                    }
-                                                });
-                                            });
-                                        }
-                                        
-                                        // Event: Tạo mới và thêm
-                                        const btnCreateAndAdd = document.getElementById('btn-create-and-add');
-                                        if (btnCreateAndAdd) {
-                                            btnCreateAndAdd.addEventListener('click', function(e) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                playlistDropdown.style.display = 'none';
-                                                window.pendingSongToAddToNewPlaylist = songId; // Lưu id bài hát
-                                                if (window.openCreatePlaylistModal) {
-                                                    window.openCreatePlaylistModal();
-                                                }
-                                            });
-                                        }
-                                        
-                                        // Event: Thêm vào playlist có sẵn
-                                        document.querySelectorAll('.add-to-existing-pl').forEach(item => {
-                                            item.addEventListener('click', async function(e) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                const plId = this.getAttribute('data-playlist-id');
-                                                playlistDropdown.style.display = 'none';
-                                                
-                                                try {
-                                                    const addRes = await fetch(`/api/v1/playlists/${plId}/songs/`, {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                            'X-CSRFToken': getCookie('csrftoken')
-                                                        },
-                                                        body: JSON.stringify({ song_id: songId })
-                                                    });
-                                                    const addData = await addRes.json();
-                                                    
-                                                    if (addRes.ok && addData.success) {
-                                                        if (window.showToast) showToast('Đã thêm bài hát vào playlist', 'success');
-                                                    } else {
-                                                        if (window.showToast) showToast(addData.error?.message || 'Có lỗi xảy ra', 'error');
-                                                    }
-                                                } catch (err) {
-                                                    console.error(err);
-                                                    if (window.showToast) showToast('Lỗi kết nối', 'error');
-                                                }
-                                            });
-                                        });
-                                        
-                                    } catch(err) {
-                                        console.error('Error fetching playlists', err);
-                                        playlistDropdown.innerHTML = '<li class="text-center py-2 text-danger small">Lỗi tải dữ liệu</li>';
-                                    }
-                                });
-                                
-                                // Đóng dropdown khi click ra ngoài
-                                document.addEventListener('click', function(e) {
-                                    if (playlistDropdown && !playlistDropdown.contains(e.target) && e.target !== btnAddToPlaylist) {
-                                        playlistDropdown.style.display = 'none';
-                                    }
-                                });
-                            }
-
-                            // Bind play button
-                            const playBtn = document.querySelector('.btn-play-large');
-                            if (playBtn) {
-                                playBtn.onclick = function (e) {
-                                    if (window.playSong) {
-                                        window.playSong(song.id, e);
-                                    }
-                                };
-                            }
-
-                        } else {
-                            document.getElementById('detail-title').textContent = "Không tìm thấy bài hát";
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Lỗi khi lấy thông tin bài hát:', error);
-                        document.getElementById('detail-title').textContent = "Lỗi tải dữ liệu";
-                    });
-            } else {
-                document.getElementById('detail-title').textContent = "Không tìm thấy bài hát (Thiếu ID)";
-            }
-        });
+        window.CURRENT_USER_ID = '{{ user.id|default_if_none:"" }}';
     </script>
+    <script src="{% static 'js/song.js' %}?v=1"></script>
 </body>
 
 </html>

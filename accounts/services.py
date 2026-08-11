@@ -15,13 +15,14 @@ import logging
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 
-from accounts.models import User, ArtistVerification, BlockList
+from accounts.models import User, ArtistVerification, BlockList, PasswordResetToken
 from accounts.selectors import (
     check_email_exists,
     check_username_exists,
     get_user_by_email,
     has_pending_verification,
     get_verification_by_id,
+    get_reset_token_by_value,
 )
 from accounts.exceptions import (
     ValidationError,
@@ -297,7 +298,7 @@ def approve_verification(verification_id, admin: User) -> ArtistVerification:
         ValidationError:  nếu verification không ở trạng thái pending
     """
 
-    if admin.role != User.ROLE_ADMIN:
+    if not admin.is_admin:
         raise PermissionDenied('Chỉ admin mới được duyệt yêu cầu')
     
     verification = get_verification_by_id(verification_id)
@@ -346,7 +347,7 @@ def reject_verification(verification_id, admin: User, reason: str = '') -> Artis
         ValidationError:  nếu verification không ở trạng thái pending
     """
 
-    if admin.role != User.ROLE_ADMIN:
+    if not admin.is_admin:
         raise PermissionDenied('Chỉ admin mới được từ chối yêu cầu')
     
     verification = get_verification_by_id(verification_id)
@@ -370,3 +371,85 @@ def reject_verification(verification_id, admin: User, reason: str = '') -> Artis
         admin.username,
     )
     return verification
+
+# Password Reset
+def request_password_reset(data: dict) -> None:
+    """
+    Gửi email chứa link đặt lại mật khẩu.
+
+    Args:
+        data: dict đã validate từ validators.validate_password_reset_request()
+              Gồm: email
+
+    Lưu ý bảo mật:
+        Dù email không tồn tại vẫn trả thành công (tránh user enumeration attack).
+    """
+    from django.core.mail import send_mail
+    from django.conf import settings
+
+    email = data['email']
+    user = get_user_by_email(email)
+
+    # Không tiết lộ email có tồn tại hay không
+    if user is None or not user.is_active:
+        logger.info('Password reset requested for unknown/inactive email: %s', email)
+        return
+
+    reset_token = PasswordResetToken.generate_for(user)
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:8000')
+    reset_link = f'{frontend_url}/auth/reset-password/?token={reset_token.token}'
+
+    subject = 'PlayMood — Đặt lại mật khẩu'
+    message = (
+        f'Xin chào {user.get_display_name()},\n\n'
+        f'Bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản PlayMood.\n'
+        f'Click vào link bên dưới để tiếp tục (link hết hạn sau 1 giờ):\n\n'
+        f'{reset_link}\n\n'
+        f'Nếu bạn không yêu cầu, hãy bỏ qua email này.\n\n'
+        f'Trân trọng,\nĐội ngũ PlayMood'
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        logger.info('Password reset email sent to: %s', user.email)
+    except Exception as exc:
+        logger.error('Failed to send reset email to %s: %s', user.email, exc)
+        raise
+
+
+def confirm_password_reset(data: dict) -> None:
+    """
+    Xác nhận token và đặt lại mật khẩu mới.
+
+    Args:
+        data: dict đã validate từ validators.validate_password_reset_confirm()
+              Gồm: token, new_password
+
+    Raises:
+        ValidationError: token không hợp lệ hoặc đã hết hạn
+    """
+    token_str = data['token']
+    new_password = data['new_password']
+
+    reset_token = get_reset_token_by_value(token_str)
+
+    if reset_token is None:
+        raise ValidationError('Link đặt lại mật khẩu không hợp lệ hoặc đã được sử dụng')
+
+    if reset_token.is_expired():
+        reset_token.delete()
+        raise ValidationError('Link đặt lại mật khẩu đã hết hạn. Vui lòng yêu cầu lại.')
+
+    user = reset_token.user
+    user.set_password(new_password)
+    user.save(update_fields=['password'])
+
+    # Xóa token sau khi dùng
+    reset_token.delete()
+    logger.info('Password reset successful for user: %s', user.email)

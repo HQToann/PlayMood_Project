@@ -134,7 +134,16 @@ class PlaylistListView(View):
     def get(self, request):
         try:
             filters = validate_list_playlists_params(request.GET)
-            result = list_my_playlists(request.user, filters)
+            user_id = request.GET.get('user_id')
+            scope = request.GET.get('scope')
+            if scope == 'public':
+                from playlists.selectors import list_public_playlists
+                result = list_public_playlists(filters, viewer=request.user if request.user.is_authenticated else None)
+            elif user_id and user_id != str(request.user.id):
+                from playlists.selectors import list_user_public_playlists
+                result = list_user_public_playlists(user_id, filters, viewer=request.user)
+            else:
+                result = list_my_playlists(request.user, filters)
             return JsonResponse(
                 {
                     'success': True,

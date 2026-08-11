@@ -17,7 +17,7 @@ class ArtistProfile(models.Model):
     user = models.OneToOneField(
         'accounts.User',
         on_delete=models.CASCADE,
-        related_name='astist_profile',
+        related_name='artist_profile',
         verbose_name='Nghệ sĩ',
     )
 
