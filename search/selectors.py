@@ -1,6 +1,6 @@
 import math
 from django.db.models import Q
-from music.models import Song
+from music.models import Song, Album
 from artists.models import ArtistProfile
 from playlists.models import Playlist
 from accounts.models import User, BlockList
@@ -149,16 +149,30 @@ def search_users(q='', requester=None, page=1, page_size=20) -> dict:
     }
 
 
+def search_albums(q='', viewer=None, page=1, page_size=20) -> dict:
+    from music.models import Album
+    qs = Album.objects.filter(status='published', artist__is_active=True).select_related('artist')
+    if q:
+        qs = qs.filter(title__icontains=q)
+    qs = qs.order_by('-created_at')
+    total = qs.count()
+    start = (page - 1) * page_size
+    items = [a.to_dict(viewer=viewer) for a in qs[start:start + page_size]]
+    return {'items': items, 'pagination': _pagination(page, page_size, total)}
+
 def search_all(q, viewer=None, limit=5) -> dict:
     """Tìm kiếm tổng hợp - mỗi loại giới hạn `limit` kết quả, không phân trang đầy đủ."""
     songs = search_songs(q=q, viewer=viewer, page=1, page_size=limit)['items']
     artists = search_artists(q=q, viewer=viewer, page=1, page_size=limit)['items']
     playlists = search_playlists(q=q, viewer=viewer, page=1, page_size=limit)['items']
+    albums = search_albums(q=q, viewer=viewer, page=1, page_size=limit)['items']
     users = search_users(q=q, requester=viewer, page=1, page_size=limit)['items']
 
     return {
         'songs': songs, 
         'artists': artists, 
         'playlists': playlists, 
+        'albums': search_albums(q=q, viewer=viewer, page=1, page_size=limit)['items'],
+        'albums': albums,
         'users': users
     }

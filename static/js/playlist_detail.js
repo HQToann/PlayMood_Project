@@ -281,9 +281,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
                     <div class="text-secondary text-center">${index + 1}</div>
                     <div class="d-flex align-items-center gap-3 text-truncate">
-                        <img src="${coverImg}" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;" onclick="window.location.href='/song/?id=${song.id}'">
+                        <img src="${coverImg}" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;" onclick="window.goToPage('/song/?id=${song.id}')">
                         <div class="text-truncate">
-                            <div class="fw-semibold text-truncate text-white" style="cursor: pointer;" onclick="window.location.href='/song/?id=${song.id}'">${song.title}</div>
+                            <div class="fw-semibold text-truncate text-white" style="cursor: pointer;" onclick="window.goToPage('/song/?id=${song.id}')">${song.title}</div>
                             <div class="small text-secondary text-truncate">${artistName}</div>
                         </div>
                     </div>
@@ -298,6 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="bi bi-three-dots-vertical action-icon hover-text-white" style="font-size: 1.2rem;"></i>
                         </div>
                         <ul class="custom-dropdown-menu dropdown-menu-dark shadow" style="display: none; position: absolute; right: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 200px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050;">
+                            <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white btn-queue-next" href="#" data-song-id="${song.id}" onclick="window.queueNext('${song.id}', event)"><i class="bi bi-music-note-list"></i> Phát tiếp theo</a></li>
                             <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white btn-add-to-other" href="#" data-song-id="${song.id}"><i class="bi bi-plus-circle"></i> Thêm vào playlist khác</a></li>
                             <li><hr class="dropdown-divider border-secondary opacity-25 my-1"></li>
                             <li><a class="dropdown-item text-danger d-flex align-items-center gap-2 py-2 px-3 text-decoration-none btn-remove-from-playlist" href="#" data-song-id="${song.id}"><i class="bi bi-trash"></i> Xóa khỏi playlist</a></li>
@@ -447,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (res.ok) {
                     if (window.showToast) showToast('Đã xóa playlist thành công', 'success');
                     setTimeout(() => {
-                        window.location.href = '/'; // Quay về trang chủ
+                        window.goToPage('/'); // Quay về trang chủ
                     }, 1000);
                 } else {
                     const data = await res.json().catch(() => ({}));
@@ -639,9 +640,9 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="d-flex align-items-center justify-content-between p-2 rounded hover-bg-secondary transition-colors">
                     <div class="d-flex align-items-center gap-3 overflow-hidden">
-                        <img src="${coverImg}" alt="${song.title}" class="rounded flex-shrink-0" style="width: 48px; height: 48px; object-fit: cover; cursor: pointer;" onclick="window.location.href='/song/?id=${song.id}'">
+                        <img src="${coverImg}" alt="${song.title}" class="rounded flex-shrink-0" style="width: 48px; height: 48px; object-fit: cover; cursor: pointer;" onclick="window.goToPage('/song/?id=${song.id}')">
                         <div class="overflow-hidden">
-                            <div class="text-white fw-semibold text-truncate" style="font-size: 1rem; cursor: pointer;" onclick="window.location.href='/song/?id=${song.id}'">${song.title}</div>
+                            <div class="text-white fw-semibold text-truncate" style="font-size: 1rem; cursor: pointer;" onclick="window.goToPage('/song/?id=${song.id}')">${song.title}</div>
                             <div class="text-secondary text-truncate small" style="font-size: 0.85rem;">Bài hát • ${artistName}</div>
                         </div>
                     </div>
@@ -759,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const cover  = song.cover_image || DEFAULT_COVER_SONG;
             const artist = song.artist ? song.artist.display_name : 'Ngh&#7879; s&#297;';
             return `
-            <div class="song-reco-card" onclick="window.location.href='/song/?id=${song.id}'">
+            <div class="song-reco-card" onclick="window.goToPage('/song/?id=${song.id}')">
                 <div class="card-img-wrap">
                     <img src="${cover}" alt="${song.title}" loading="lazy">
                     <button class="play-overlay"

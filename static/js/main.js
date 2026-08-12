@@ -1,3 +1,12 @@
+
+// Global navigation wrapper to use AJAX router if available
+window.goToPage = function(url) {
+    if (window.pmNavigate) {
+        window.pmNavigate(url, true);
+    } else {
+        window.location.href = url;
+    }
+};
 // main.js
 // Common JS code for PlayMood
 
@@ -162,4 +171,160 @@ window.showToast = function(msg, isSuccess = true) {
     });
     
     toast.show();
+};
+
+// Global Time Ago Formatter
+window.timeAgo = function(isoString) {
+    if (!isoString) return '';
+    const now = new Date();
+    const past = new Date(isoString);
+    const diffMs = now - past;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return 'Vừa xong';
+    if (diffMin < 60) return `${diffMin} phút trước`;
+    if (diffHour < 24) return `${diffHour} giờ trước`;
+    if (diffDay < 7) return `${diffDay} ngày trước`;
+    return past.toLocaleDateString('vi-VN');
+};
+
+// Global Format Time (seconds -> mm:ss)
+window.formatTime = function(s) {
+    if (isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+};
+
+// Global toggle follow user
+window.toggleFollowUser = async function(userId, btnElement) {
+    // Fallback to checking undefined just in case
+    if (window.USER_IS_AUTHENTICATED === false || window.CURRENT_USER_AUTHENTICATED === false) {
+        window.location.href = window.LOGIN_URL || '/auth/login/';
+        return;
+    }
+    
+    const originalText = btnElement.innerText;
+    btnElement.disabled = true;
+    btnElement.innerText = '...';
+    
+    function getCsrf() {
+        if (typeof getCookie === 'function') return getCookie('csrftoken');
+        const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'));
+        return match ? match[2] : '';
+    }
+    
+    try {
+        const res = await fetch(`/api/v1/social/users/${userId}/follow/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrf(),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            if (data.data.status === 'following') {
+                btnElement.innerText = 'Đang theo dõi';
+                btnElement.classList.remove('btn-outline-light', 'text-white');
+                btnElement.classList.add('btn-light', 'text-dark');
+            } else if (data.data.status === 'requested') {
+                btnElement.innerText = 'Đã yêu cầu';
+                btnElement.classList.remove('btn-outline-light', 'text-white');
+                btnElement.classList.add('btn-light', 'text-dark');
+            } else {
+                btnElement.innerText = 'Theo dõi';
+                btnElement.classList.remove('btn-light', 'text-dark');
+                btnElement.classList.add('btn-outline-light', 'text-white');
+            }
+        } else {
+            alert(data.error?.message || 'Lỗi xử lý yêu cầu');
+            btnElement.innerText = originalText;
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối');
+        btnElement.innerText = originalText;
+    } finally {
+        btnElement.disabled = false;
+    }
+};
+
+// Global open add to playlist (fallback to redirecting to song details since there's no global modal)
+window.openAddToPlaylistModal = function(songId) {
+    if (window.goToPage) {
+        window.goToPage(`/song/?id=${songId}`);
+    } else {
+        window.location.href = `/song/?id=${songId}`;
+    }
+};
+
+// Global play album logic
+window.playAlbum = async function(albumId, albumTitle = 'Album') {
+    try {
+        let contextName = albumTitle;
+        if (contextName === 'Album') {
+            try {
+                const alRes = await fetch(`/api/v1/music/albums/${albumId}/`);
+                const alData = await alRes.json();
+                if (alData.success && alData.data) {
+                    contextName = alData.data.title || 'Album';
+                }
+            } catch(e) {}
+        }
+
+        const res  = await fetch(`/api/v1/music/albums/${albumId}/songs/`);
+        const data = await res.json();
+        if (!data.success) { 
+            if (window.showToast) window.showToast('Không thể tải album', 'error');
+            return; 
+        }
+
+        const songs = data.data.items || [];
+        if (songs.length === 0) {
+            if (window.showToast) window.showToast('Album chưa có bài hát nào', 'error');
+            return;
+        }
+
+        /* Phát bài đầu tiên qua window.playSong */
+        const firstSongId = songs[0].song.id;
+        if (typeof window.playSong === 'function') {
+            // Xoá sạch danh sách chờ hiện tại trước khi phát album
+            if (typeof window._songQueue !== 'undefined') {
+                window._songQueue = [];
+                localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+            }
+
+            window.playSong(firstSongId);
+            
+            // Append rest to queue
+            let rest = songs.slice(1);
+            
+            // Xáo trộn nếu đang bật chế độ ngẫu nhiên
+            const isShuffle = localStorage.getItem("pm_shuffle") === "true";
+            if (isShuffle && rest.length > 0) {
+                for (let i = rest.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [rest[i], rest[j]] = [rest[j], rest[i]];
+                }
+            }
+
+            rest.forEach(item => {
+                const s = item.song;
+                const artistName = s.artist ? (s.artist.display_name || s.artist.username || 'Unknown') : 'Unknown';
+                if (window.addToQueue) {
+                    window.addToQueue(s.id, s.title, artistName, s.cover_image, `Nội dung tiếp theo từ ${contextName}`, true);
+                }
+            });
+        } else {
+            if (window.showToast) window.showToast('Player chưa sẵn sàng', 'error');
+        }
+    } catch (err) {
+        console.error('playAlbum:', err);
+        if (window.showToast) window.showToast('Lỗi kết nối', 'error');
+    }
 };

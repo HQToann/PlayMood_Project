@@ -28,12 +28,6 @@ let songSearchTimeout = null;
 /* ══════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════ */
-function getCsrf() {
-    const match = document.cookie.split(';')
-        .map(c => c.trim())
-        .find(c => c.startsWith('csrftoken='));
-    return match ? match.split('=')[1] : '';
-}
 
 function fmtDuration(secs) {
     if (!secs) return '';
@@ -173,7 +167,7 @@ function buildAlbumCard(album) {
     };
 
     /* Click vào card → phát album */
-    card.onclick = () => playAlbum(albumId);
+    card.onclick = () => playAlbum(albumId, album.title);
     return card;
 }
 
@@ -184,8 +178,19 @@ function buildAlbumCard(album) {
  * Fetch bài hát trong album rồi phát bài đầu tiên.
  * Nếu album rỗng → thông báo toast.
  */
-async function playAlbum(albumId) {
+async function playAlbum(albumId, albumTitle = 'Album') {
     try {
+        let contextName = albumTitle;
+        if (contextName === 'Album') {
+            try {
+                const alRes = await fetch(`/api/v1/music/albums/${albumId}/`);
+                const alData = await alRes.json();
+                if (alData.success && alData.data) {
+                    contextName = alData.data.title || 'Album';
+                }
+            } catch(e) {}
+        }
+
         const res  = await fetch(`/api/v1/music/albums/${albumId}/songs/`);
         const data = await res.json();
         if (!data.success) { toast('Không thể tải album', false); return; }
@@ -196,10 +201,34 @@ async function playAlbum(albumId) {
             return;
         }
 
-        /* Phát bài đầu tiên qua window.playSong (định nghĩa trong player.js) */
+        /* Phát bài đầu tiên qua window.playSong */
         const firstSongId = songs[0].song.id;
         if (typeof window.playSong === 'function') {
+            // Xoá sạch danh sách chờ hiện tại trước khi phát album
+            if (typeof window._songQueue !== 'undefined') {
+                window._songQueue = [];
+                localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+            }
+
             window.playSong(firstSongId);
+            
+            // Append rest to queue
+            let rest = songs.slice(1);
+            
+            // Xáo trộn nếu đang bật chế độ ngẫu nhiên
+            const isShuffle = localStorage.getItem("pm_shuffle") === "true";
+            if (isShuffle && rest.length > 0) {
+                for (let i = rest.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [rest[i], rest[j]] = [rest[j], rest[i]];
+                }
+            }
+
+            rest.forEach(item => {
+                const s = item.song;
+                const artistName = s.artist ? (s.artist.display_name || s.artist.username || 'Unknown') : 'Unknown';
+                window.addToQueue(s.id, s.title, artistName, s.cover_image, `Nội dung tiếp theo từ ${contextName}`, true);
+            });
         } else {
             toast('Player chưa sẵn sàng', false);
         }
@@ -284,13 +313,13 @@ async function saveAlbum() {
                 fd.append('cover_image', coverFile);
                 res = await fetch(`/api/v1/music/albums/${albumId}/`, {
                     method: 'POST',
-                    headers: { 'X-CSRFToken': getCsrf() },
+                    headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '' },
                     body: fd,
                 });
             } else {
                 res = await fetch(`/api/v1/music/albums/${albumId}/`, {
                     method: 'PATCH',
-                    headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+                    headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, description: desc }),
                 });
             }
@@ -310,7 +339,7 @@ async function saveAlbum() {
             */
             res  = await fetch('/api/v1/music/albums/', {
                 method: 'POST',
-                headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+                headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, description: desc }),
             });
             data = await res.json();
@@ -321,7 +350,7 @@ async function saveAlbum() {
                     fd.append('cover_image', coverFile);
                     await fetch(`/api/v1/music/albums/${data.data.id}/`, {
                         method: 'POST',
-                        headers: { 'X-CSRFToken': getCsrf() },
+                        headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '' },
                         body: fd,
                     });
                 }
@@ -413,9 +442,16 @@ async function loadAlbumSongs(albumId) {
                     <div class="song-title-sm">${escHtml(s.title)}</div>
                     <div class="song-dur">${fmtDuration(s.duration)}</div>
                 </div>
-                <button class="btn-rm-song" title="Xoá khỏi album">
-                    <i class="bi bi-x-lg" style="font-size:.8rem;"></i>
-                </button>`;
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 btn-queue-next" title="Phát tiếp theo">
+                        <i class="bi bi-music-note-list"></i>
+                    </button>
+                    <button class="btn-rm-song" title="Xoá khỏi album">
+                        <i class="bi bi-x-lg" style="font-size:.8rem;"></i>
+                    </button>
+                </div>`;
+
+            row.querySelector('.btn-queue-next').onclick = (e) => window.queueNext(s.id, e);
 
             row.querySelector('.btn-rm-song').onclick =
                 () => removeSongFromAlbum(albumId, s.id);
@@ -508,7 +544,7 @@ async function addSongToAlbum(songId, songTitle) {
     try {
         const res  = await fetch(`/api/v1/music/albums/${currentAlbumId}/songs/`, {
             method:  'POST',
-            headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+            headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' },
             body:    JSON.stringify({ song_id: songId }),
         });
         const data = await res.json();
@@ -533,7 +569,7 @@ async function removeSongFromAlbum(albumId, songId) {
     try {
         const res  = await fetch(`/api/v1/music/albums/${albumId}/songs/${songId}/`, {
             method:  'DELETE',
-            headers: { 'X-CSRFToken': getCsrf() },
+            headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '' },
         });
         const data = await res.json();
         if (data.success) {
@@ -558,7 +594,7 @@ async function changeAlbumStatus(albumId, action, source) {
     try {
         const res  = await fetch(`/api/v1/music/albums/${albumId}/${action}/`, {
             method:  'POST',
-            headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+            headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' },
         });
         const data = await res.json();
         if (data.success) {
@@ -605,7 +641,7 @@ async function confirmDeleteAlbum() {
     try {
         const res  = await fetch(`/api/v1/music/albums/${deleteTargetId}/`, {
             method:  'DELETE',
-            headers: { 'X-CSRFToken': getCsrf() },
+            headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '' },
         });
         const data = await res.json();
         if (data.success) {

@@ -1,6 +1,6 @@
 from accounts.exceptions import ValidationError
 
-SEARCH_Q_MIN_LEN = 2
+SEARCH_Q_MIN_LEN = 1
 SEARCH_Q_MAX_LEN = 100
 
 #validate q + page + page_size dùng chung cho songs/artists/playlists/users

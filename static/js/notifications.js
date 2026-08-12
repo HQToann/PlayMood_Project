@@ -14,33 +14,7 @@
 // Helpers
 // ─────────────────────────────────────────
 
-function getCsrfToken() {
-    const name = 'csrftoken';
-    const match = document.cookie
-        .split(';')
-        .map(c => c.trim())
-        .find(c => c.startsWith(name + '='));
-    return match ? decodeURIComponent(match.split('=')[1]) : '';
-}
 
-/**
- * Trả chuỗi thời gian tương đối (2 phút trước, 3 giờ trước…)
- */
-function timeAgo(isoString) {
-    const now = new Date();
-    const past = new Date(isoString);
-    const diffMs = now - past;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-
-    if (diffSec < 60) return 'Vừa xong';
-    if (diffMin < 60) return `${diffMin} phút trước`;
-    if (diffHour < 24) return `${diffHour} giờ trước`;
-    if (diffDay < 7) return `${diffDay} ngày trước`;
-    return past.toLocaleDateString('vi-VN');
-}
 
 /**
  * Lấy icon + màu badge theo loại thông báo
@@ -221,21 +195,21 @@ async function fetchUnreadCount() {
 async function apiMarkRead(notifId) {
     return fetch(`/api/v1/notifications/${notifId}/read/`, {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json' }
+        headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' }
     });
 }
 
 async function apiMarkAllRead() {
     return fetch('/api/v1/notifications/read-all/', {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json' }
+        headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' }
     });
 }
 
 async function apiDelete(notifId) {
     return fetch(`/api/v1/notifications/${notifId}/`, {
         method: 'DELETE',
-        headers: { 'X-CSRFToken': getCsrfToken() }
+        headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '' }
     });
 }
 
@@ -282,7 +256,7 @@ function deleteNotification(el, notifId) {
 function followBack(btn, userId) {
     fetch(`/api/v1/social/users/${userId}/follow/`, {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json' }
+        headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' }
     }).then(res => {
         if (res.ok) {
             btn.innerHTML = '<i class="bi bi-check-lg"></i>';
@@ -349,7 +323,7 @@ async function handleFrAction(action) {
         // Call accept or reject
         const resAction = await fetch(`/api/v1/social/follow-requests/${requestId}/${action}/`, {
             method: 'POST',
-            headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json' }
+            headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' }
         });
 
         if (resAction.ok) {

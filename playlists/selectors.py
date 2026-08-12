@@ -98,8 +98,7 @@ def list_public_playlists(filters: dict, viewer=None) -> dict:
 
     if filters.get('q'):
         qs = qs.filter(title__icontains=filters['q'])
-    
-    qs = qs.order_by('-created_at')
+    qs = qs.order_by('-updated_at')
 
     page = filters.get('page', 1)
     page_size = filters.get('page_size', 20)

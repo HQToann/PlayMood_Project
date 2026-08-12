@@ -160,7 +160,7 @@ async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
                     const cover = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
-                                                <div class="music-card" onclick="window.location.href='/song/?id=${song.id}'" style="cursor:pointer;min-width:160px;width:160px;">
+                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer;min-width:160px;width:160px;">
                                                     <div class="music-card-img-wrap">
                                                         <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';">
                                                         <button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong('${song.id}',event)">
@@ -241,7 +241,7 @@ async function loadDefaultRecommendations() {
                     const cover = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
-                                                <div class="music-card" onclick="window.location.href='/song/?id=${song.id}'" style="cursor:pointer;min-width:160px;width:160px;">
+                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer;min-width:160px;width:160px;">
                                                     <div class="music-card-img-wrap">
                                                         <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';">
                                                         <button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong('${song.id}',event)">

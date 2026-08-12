@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timeHtml = `<div class="friend-time mt-1 text-muted-custom" style="font-size:0.7rem;">${friend.timeText}</div>`;
 
                 html += `
-                <div class="friend-item ${opacityClass}" style="display:flex;align-items:center;padding:10px 0;cursor:pointer;" data-user-id="${friend.id}" onclick="window.location.href='/profile/${friend.id}/'">
+                <div class="friend-item ${opacityClass}" style="display:flex;align-items:center;padding:10px 0;cursor:pointer;" data-user-id="${friend.id}" onclick="window.goToPage('/profile/${friend.id}/')">
                     <a href="/profile/${friend.id}/" class="friend-avatar text-decoration-none" style="width:40px;height:40px;position:relative;flex-shrink:0;margin-right:12px;" title="Xem hồ sơ" onclick="event.stopPropagation();">
                         <img src="${friend.avatar}" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover ${grayscaleClass}">
                         ${dotHtml}

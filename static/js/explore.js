@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderSongCard(song) {
         var cover = song.cover_image || DEFAULT_COVER;
         var artist = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-        return '<div class="music-card" onclick="window.location.href=\'/song/?id=' + song.id + '\'" style="cursor:pointer;">' +
+        return '<div class="music-card" onclick="window.goToPage(\'/song/?id=' + song.id + '\')" style="cursor:pointer;">' +
             '<div class="music-card-img-wrap">' +
             '<img src="' + esc(cover) + '" alt="' + esc(song.title) + '" class="music-card-img" loading="lazy">' +
             '<button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong(\'' + song.id + '\',event)"><i class="bi bi-play-fill"></i></button>' +

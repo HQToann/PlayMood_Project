@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         let html = '';
         playlists.forEach((pl, index) => {
             const imgUrl = pl.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';
-            // Only show a limited number of playlists on sidebar (e.g. 10)
-            if (index < 10) {
+            // Only show a limited number of playlists on sidebar (e.g. 5)
+            if (index < 5) {
                 html += `
                     <a href="/playlist/detail/?id=${pl.id}" class="text-decoration-none text-white d-block">
                         <div class="playlist-item mt-2 hover-bg-light p-1 rounded" style="transition: background-color 0.2s;">
