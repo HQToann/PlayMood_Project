@@ -1,0 +1,565 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Album</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <style>
+        /* Album specific styles */
+        .album-header {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(to bottom, rgba(40, 40, 40, 0.8), var(--bg-app));
+        }
+
+        .album-cover {
+            width: 232px;
+            height: 232px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .album-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .album-type {
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .album-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0 0 1rem 0;
+            line-height: 1.1;
+        }
+
+        .album-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .album-meta .creator {
+            color: var(--text-primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .album-meta .creator:hover {
+            text-decoration: underline;
+        }
+
+        .album-controls {
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-play-large {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-play-large:hover {
+            transform: scale(1.05);
+            background-color: #1ed760;
+            /* Lighter green */
+        }
+
+        .action-icon {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .action-icon:hover {
+            color: var(--text-primary);
+        }
+
+        /* Custom Album Grid */
+        .album-grid {
+            display: grid;
+            grid-template-columns: 30px minmax(200px, 1fr) 25% 20% 50px 30px 30px;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+        }
+
+        @media (max-width: 991px) {
+            .album-grid {
+                grid-template-columns: 30px minmax(200px, 1fr) 30% 50px 30px 30px;
+            }
+
+            .album-grid .hide-lg {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .album-grid {
+                grid-template-columns: 30px minmax(150px, 1fr) 50px 30px 30px;
+            }
+
+            .album-grid .hide-md {
+                display: none !important;
+            }
+        }
+
+        .album-grid-row {
+            transition: background-color 0.2s;
+        }
+
+        .album-grid-row:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            {% include 'includes/left_sidebar.html' with active_page='album' %}
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                {% include 'includes/top_header.html' %}
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll pb-5">
+
+                    <!-- Album Header -->
+                    <div class="album-header">
+                        <img src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                            alt="Đang tải..." class="album-cover" id="detail-album-cover">
+                        <div class="album-info">
+                            <div class="album-type">Album</div>
+                            <h1 class="album-title" id="detail-album-title">Đang tải...</h1>
+                            <div class="album-meta">
+                                <a href="#" class="creator" id="detail-album-artist">Đang tải</a>
+                                <span>•</span>
+                                <span id="detail-album-song-count">... bài hát,</span>
+                                <span class="text-secondary" id="detail-album-duration">...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Album Controls -->
+                    <div class="album-controls position-relative" style="z-index: 10;">
+                        <button id="btn-play-album" class="btn-play-large">
+                            <i class="bi bi-play-fill" style="margin-left: 2px;"></i>
+                        </button>
+                        <i class="bi bi-heart action-icon position-relative hover-text-white" id="btn-like-album" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i>
+                        <div class="position-relative" id="album-menu-wrapper" style="display: none;">
+                            <div class="custom-dropdown-toggle" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-three-dots-vertical action-icon"></i>
+                            </div>
+                            <ul class="custom-dropdown-menu dropdown-menu-dark shadow" style="display: none; position: absolute; left: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 160px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050;">
+                                <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white" href="#" id="btn-edit-album"><i class="bi bi-pencil"></i> Sửa Album</a></li>
+                                <li><a class="dropdown-item text-danger d-flex align-items-center gap-2 py-2 px-3 text-decoration-none" href="#" id="btn-delete-album"><i class="bi bi-trash"></i> Xóa Album</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Album Songs Table -->
+                    <div class="px-4">
+                        <!-- Header Row -->
+                        <div class="album-grid py-2 px-3 text-secondary border-bottom border-secondary border-opacity-25 mb-2"
+                            style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">
+                            <div class="text-center">#</div>
+                            <div>Tiêu đề</div>
+                            <div class="hide-md">Album</div>
+                            <div class="hide-lg">Ngày thêm</div>
+                            <div><i class="bi bi-clock"></i></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+
+                        <!-- Album Items -->
+                        <div class="d-flex flex-column gap-1 pb-4" id="album-songs-container">
+                            <!-- Songs will be rendered here dynamically via JS -->
+                            <div class="text-center py-4 text-secondary">
+                                <div class="spinner-border spinner-border-sm me-2" role="status"></div> Đang tải danh sách bài hát...
+                            </div>
+                        </div>
+
+                        <!-- Add songs to album section -->
+                        <div class="album-add-songs-section pb-5 pt-3">
+                            <div id="albumSearchWrapper" style="position: relative; height: 38px; transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden;">
+                                
+                                <!-- Tìm thêm text -->
+                                <div id="btn-search-container" class="text-end pe-3" style="position: absolute; top: 0; right: 0; width: 100%; transition: opacity 0.15s ease;">
+                                    <a href="#" id="btn-toggle-search" class="text-white text-decoration-none fw-bold" style="font-size: 0.95rem;">Tìm thêm</a>
+                                </div>
+                                
+                                <!-- Search Area -->
+                                <div id="albumSearchArea" style="position: absolute; top: 0; left: 0; right: 0; transform: translateX(100%); opacity: 0; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease; pointer-events: none;">
+                                    <!-- Divider inside search area -->
+                                    <hr class="border-secondary opacity-25 mt-0 mb-4">
+                                    
+                                    <div class="d-flex justify-content-between align-items-start mb-4">
+                                        <div class="w-100">
+                                            <h4 class="text-white fw-bold mb-4">Hãy cùng tìm nội dung cho danh sách phát của bạn</h4>
+                                            <div class="d-flex align-items-center">
+                                                <div class="search-bar position-relative" style="max-width: 450px; width: 100%; padding: 10px 16px; border-radius: 4px; background: #2a2a2a;">
+                                                    <i class="bi bi-search text-white"></i>
+                                                    <input type="text" id="albumSearchInput" placeholder="Tìm bài hát và tập podcast" style="background: none; border: none; color: white; outline: none; width: 85%; margin-left: 10px; font-size: 0.9rem;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button id="btn-close-search" class="btn text-secondary hover-text-white p-0 border-0 fs-4" style="background: none;">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="albumSearchLoading" class="text-center py-4" style="display: none;">
+                                        <div class="spinner-border text-secondary" role="status"></div>
+                                    </div>
+
+                                    <div id="albumSearchResults" class="horizontal-scroll-container py-2" style="display: none; gap: 1rem;">
+                                        <!-- Results go here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <!-- ========================================
+                         GỢI Ý: PLAYLIST TƯƠNG TỰ + BÀI HÁT
+                         ======================================== -->
+                    <div class="px-4 pb-5" id="album-recommendations-section">
+
+                        <!-- Album Tương Tự -->
+                        <div class="mb-5" id="similar-albums-wrapper">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <p class="mb-0" style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;">CÓ THỂ BẠN SẼ THÍCH</p>
+                                    <h5 class="fw-bold text-white mb-0 mt-1">Album Tương Tự</h5>
+                                </div>
+                            </div>
+                            <div id="similar-albums-container" class="d-flex gap-3" style="overflow-x:auto;padding-bottom:0.75rem;scrollbar-width:none;">
+                                <!-- Skeleton loading -->
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;"></div>
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;animation-delay:.1s"></div>
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;animation-delay:.2s"></div>
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;animation-delay:.3s"></div>
+                            </div>
+                        </div>
+
+                        <!-- Bài Hát Gợi Ý (For You) -->
+                        <div id="recommended-songs-wrapper">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <p class="mb-0" style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-transform:uppercase;letter-spacing:2px;">GỢI Ý CHO BẠN</p>
+                                    <h5 class="fw-bold text-white mb-0 mt-1">Bài Hát Có Thể Bạn Thích</h5>
+                                </div>
+                            </div>
+                            <div id="recommended-songs-container" class="d-flex gap-3" style="overflow-x:auto;padding-bottom:0.75rem;scrollbar-width:none;">
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;"></div>
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;animation-delay:.1s"></div>
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;animation-delay:.2s"></div>
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;animation-delay:.3s"></div>
+                                <div class="reco-skeleton" style="min-width:150px;width:150px;flex-shrink:0;animation-delay:.4s"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <style>
+                        .reco-skeleton {
+                            height: 210px;
+                            border-radius: 12px;
+                            background: rgba(255,255,255,0.05);
+                            animation: skeleton-pulse 1.5s ease-in-out infinite;
+                        }
+                        @keyframes skeleton-pulse {
+                            0%, 100% { opacity: .4; }
+                            50% { opacity: .7; }
+                        }
+                        .pl-reco-card {
+                            min-width: 150px;
+                            width: 150px;
+                            flex-shrink: 0;
+                            background: rgba(255,255,255,0.04);
+                            border-radius: 12px;
+                            padding: 0.85rem;
+                            display: block;
+                            text-decoration: none;
+                            color: #fff;
+                            transition: background 0.25s, transform 0.25s;
+                        }
+                        .pl-reco-card:hover {
+                            background: rgba(255,255,255,0.09);
+                            transform: translateY(-4px);
+                            color: #fff;
+                        }
+                        .pl-reco-card .card-img-wrap {
+                            position: relative;
+                            width: 100%;
+                            aspect-ratio: 1;
+                            border-radius: 8px;
+                            overflow: hidden;
+                            margin-bottom: 0.7rem;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+                        }
+                        .pl-reco-card img {
+                            width: 100%; height: 100%; object-fit: cover;
+                            transition: transform 0.3s;
+                        }
+                        .pl-reco-card:hover img { transform: scale(1.05); }
+                        .pl-reco-card .card-title-text {
+                            font-weight: 600; font-size: 0.88rem;
+                            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                            margin-bottom: 3px;
+                        }
+                        .pl-reco-card .card-sub-text {
+                            color: rgba(255,255,255,0.5); font-size: 0.76rem;
+                            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                        }
+                        .song-reco-card {
+                            min-width: 150px;
+                            width: 150px;
+                            flex-shrink: 0;
+                            cursor: pointer;
+                        }
+                        .song-reco-card .card-img-wrap {
+                            position: relative;
+                            width: 100%; aspect-ratio: 1;
+                            border-radius: 8px; overflow: hidden;
+                            margin-bottom: 0.7rem;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        }
+                        .song-reco-card img { width:100%;height:100%;object-fit:cover;transition:transform 0.3s; }
+                        .song-reco-card:hover img { transform:scale(1.05); }
+                        .song-reco-card .play-overlay {
+                            position: absolute; bottom: 8px; right: 8px;
+                            width: 34px; height: 34px; border-radius: 50%;
+                            background: var(--accent-color, #2dd4bf);
+                            color: #000; border: none; font-size: 0.95rem;
+                            display: flex; align-items: center; justify-content: center;
+                            opacity: 0; transition: opacity 0.2s;
+                        }
+                        .song-reco-card:hover .play-overlay { opacity: 1; }
+                        .song-reco-card .card-title-text {
+                            font-weight: 600; font-size: 0.88rem; color: #fff;
+                            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+                        }
+                        .song-reco-card .card-sub-text {
+                            color: rgba(255,255,255,0.5); font-size: 0.76rem;
+                            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                        }
+                    </style>
+
+                </div>
+            </main>
+
+            <!-- RIGHT SIDEBAR (Friends Activity) -->
+            {% include 'includes/right_sidebar.html' %}
+        </div>
+
+        <!-- PLAYER BAR -->
+        {% include 'includes/player_bar.html' %}
+    </div>
+
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
+        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+                PlayMood
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+                <a href="#" class="nav-link-custom active"><i class="bi bi-house-door"></i> Trang chủ</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-emoji-smile"></i> Tâm trạng</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Album</a>
+            </div>
+
+            <!-- Friends Activity (Mobile only) -->
+            <div class="px-3 py-3 flex-grow-1 overflow-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom"
+                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
+                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')"
+                            title="Thêm bạn bè"></i>
+                    </div>
+                </div>
+
+                <div class="search-bar mb-4 w-100"
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Linh Đan</div>
+                        <div class="friend-song">Đang nghe: Waiting For You</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Hải Nam</div>
+                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
+                        <div class="friend-time">1 giờ trước</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Đăng xuất</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="handleLogout(event)">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script src="{% static 'js/main.js' %}?v=2.5"></script>
+    <script src="{% static 'js/album_detail.js' %}?v=1"></script>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title fw-bold text-white" id="deleteConfirmModalLabel">Xóa bài hát</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    Bạn có chắc chắn muốn xóa bài hát này khỏi album không? Hành động này không thể hoàn tác.
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="btn-confirm-delete">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Album Modal -->
+    <div class="modal fade" id="editAlbumModal" tabindex="-1" aria-labelledby="editAlbumModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--bg-card); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold text-white" id="editAlbumModalLabel">Chỉnh sửa Album</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editAlbumForm" onsubmit="event.preventDefault();">
+                        <div class="mb-4 text-center">
+                            <label class="form-label text-secondary d-block text-start mb-2" style="font-size: 0.9rem;">Ảnh bìa</label>
+                            <div class="position-relative d-inline-block" style="cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="document.getElementById('editAlbumCoverUpload').click();">
+                                <img id="editAlbumCoverPreview" src="" alt="Cover" style="width: 160px; height: 160px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                                <div class="position-absolute top-50 start-50 translate-middle d-flex justify-content-center align-items-center" style="width: 44px; height: 44px; background-color: rgba(0,0,0,0.6); border-radius: 50%; pointer-events: none;">
+                                    <i class="bi bi-camera text-white fs-5"></i>
+                                </div>
+                            </div>
+                            <input class="d-none" type="file" id="editAlbumCoverUpload" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editAlbumTitle" class="form-label text-secondary" style="font-size: 0.9rem;">Tên Album</label>
+                            <input type="text" class="form-control text-white border-secondary" id="editAlbumTitle" placeholder="Nhập tên album..." required style="background-color: rgba(255,255,255,0.05);">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-2 pb-4">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" id="btn-save-edit-album" class="btn rounded-pill px-4 m-0 text-dark fw-bold" style="background-color: var(--accent-color); border: none;">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+
+    <!-- Recommendation sections: Similar Albums + For-You Songs -->
+
+</body>
+</html>

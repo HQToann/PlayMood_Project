@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                                     const artist = item.artist ? (item.artist.display_name || item.artist.username) : 'Nghệ sĩ';
                                     html += `
-                                        <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between" style="cursor: pointer; transition: background 0.2s;" onclick="if(window.playAlbum) { window.playAlbum('${item.id}', '${item.title.replace(/'/g, "\\'")}'); }">
+                                        <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between" style="cursor: pointer; transition: background 0.2s;" onclick="window.goToPage('/album/detail/?id=${item.id}')">
                                             <div class="d-flex align-items-center gap-3">
                                                 <div style="position: relative; width: 48px; height: 48px;">
                                                     <img src="${img}" alt="cover" style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover;">

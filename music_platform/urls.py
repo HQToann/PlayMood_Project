@@ -133,10 +133,10 @@ urlpatterns = [
     # Library Routes
     path('library/favorites/', login_required_view('library/favorites.html'), name='library_favorites_page'),
     path('library/recent/', login_required_view('library/recent.html'), name='library_recent_page'),
-    path('library/downloaded/', login_required_view('library/downloaded.html'), name='library_downloaded_page'),
-    path('library/albums/', login_required_view('library/albums.html'), name='library_albums_page'),
+    path('library/albums/', login_required_view('albums/albums.html'), name='library_albums_page'),
 
     path('song/', TemplateView.as_view(template_name='song/song.html'), name='song_page'),
+    path('album/detail/', login_required_view('albums/album_detail.html'), name='album_detail_page'),
 
     # Admin & API Routes
     path('admin/', admin.site.urls),
