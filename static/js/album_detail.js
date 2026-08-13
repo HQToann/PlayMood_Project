@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success && data.data) {
                     const album = data.data;
+                    window._currentAlbum = album;
                     
                     const coverUrl = album.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
                     const imgEl = document.getElementById('detail-album-cover');
@@ -82,11 +83,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     
-                    // Hiển thị menu xóa nếu là owner
-                    const menuWrapper = document.getElementById('album-menu-wrapper');
-                    if (menuWrapper) {
-                        if (album.is_owner) {
-                            menuWrapper.style.display = 'block';
+                    // Hiển thị tính năng chỉnh sửa nếu là owner
+                    const liEdit = document.getElementById('li-edit-album');
+                    const liDelete = document.getElementById('li-delete-album');
+                    const addSongsSection = document.querySelector('.album-add-songs-section');
+                    if (album.is_owner) {
+                        if (liEdit) liEdit.style.display = 'block';
+                        if (liDelete) liDelete.style.display = 'block';
+                        if (addSongsSection) addSongsSection.style.display = 'block';
                             
                             // Populate Edit Modal
                             const editModalBtn = document.getElementById('btn-edit-album');
@@ -198,9 +202,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 });
                             }
                         } else {
-                            menuWrapper.style.display = 'none';
+                            if (addSongsSection) addSongsSection.style.display = 'none';
                         }
-                    }
                     
                     // Render right away using album.songs
                     if (album && album.songs) {
@@ -274,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="small text-secondary text-truncate">${artistName}</div>
                         </div>
                     </div>
-                    <div class="text-secondary hide-md text-truncate">Bài hát đơn</div>
+                    <div class="text-secondary hide-md text-truncate">${(song.play_count || 0).toLocaleString('vi-VN')}</div>
                     <div class="text-secondary hide-lg text-truncate">${formatDate(item.added_at)}</div>
                     <div class="text-secondary">${formatDuration(song.duration || 0)}</div>
                     <div class="text-secondary text-center position-relative btn-like" data-song-id="${song.id}" style="z-index: 2;" onclick="event.stopPropagation()">
@@ -287,8 +290,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <ul class="custom-dropdown-menu dropdown-menu-dark shadow" style="display: none; position: absolute; right: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 200px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050;">
                             <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white btn-queue-next" href="#" data-song-id="${song.id}" onclick="window.queueNext('${song.id}', event)"><i class="bi bi-music-note-list"></i> Phát tiếp theo</a></li>
                             <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white btn-add-to-other" href="#" data-song-id="${song.id}"><i class="bi bi-plus-circle"></i> Thêm vào playlist khác</a></li>
+                            ${window._currentAlbum && window._currentAlbum.is_owner ? `
                             <li><hr class="dropdown-divider border-secondary opacity-25 my-1"></li>
                             <li><a class="dropdown-item text-danger d-flex align-items-center gap-2 py-2 px-3 text-decoration-none btn-remove-from-album" href="#" data-song-id="${song.id}"><i class="bi bi-trash"></i> Xóa khỏi album</a></li>
+                            ` : ''}
                         </ul>
                     </div>
                 </div>
@@ -447,51 +452,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Thả tim album (Thực tế)
-    const btnLikeAlbum = document.getElementById('btn-like-album');
-    if (btnLikeAlbum) {
-        btnLikeAlbum.addEventListener('click', async function() {
-            const isLiked = this.classList.contains('bi-heart-fill');
-            
-            // Optimistic update UI
-            if (isLiked) {
-                this.className = 'bi bi-heart action-icon position-relative hover-text-white';
-            } else {
-                this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
-            }
-            
-            try {
-                const res = await fetch(`/api/v1/music/albums/${albumId}/like/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
+
+    // Thêm toàn bộ bài hát vào danh sách phát (hàng đợi)
+    const btnAddToLibrary = document.getElementById('btn-add-to-library');
+    if (btnAddToLibrary) {
+        btnAddToLibrary.addEventListener('click', function() {
+            if (window._currentAlbum && window._currentAlbum.songs && window._currentAlbum.songs.length > 0) {
+                const albumName = document.getElementById('detail-album-title').textContent || 'Album';
+                let addedCount = 0;
+                
+                window._currentAlbum.songs.forEach(item => {
+                    const s = item.song;
+                    const artistName = s.artist ? (s.artist.display_name || s.artist.username || 'Unknown') : 'Unknown';
+                    if (window.addToQueue) {
+                        window.addToQueue(s.id, s.title, artistName, s.cover_image, `Từ ${albumName}`, true);
+                        addedCount++;
                     }
                 });
-                const data = await res.json();
-                if (!res.ok || !data.success) {
-                    // Revert UI if error
-                    if (isLiked) {
-                        this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
-                    } else {
-                        this.className = 'bi bi-heart action-icon position-relative hover-text-white';
-                    }
-                    if (window.showToast) showToast('Lỗi xử lý', 'error');
-                } else {
-                    // Success 
-                    if (data.data.action === 'liked') {
-                        if (window.showToast) showToast('Đã thêm album vào thư viện', 'success');
-                    }
+                
+                if (addedCount > 0 && window.showToast) {
+                    window.showToast(`Đã thêm ${addedCount} bài hát vào danh sách chờ`, 'success');
                 }
-            } catch (err) {
-                console.error('Lỗi thích album:', err);
-                // Revert UI if error
-                if (isLiked) {
-                    this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
-                } else {
-                    this.className = 'bi bi-heart action-icon position-relative hover-text-white';
-                }
-                if (window.showToast) showToast('Lỗi mạng', 'error');
+            } else {
+                if (window.showToast) showToast('Album trống', 'warning');
             }
         });
     }

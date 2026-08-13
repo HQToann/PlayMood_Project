@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="playlist-card position-relative">
                     <div class="card-image-wrapper">
                         <img src="${imgUrl}" alt="${pl.title}">
-                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                        <div class="card-play-btn" onclick="event.preventDefault(); event.stopPropagation(); if(window.playPlaylist) window.playPlaylist('${pl.id}', event, '${pl.title.replace(/'/g, "\\'")}')"><i class="bi bi-play-fill"></i></div>
                     </div>
                     <div class="card-title text-truncate" title="${pl.title}">${pl.title}</div>
                     <div class="card-subtitle text-truncate">Bởi ${pl.owner.display_name}</div>
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="playlist-card position-relative">
                                 <div class="card-image-wrapper">
                                     <img src="${imgUrl}" alt="${pl.title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';">
-                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                    <div class="card-play-btn" onclick="event.preventDefault(); event.stopPropagation(); if(window.playPlaylist) window.playPlaylist('${pl.id}', event, '${pl.title.replace(/'/g, "\\'")}')"><i class="bi bi-play-fill"></i></div>
                                 </div>
                                 <div class="card-title text-truncate" title="${pl.title}">${pl.title}</div>
                                 <div class="card-subtitle text-truncate">Bởi ${pl.owner ? pl.owner.display_name : 'Nghệ sĩ'}</div>
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="playlist-card position-relative">
                                 <div class="card-image-wrapper">
                                     <img src="${imgUrl}" alt="${pl.title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';">
-                                    <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                                    <div class="card-play-btn" onclick="event.preventDefault(); event.stopPropagation(); if(window.playPlaylist) window.playPlaylist('${pl.id}', event, '${pl.title.replace(/'/g, "\\'")}')"><i class="bi bi-play-fill"></i></div>
                                 </div>
                                 <div class="card-title text-truncate" title="${pl.title}">${pl.title}</div>
                                 <div class="card-subtitle text-truncate">Bởi ${pl.owner ? pl.owner.display_name : 'Nghệ sĩ'}</div>

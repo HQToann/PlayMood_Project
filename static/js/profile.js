@@ -185,10 +185,10 @@ async function loadAlbums() {
         const albums = (data.success && data.data && data.data.items) ? data.data.items : [];
         const html = albums.length > 0
             ? albums.map(album => `
-                <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
+                <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px; cursor: pointer;" onclick="window.location.href='/album/detail/?id=${album.id}'">
                     <div class="card-image-wrapper">
                         <img src="${album.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${album.title}">
-                        <div class="card-play-btn"><i class="bi bi-play-fill"></i></div>
+                        <div class="card-play-btn" onclick="event.preventDefault(); event.stopPropagation(); if(window.playAlbum) window.playAlbum('${album.id}', '${album.title.replace(/'/g, "\\'")}')"><i class="bi bi-play-fill"></i></div>
                     </div>
                     <div class="card-title">${album.title}</div>
                     <div class="card-subtitle">${album.song_count} bài hát</div>

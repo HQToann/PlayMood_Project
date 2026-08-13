@@ -72,7 +72,6 @@ class Playlist(models.Model):
             },
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
-            'like_count': self.likes.count(),
         }
 
         if include_song_count:
@@ -81,10 +80,8 @@ class Playlist(models.Model):
         viewer_id = getattr(viewer, 'id', None)
         if viewer_id and getattr(viewer, 'is_authenticated', False):
             data['is_owner'] = str(viewer_id) == str(self.owner_id)
-            data['is_liked'] = self.likes.filter(user_id=viewer_id).exists()
         else:
             data['is_owner'] = False
-            data['is_liked'] = False
         return data
     
 
@@ -138,53 +135,10 @@ class PlaylistSong(models.Model):
     def to_dict(self, viewer=None):
         data = {
             'id': str(self.id),
-            'song': {
-                'id': str(self.song_id),
-                'title': self.song.title,
-                'artist': {
-                    'id': str(self.song.artist_id),
-                    'username': self.song.artist.username,
-                    'display_name': self.song.artist.get_display_name(),
-                },
-                'cover_image': self.song.cover_image.url if self.song.cover_image else None,
-                'duration': self.song.duration,
-                'status': self.song.status,
-            },
+            'song': self.song.to_dict(viewer=viewer, include_stats=False, include_viewer_state=True),
             'order': self.order,
             'added_at': self.added_at.isoformat(),
         }
-        if viewer and viewer.is_authenticated:
-            data['song']['is_liked'] = self.song.likes.filter(user=viewer).exists()
         return data
 
-
-# Bản ghi user thích một playlist
-class PlaylistLike(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    user = models.ForeignKey(
-        'accounts.User',
-        on_delete=models.CASCADE,
-        related_name='liked_playlists',
-        verbose_name='Người dùng',
-        db_index=True,
-    )
-
-    playlist = models.ForeignKey(
-        Playlist,
-        on_delete=models.CASCADE,
-        related_name='likes',
-        verbose_name='Playlist',
-        db_index=True,
-    )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'playlists_playlist_like'
-        unique_together = [('user', 'playlist')]
-        verbose_name = 'Lượt thích Playlist'
-        verbose_name_plural = 'Lượt thích Playlist'
-
-    def __str__(self):
-        return f'{self.user.username} thích {self.playlist.title}'
+

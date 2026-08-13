@@ -741,7 +741,7 @@ body {
 /* Custom Playlist Grid */
 .playlist-grid {
     display: grid;
-    grid-template-columns: 30px minmax(200px, 1fr) 25% 20% 50px 30px 30px;
+    grid-template-columns: 30px minmax(200px, 4fr) minmax(100px, 1.5fr) minmax(120px, 1.5fr) 50px 30px 30px;
     align-items: center;
     gap: 16px;
     width: 100%;
@@ -749,7 +749,7 @@ body {
 
 @media (max-width: 991px) {
     .playlist-grid {
-        grid-template-columns: 30px minmax(200px, 1fr) 30% 50px 30px 30px;
+        grid-template-columns: 30px minmax(200px, 4fr) minmax(100px, 1.5fr) 50px 30px 30px;
     }
 
     .playlist-grid .hide-lg {

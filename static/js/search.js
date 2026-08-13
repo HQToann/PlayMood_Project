@@ -171,7 +171,7 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             const img = topItem.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&q=80';
             const artistName = topItem.artist ? (topItem.artist.display_name || topItem.artist.username) : 'Nghệ sĩ';
             topHtml = `
-                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="if(window.playAlbum) { window.playAlbum('${topItem.id}', '${topItem.title.replace(/'/g, "\\'")}'); }">
+                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='/album/detail/?id=${topItem.id}'">
                     <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
                     <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
                     <div class="d-flex align-items-center gap-2">
@@ -195,6 +195,10 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
                         <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">Playlist</span>
                         <span class="text-muted-custom fw-semibold">${ownerName}</span>
                     </div>
+                    
+                    <button class="btn-play-circle position-absolute" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); if(window.playPlaylist) { window.playPlaylist('${topItem.id}', event, '${topItem.title.replace(/'/g, "\\'")}'); }">
+                        <i class="bi bi-play-fill fs-3" style="margin-left: 3px;"></i>
+                    </button>
                 </div>
             `;
         } else {
@@ -273,23 +277,30 @@ function renderList(items, type) {
                                 <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">${ownerName}</div>
                             </div>
                         </div>
-                        <div class="text-muted-custom" style="width: 25%; font-size: 0.9rem;">Playlist</div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-muted-custom hide-md" style="font-size: 0.9rem;">Playlist</div>
+                            <button class="btn btn-link text-white p-0 text-decoration-none" style="font-size: 1.5rem;" onclick="event.stopPropagation(); if(window.playPlaylist) { window.playPlaylist('${item.id}', event, '${item.title.replace(/'/g, "\\'")}'); }">
+                                <i class="bi bi-play-circle"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             } else if (type === 'album') {
                 const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                 const artistName = item.artist ? (item.artist.display_name || item.artist.username) : 'Nghệ sĩ';
                 html += `
-                    <div class="song-row d-flex align-items-center gap-3 p-2 rounded-3" style="cursor: pointer;" onclick="if(window.playAlbum) { window.playAlbum('${item.id}', '${item.title.replace(/'/g, "\\'")}'); }">
-                        <div style="width: 48px; height: 48px; flex-shrink: 0;">
-                            <img src="${img}" alt="cover" class="w-100 h-100 rounded" style="object-fit: cover;">
-                        </div>
-                        <div class="flex-grow-1 text-truncate pe-3">
-                            <div class="text-white fw-semibold text-truncate" style="font-size: 1rem;">${item.title}</div>
-                            <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">Album • ${artistName}</div>
+                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.location.href='/album/detail/?id=${item.id}'">
+                        <div class="d-flex align-items-center gap-3 w-100">
+                            <div style="width: 48px; height: 48px; flex-shrink: 0;">
+                                <img src="${img}" alt="cover" class="w-100 h-100 rounded" style="object-fit: cover;">
+                            </div>
+                            <div class="flex-grow-1 text-truncate pe-3">
+                                <div class="text-white fw-semibold text-truncate" style="font-size: 1rem;">${item.title}</div>
+                                <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">Album • ${artistName}</div>
+                            </div>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <button class="btn btn-link text-white p-0 text-decoration-none" style="font-size: 1.5rem;">
+                            <button class="btn btn-link text-white p-0 text-decoration-none" style="font-size: 1.5rem;" onclick="event.stopPropagation(); if(window.playAlbum) { window.playAlbum('${item.id}', '${item.title.replace(/'/g, "\\'")}'); }">
                                 <i class="bi bi-play-circle"></i>
                             </button>
                         </div>

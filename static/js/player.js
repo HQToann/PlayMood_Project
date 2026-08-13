@@ -43,6 +43,8 @@ window.queueNext = async function(songId, event) {
             });
             
             localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+    localStorage.setItem('pm_saved_at', Date.now());
+            localStorage.setItem('pm_saved_at', Date.now());
             
             // Nếu chưa có bài nào đang phát, phát luôn bài này
             if (!globalAudio.src && !currentSongId) {
@@ -297,6 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     [window._songQueue[i], window._songQueue[j]] = [window._songQueue[j], window._songQueue[i]];
                 }
                 localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+    localStorage.setItem('pm_saved_at', Date.now());
+            localStorage.setItem('pm_saved_at', Date.now());
                 if (typeof renderQueue === 'function') renderQueue();
             }
         });
@@ -468,10 +472,30 @@ function getCsrf() {
     return typeof getCookie === 'function' ? getCookie('csrftoken') : '';
 }
 
+window.syncPlayerUI = function() {
+    const detailPlayIcon = document.getElementById('detail-play-icon');
+    if (detailPlayIcon) {
+        const pid = new URLSearchParams(window.location.search).get('id');
+        if (pid === currentSongId && isPlaying) {
+            detailPlayIcon.classList.replace('bi-play-fill', 'bi-pause-fill');
+            detailPlayIcon.style.marginLeft = '0';
+        } else {
+            detailPlayIcon.classList.replace('bi-pause-fill', 'bi-play-fill');
+            detailPlayIcon.style.marginLeft = '2px';
+        }
+    }
+    
+    // Đồng bộ nút play trên các danh sách playlist/album
+    document.querySelectorAll('.card-play-btn').forEach(btn => {
+        // Có thể mở rộng sau nếu cần đồng bộ nút play của từng item
+    });
+};
+
 // ─────────────────────────────────────────────
 // UI Updates
 // ─────────────────────────────────────────────
 function updatePlayIcon() {
+    if (window.syncPlayerUI) window.syncPlayerUI();
     if (pbPlayIcon) {
         if (isPlaying) {
             pbPlayIcon.classList.remove('bi-play-fill', 'ms-1');
@@ -602,6 +626,7 @@ function playNext() {
 
     // Cập nhật lại queue sau khi pop
     localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+    localStorage.setItem('pm_saved_at', Date.now());
     if (typeof renderQueue === 'function') renderQueue();
 
     window.playSong(nextSong.id);
@@ -919,6 +944,8 @@ window.playPlaylist = async function (playlistId, event, contextTitle = 'Playlis
             // Xoá sạch danh sách chờ hiện tại trước khi phát playlist
             window._songQueue = [];
             localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+    localStorage.setItem('pm_saved_at', Date.now());
+            localStorage.setItem('pm_saved_at', Date.now());
 
             // Play the first song
             window.playSong(songs[0].id, null, false);
@@ -1017,6 +1044,7 @@ window.addToQueue = function (songId, title, artist, cover, context = null, sile
     }
     window._songQueue.push({ id: songId, title: title, artist: artist, cover: cover, context: context });
     localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+    localStorage.setItem('pm_saved_at', Date.now());
     renderQueue();
     if (!silent) window.showQueuePanel(); // Tự động mở panel nếu thêm thủ công
     if (!silent && typeof showToast === 'function') showToast(`Đã thêm "${title}" vào danh sách chờ`, 'success');
@@ -1026,6 +1054,7 @@ window.addToQueue = function (songId, title, artist, cover, context = null, sile
 window.removeFromQueue = function (songId) {
     window._songQueue = window._songQueue.filter(s => s.id !== songId);
     localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+    localStorage.setItem('pm_saved_at', Date.now());
     renderQueue();
 };
 
@@ -1037,6 +1066,7 @@ window.playSongFromQueue = function (songId) {
         // Xoá toàn bộ bài hát từ đầu queue đến bài này (bao gồm cả bài này vì nó sẽ được phát)
         window._songQueue.splice(0, idx + 1);
         localStorage.setItem('pm_queue', JSON.stringify(window._songQueue));
+    localStorage.setItem('pm_saved_at', Date.now());
         renderQueue();
     }
     window.playSong(songId);

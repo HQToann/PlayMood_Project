@@ -16,34 +16,33 @@
            DESIGN TOKENS
         ══════════════════════════════════════ */
         :root {
-            --pm-purple:        #a855f7;
-            --pm-purple-dk:     #7c3aed;
-            --pm-purple-bg:     rgba(168,85,247,0.08);
-            --pm-purple-border: rgba(168,85,247,0.3);
-            --pm-green:         #1db954;
+            --pm-theme:         var(--accent-color);
+            --pm-theme-dk:      #1ed760;
+            --pm-theme-bg:      rgba(140,225,178,0.15);
+            --pm-theme-border:  rgba(140,225,178,0.3);
             --pm-amber:         #f59e0b;
             --pm-red:           #ef4444;
-            --pm-card:          rgba(255,255,255,0.04);
-            --pm-card-hover:    rgba(255,255,255,0.07);
-            --pm-border:        rgba(255,255,255,0.08);
-            --pm-muted:         rgba(255,255,255,0.45);
-            --pm-radius:        16px;
-            --pm-radius-sm:     10px;
-            --transition:       0.22s cubic-bezier(.4,0,.2,1);
+            --pm-card:          rgba(255,255,255,0.02);
+            --pm-card-hover:    rgba(255,255,255,0.06);
+            --pm-border:        rgba(255,255,255,0.05);
+            --pm-muted:         rgba(255,255,255,0.5);
+            --pm-radius:        12px;
+            --pm-radius-sm:     8px;
+            --transition:       0.25s ease;
         }
 
         /* ══════════════════════════════════════
            HERO BANNER
         ══════════════════════════════════════ */
         .hero-library {
-            margin: 1.25rem 2rem 0;
-            padding: 1.5rem 1.75rem;
+            margin: -30px -30px 0 -30px;
+            padding: 1.5rem 30px;
             background: linear-gradient(135deg,
-                rgba(124,58,237,.55) 0%,
-                rgba(30,10,60,.85) 60%,
-                rgba(10,5,30,.9) 100%);
-            border: 1px solid var(--pm-border);
-            border-radius: var(--pm-radius);
+                rgba(140,225,178,.15) 0%,
+                rgba(140,225,178,.05) 60%,
+                rgba(0,0,0,.2) 100%);
+            border-bottom: 1px solid var(--pm-border);
+            border-radius: 0 0 12px 12px;
             display: flex; align-items: center; gap: 1.25rem;
             backdrop-filter: blur(12px);
             position: relative; overflow: hidden;
@@ -52,21 +51,21 @@
             content: '';
             position: absolute; inset: 0;
             background: radial-gradient(ellipse 60% 80% at 0% 50%,
-                rgba(168,85,247,.18) 0%, transparent 70%);
+                var(--pm-theme-bg) 0%, transparent 70%);
             pointer-events: none;
         }
         .hero-icon {
             width: 76px; height: 76px; flex-shrink: 0;
-            background: linear-gradient(135deg, var(--pm-purple), var(--pm-purple-dk));
+            background: linear-gradient(135deg, var(--pm-theme), var(--pm-theme-dk));
             border-radius: var(--pm-radius-sm);
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.4rem; color: #fff;
-            box-shadow: 0 8px 24px rgba(124,58,237,.45);
+            font-size: 2.4rem; color: #121212;
+            box-shadow: 0 8px 24px rgba(140,225,178,.25);
         }
         .hero-info h1 {
             font-family: 'Inter', sans-serif;
             font-size: 2rem; font-weight: 800; margin: 0 0 .25rem;
-            background: linear-gradient(120deg, #fff 40%, var(--pm-purple));
+            background: linear-gradient(120deg, #fff 40%, var(--pm-theme));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .hero-label {
@@ -74,15 +73,7 @@
             text-transform: uppercase; color: var(--pm-muted); margin-bottom: .3rem;
         }
         .hero-meta { font-size: .9rem; color: rgba(255,255,255,.75); }
-        .hero-meta b { color: #fff; }
-        #albumCountBadge {
-            display: inline-flex; align-items: center;
-            background: var(--pm-purple-bg);
-            border: 1px solid var(--pm-purple-border);
-            border-radius: 20px; padding: 1px 10px;
-            font-size: .78rem; font-weight: 600;
-            color: var(--pm-purple); margin-left: .5rem; vertical-align: middle;
-        }
+        .hero-meta b { color: #fff; font-weight: 600; }
 
         /* ══════════════════════════════════════
            TOOLBAR
@@ -94,20 +85,19 @@
         }
         .section-title {
             font-family: 'Inter', sans-serif;
-            font-size: 1rem; font-weight: 700;
-            color: rgba(255,255,255,.85); letter-spacing: .5px;
+            font-size: 1.1rem; font-weight: 700;
+            color: #fff; letter-spacing: .5px;
         }
         .btn-create-album {
             display: inline-flex; align-items: center; gap: .5rem;
-            background: linear-gradient(135deg, var(--pm-purple), var(--pm-purple-dk));
-            color: #fff; border: none; border-radius: 30px;
+            background: transparent;
+            color: var(--pm-theme); border: 1px solid var(--pm-theme); border-radius: 30px;
             padding: .5rem 1.25rem; font-size: .85rem; font-weight: 600;
             cursor: pointer; transition: var(--transition);
-            box-shadow: 0 4px 14px rgba(124,58,237,.35);
         }
         .btn-create-album:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 22px rgba(124,58,237,.5);
+            background: var(--pm-theme-bg);
+            transform: scale(1.02);
         }
 
         /* ══════════════════════════════════════
@@ -115,59 +105,61 @@
         ══════════════════════════════════════ */
         .album-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-            gap: 1.1rem;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
             padding: 0 2rem 5rem;
             margin-top: 1rem;
         }
 
         /* ── Card: add new ── */
         .album-card-new {
-            background: var(--pm-purple-bg);
-            border: 2px dashed var(--pm-purple-border);
+            background: var(--pm-theme-bg);
+            border: 2px dashed var(--pm-theme-border);
             border-radius: var(--pm-radius);
-            aspect-ratio: 1 / 1.18;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: .55rem;
+            min-height: 104px;
+            display: flex; flex-direction: row;
+            align-items: center; justify-content: flex-start; gap: 1rem;
+            padding: 12px 16px;
             cursor: pointer; transition: var(--transition);
         }
         .album-card-new:hover {
-            background: rgba(168,85,247,.15);
-            border-color: rgba(168,85,247,.7);
+            background: rgba(140,225,178,.25);
+            border-color: var(--pm-theme);
             transform: translateY(-3px);
         }
         .album-card-new .new-icon {
-            width: 48px; height: 48px;
-            background: rgba(168,85,247,.15); border-radius: 50%;
+            width: 80px; height: 80px; flex-shrink: 0;
+            background: rgba(140,225,178,.15); border-radius: var(--pm-radius-sm);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; color: var(--pm-purple);
+            font-size: 1.8rem; color: var(--pm-theme);
             transition: var(--transition);
         }
         .album-card-new:hover .new-icon {
-            background: rgba(168,85,247,.28); transform: scale(1.08);
+            background: rgba(140,225,178,.28); transform: scale(1.08);
         }
         .album-card-new span { font-size: .78rem; font-weight: 600; color: var(--pm-muted); }
 
         /* ── Card: album ── */
         .album-card {
+            display: flex; align-items: center; gap: 1rem;
             background: var(--pm-card);
-            border: 1px solid var(--pm-border);
+            padding: 12px 16px;
             border-radius: var(--pm-radius);
-            overflow: hidden; cursor: pointer;
-            transition: var(--transition); position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: relative;
         }
         .album-card:hover {
             background: var(--pm-card-hover);
-            transform: translateY(-4px);
-            box-shadow: 0 14px 36px rgba(0,0,0,.4);
-            border-color: rgba(255,255,255,.14);
         }
         .album-card:hover .album-cover-img { transform: scale(1.04); }
 
         .album-cover-wrap {
-            width: 100%; aspect-ratio: 1;
+            width: 80px; height: 80px; flex-shrink: 0;
             position: relative; overflow: hidden;
-            background: linear-gradient(135deg, #2a1060, #110830);
+            background: #2a2a2a;
+            border-radius: var(--pm-radius-sm);
+            box-shadow: 0 4px 12px rgba(0,0,0,.3);
         }
         .album-cover-placeholder {
             width: 100%; height: 100%;
@@ -180,30 +172,30 @@
         }
         /* ── Nút 3 chấm & dropdown ── */
         .card-menu-btn {
-            position: absolute; top: 8px; right: 8px;
-            width: 32px; height: 32px;
+            width: 28px; height: 28px;
             border-radius: 50%; border: none;
-            background: rgba(0,0,0,.55);
-            backdrop-filter: blur(6px);
-            color: #fff; font-size: 1rem;
+            background: transparent;
+            color: var(--pm-muted); font-size: 1rem;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: var(--transition);
             z-index: 10;
         }
-        .card-menu-btn:hover { background: rgba(168,85,247,.7); }
+        .album-card:hover .card-menu-btn {
+            color: #fff;
+        }
+        .card-menu-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
 
         .card-menu-dropdown {
-            position: absolute; top: 44px; right: 8px;
-            background: #1e1a38;
-            border: 1px solid var(--pm-border);
-            border-radius: 12px;
+            position: absolute; bottom: 100%; right: 0; margin-bottom: 8px;
+            background: #282828;
+            border-radius: 8px;
             padding: 4px;
             min-width: 165px;
             box-shadow: 0 8px 28px rgba(0,0,0,.55);
             z-index: 20;
-            opacity: 0; transform: scale(.9) translateY(-6px);
+            opacity: 0; transform: scale(.9) translateY(6px);
             pointer-events: none;
-            transform-origin: top right;
+            transform-origin: bottom right;
             transition: opacity .18s ease, transform .18s ease;
         }
         .card-menu-dropdown.open {
@@ -212,20 +204,20 @@
         }
         .card-menu-item {
             display: flex; align-items: center; gap: .6rem;
-            padding: .5rem .75rem; border-radius: 8px;
+            padding: .5rem .75rem; border-radius: 4px;
             font-size: .82rem; font-weight: 500; color: rgba(255,255,255,.85);
             cursor: pointer; transition: background var(--transition);
             border: none; background: none; width: 100%; text-align: left;
         }
-        .card-menu-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .card-menu-item:hover { background: rgba(255,255,255,.1); color: #fff; }
         .card-menu-item.danger { color: #f87171; }
         .card-menu-item.danger:hover { background: rgba(239,68,68,.12); }
         .card-menu-item i { width: 16px; text-align: center; font-size: .88rem; }
-        .card-menu-divider { height: 1px; background: var(--pm-border); margin: 4px 0; }
+        .card-menu-divider { height: 1px; background: rgba(255,255,255,.1); margin: 4px 0; }
 
-        .album-body { padding: .7rem .75rem .75rem; }
+        .album-body { padding: 0; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
         .album-name {
-            font-size: .9rem; font-weight: 700; color: #fff;
+            font-size: 1.05rem; font-weight: 700; color: #fff;
             margin: 0 0 .3rem;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
@@ -233,7 +225,7 @@
             display: flex; align-items: center;
             justify-content: space-between; gap: .4rem;
         }
-        .album-song-count { font-size: .72rem; color: var(--pm-muted); }
+        .album-song-count { font-size: .85rem; color: var(--pm-muted); }
         .badge-status {
             display: inline-flex; align-items: center; gap: 3px;
             font-size: .62rem; font-weight: 700;
@@ -241,8 +233,8 @@
             text-transform: uppercase; letter-spacing: .8px;
         }
         .badge-published {
-            background: rgba(29,185,84,.15); color: var(--pm-green);
-            border: 1px solid rgba(29,185,84,.3);
+            background: rgba(140,225,178,.15); color: var(--pm-theme);
+            border: 1px solid rgba(140,225,178,.3);
         }
         .badge-draft {
             background: rgba(245,158,11,.12); color: var(--pm-amber);
@@ -296,8 +288,8 @@
             outline: none;
         }
         .pm-input:focus {
-            border-color: var(--pm-purple);
-            box-shadow: 0 0 0 3px rgba(168,85,247,.12);
+            border-color: var(--pm-theme);
+            box-shadow: 0 0 0 3px rgba(140,225,178,.15);
         }
         .pm-input::placeholder { color: rgba(255,255,255,.25); }
         textarea.pm-input { resize: none; }
@@ -358,7 +350,7 @@
 
         /* Buttons */
         .btn-pm-primary {
-            background: linear-gradient(135deg, var(--pm-purple), var(--pm-purple-dk));
+            background: linear-gradient(135deg, var(--pm-theme), var(--pm-theme-dk));
             color: #fff; border: none; border-radius: 30px;
             padding: .5rem 1.5rem; font-size: .88rem; font-weight: 700;
             cursor: pointer; transition: var(--transition);
@@ -393,8 +385,8 @@
         }
         .btn-pm-amber:hover { background: rgba(245,158,11,.22); }
         .btn-pm-edit {
-            background: rgba(168,85,247,.12); color: var(--pm-purple);
-            border: 1px solid var(--pm-purple-border);
+            background: var(--pm-theme-bg); color: var(--pm-theme);
+            border: 1px solid var(--pm-theme-border);
             border-radius: 30px; padding: .45rem 1.1rem; font-size: .82rem; font-weight: 600;
             cursor: pointer; transition: var(--transition);
         }
@@ -424,14 +416,13 @@
 
                 <!-- ── Hero Banner ── -->
                 <div class="hero-library">
-                    <div class="hero-icon">
-                        <i class="bi bi-vinyl-fill"></i>
-                    </div>
+
                     <div class="hero-info">
                         <div class="hero-label">Thư viện</div>
                         <h1>Album của tôi</h1>
                         <div class="hero-meta">
                             <b>{{ request.user.get_display_name }}</b>
+                            <span class="mx-1">•</span>
                             <span id="albumCountBadge">…</span>
                         </div>
                     </div>
@@ -442,7 +433,7 @@
                 <!-- ── Toolbar ── -->
                 <div class="albums-toolbar">
                     <span class="section-title">
-                        <i class="bi bi-collection me-1" style="color:var(--pm-purple)"></i>
+                        <i class="bi bi-collection me-1" style="color:var(--pm-theme)"></i>
                         Tất cả album
                     </span>
                     <button class="btn-create-album" onclick="openCreateAlbumModal()">
@@ -450,12 +441,24 @@
                     </button>
                 </div>
 
-                <!-- ── Grid ── -->
-                <div class="album-grid" id="albumGrid">
-                    <!-- Skeleton placeholders -->
-                    <div class="skeleton" style="border-radius:16px;aspect-ratio:1/.85;"></div>
-                    <div class="skeleton" style="border-radius:16px;aspect-ratio:1/.85;"></div>
-                    <div class="skeleton" style="border-radius:16px;aspect-ratio:1/.85;"></div>
+                <!-- ── List ── -->
+                <div class="px-4 pb-4">
+                    <div class="playlist-grid py-2 px-3 text-secondary border-bottom border-secondary border-opacity-25 mb-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                        <div class="text-center">#</div>
+                        <div>Tiêu đề</div>
+                        <div class="hide-md">Trạng thái</div>
+                        <div class="hide-lg">Bài hát</div>
+                        <div></div>
+                        <div></div>
+                        <div class="text-center"><i class="bi bi-clock"></i></div>
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-1" id="albumGrid">
+                        <!-- Skeleton placeholders -->
+                        <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                        <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                        <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                    </div>
                 </div>
 
                 <!-- Empty state (hidden) -->

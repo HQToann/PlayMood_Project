@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success && data.data) {
                     const playlist = data.data;
+                    window._currentPlaylist = playlist;
                     
                     const coverUrl = playlist.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
                     const imgEl = document.getElementById('detail-playlist-cover');
@@ -72,23 +73,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('detail-playlist-song-count').textContent = `${playlist.song_count || 0} bài hát`;
                     }
                     
-                    // Hiển thị trạng thái Thả tim playlist
-                    const btnLikePlaylist = document.getElementById('btn-like-playlist');
-                    if (btnLikePlaylist) {
-                        if (playlist.is_liked) {
-                            btnLikePlaylist.className = 'bi bi-heart-fill action-icon position-relative text-accent';
-                        } else {
-                            btnLikePlaylist.className = 'bi bi-heart action-icon position-relative hover-text-white';
-                        }
-                    }
-                    
                     // Hiển thị menu xóa nếu là owner
-                    const menuWrapper = document.getElementById('playlist-menu-wrapper');
-                    if (menuWrapper) {
-                        if (playlist.is_owner) {
-                            menuWrapper.style.display = 'block';
-                            
-                            // Populate Edit Modal
+                    const liEdit = document.getElementById('li-edit-playlist');
+                    const liDelete = document.getElementById('li-delete-playlist');
+                    if (playlist.is_owner) {
+                        if (liEdit) liEdit.style.display = 'block';
+                        if (liDelete) liDelete.style.display = 'block';
+                        
+                        const addSongsSection = document.querySelector('.playlist-add-songs-section');
+                        if (addSongsSection) addSongsSection.style.display = 'block';
+
+                        
+                        // Populate Edit Modal
                             const editModalBtn = document.getElementById('btn-edit-playlist');
                             const editTitleInput = document.getElementById('editPlaylistTitle');
                             const editCoverPreview = document.getElementById('editPlaylistCoverPreview');
@@ -198,9 +194,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 });
                             }
                         } else {
-                            menuWrapper.style.display = 'none';
+                            const addSongsSection = document.querySelector('.playlist-add-songs-section');
+                            if (addSongsSection) addSongsSection.style.display = 'none';
                         }
-                    }
+                    
                     
                 } else {
                     document.getElementById('detail-playlist-title').textContent = "Không tìm thấy playlist";
@@ -217,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.data && data.data.items) {
+                        window._currentPlaylistSongs = data.data.items;
                         renderPlaylistSongs(data.data.items);
                     } else {
                         document.getElementById('playlist-songs-container').innerHTML = '<div class="text-center py-4 text-secondary">Lỗi tải danh sách bài hát</div>';
@@ -299,9 +297,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <ul class="custom-dropdown-menu dropdown-menu-dark shadow" style="display: none; position: absolute; right: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 200px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050;">
                             <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white btn-queue-next" href="#" data-song-id="${song.id}" onclick="window.queueNext('${song.id}', event)"><i class="bi bi-music-note-list"></i> Phát tiếp theo</a></li>
-                            <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white btn-add-to-other" href="#" data-song-id="${song.id}"><i class="bi bi-plus-circle"></i> Thêm vào playlist khác</a></li>
+                            <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white btn-report-song" href="#" data-song-id="${song.id}"><i class="bi bi-flag"></i> Báo cáo bài hát</a></li>
+                            ${window._currentPlaylist && window._currentPlaylist.is_owner ? `
                             <li><hr class="dropdown-divider border-secondary opacity-25 my-1"></li>
                             <li><a class="dropdown-item text-danger d-flex align-items-center gap-2 py-2 px-3 text-decoration-none btn-remove-from-playlist" href="#" data-song-id="${song.id}"><i class="bi bi-trash"></i> Xóa khỏi playlist</a></li>
+                            ` : ''}
                         </ul>
                     </div>
                 </div>
@@ -461,50 +461,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Thả tim playlist (Thực tế)
-    const btnLikePlaylist = document.getElementById('btn-like-playlist');
-    if (btnLikePlaylist) {
-        btnLikePlaylist.addEventListener('click', async function() {
-            const isLiked = this.classList.contains('bi-heart-fill');
-            
-            // Optimistic update UI
-            if (isLiked) {
-                this.className = 'bi bi-heart action-icon position-relative hover-text-white';
-            } else {
-                this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
-            }
-            
-            try {
-                const res = await fetch(`/api/v1/playlists/${playlistId}/like/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
+    // Thêm toàn bộ bài hát vào danh sách phát (hàng đợi)
+    const btnAddToLibrary = document.getElementById('btn-add-to-library');
+    if (btnAddToLibrary) {
+        btnAddToLibrary.addEventListener('click', function() {
+            if (window._currentPlaylistSongs && window._currentPlaylistSongs.length > 0) {
+                const playlistName = document.getElementById('detail-playlist-title').textContent || 'Playlist';
+                let addedCount = 0;
+                
+                window._currentPlaylistSongs.forEach(item => {
+                    const s = item.song;
+                    const artistName = s.artist ? (s.artist.display_name || s.artist.username || 'Unknown') : 'Unknown';
+                    if (window.addToQueue) {
+                        window.addToQueue(s.id, s.title, artistName, s.cover_image, `Từ ${playlistName}`, true);
+                        addedCount++;
                     }
                 });
-                const data = await res.json();
-                if (!res.ok || !data.success) {
-                    // Revert UI if error
-                    if (isLiked) {
-                        this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
-                    } else {
-                        this.className = 'bi bi-heart action-icon position-relative hover-text-white';
-                    }
-                    if (window.showToast) showToast('Lỗi xử lý', 'error');
-                } else {
-                    // Success 
-                    if (data.data.action === 'liked') {
-                        if (window.showToast) showToast('Đã thêm playlist vào thư viện', 'success');
-                    }
+                
+                if (addedCount > 0 && window.showToast) {
+                    window.showToast(`Đã thêm ${addedCount} bài hát vào danh sách chờ`, 'success');
                 }
-            } catch (err) {
-                console.error('Lỗi thích playlist:', err);
-                // Revert UI if error
-                if (isLiked) {
-                    this.className = 'bi bi-heart-fill action-icon position-relative text-accent';
-                } else {
-                    this.className = 'bi bi-heart action-icon position-relative hover-text-white';
-                }
-                if (window.showToast) showToast('Lỗi mạng', 'error');
+            } else {
+                if (window.showToast) showToast('Playlist trống', 'warning');
             }
         });
     }

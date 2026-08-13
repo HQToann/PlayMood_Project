@@ -95,54 +95,59 @@ function renderGrid(albums) {
     }
     if (noMsg) noMsg.classList.add('d-none');
 
-    albums.forEach(album => grid.appendChild(buildAlbumCard(album)));
+    albums.forEach((album, index) => grid.appendChild(buildAlbumCard(album, index + 1)));
 }
 
 /* ── Build card – nút ⋮ cố định + dropdown menu (thân thiện mobile) ── */
-function buildAlbumCard(album) {
+function buildAlbumCard(album, index) {
     const albumId = String(album.id);
     const card    = document.createElement('div');
-    card.className       = 'album-card';
+    card.className       = 'playlist-grid playlist-grid-row py-2 px-3 rounded position-relative';
     card.dataset.albumId = albumId;
 
     const coverHtml = album.cover_image
-        ? `<img src="${escHtml(album.cover_image)}" alt="${escHtml(album.title)}" class="album-cover-img">`
-        : `<div class="album-cover-placeholder"><i class="bi bi-vinyl-fill"></i></div>`;
+        ? `<img src="${escHtml(album.cover_image)}" alt="${escHtml(album.title)}" class="rounded flex-shrink-0" style="width: 40px; height: 40px; object-fit: cover;">`
+        : `<div class="rounded flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #2a2a2a; color: rgba(255,255,255,0.2);"><i class="bi bi-vinyl-fill"></i></div>`;
 
     const isPub = album.status === 'published';
 
     card.innerHTML = `
-        <div class="album-cover-wrap">
+        <div class="text-secondary text-center">${index}</div>
+        <div class="d-flex align-items-center gap-3 text-truncate">
             ${coverHtml}
-            <!-- Nút 3 chấm – luôn hiển thị -->
-            <button class="card-menu-btn js-menu-btn" title="Tùy chọn">
-                <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <!-- Dropdown menu -->
-            <div class="card-menu-dropdown js-menu-dropdown">
-                <button class="card-menu-item js-songs">
-                    <i class="bi bi-music-note-list"></i> Quản lý bài hát
-                </button>
-                <button class="card-menu-item js-edit">
-                    <i class="bi bi-pencil"></i> Chỉnh sửa album
-                </button>
-                <div class="card-menu-divider"></div>
-                <button class="card-menu-item danger js-delete">
-                    <i class="bi bi-trash3"></i> Xóa album
-                </button>
+            <div class="text-truncate">
+                <div class="fw-semibold text-white text-truncate">${escHtml(album.title)}</div>
+                <div class="small text-secondary text-truncate">${isPub ? 'Phát hành' : 'Nháp'}</div>
             </div>
         </div>
-        <div class="album-body">
-            <div class="album-name">${escHtml(album.title)}</div>
-            <div class="album-meta">
-                <span class="album-song-count">${album.song_count} bài hát</span>
-                <span class="badge-status ${isPub ? 'badge-published' : 'badge-draft'}">
-                    ${isPub
-                        ? 'Phát hành'
-                        : 'Nháp'}
-                </span>
+        <div class="text-secondary hide-md text-truncate">
+            <span class="badge-status ${isPub ? 'badge-published' : 'badge-draft'}">
+                ${isPub ? 'Phát hành' : 'Nháp'}
+            </span>
+        </div>
+        <div class="text-secondary hide-lg text-truncate">
+            ${album.song_count} bài hát
+        </div>
+        <div></div>
+        <div></div>
+        <div class="text-secondary text-center">
+            <div style="position:relative; display:inline-block;">
+                <i class="bi bi-three-dots hover-text-white card-menu-btn js-menu-btn" title="Tùy chọn" style="cursor: pointer; font-size: 1.1rem; z-index: 3; transition: color 0.2s; position:relative; background:transparent; border:none; color:var(--pm-muted); padding:0;"></i>
+                <div class="card-menu-dropdown js-menu-dropdown">
+                    <button class="card-menu-item js-songs">
+                        <i class="bi bi-music-note-list"></i> Quản lý bài hát
+                    </button>
+                    <button class="card-menu-item js-edit">
+                        <i class="bi bi-pencil"></i> Chỉnh sửa album
+                    </button>
+                    <div class="card-menu-divider"></div>
+                    <button class="card-menu-item danger js-delete">
+                        <i class="bi bi-trash3"></i> Xóa album
+                    </button>
+                </div>
             </div>
-        </div>`;
+        </div>
+    `;
 
     const menuBtn      = card.querySelector('.js-menu-btn');
     const menuDropdown = card.querySelector('.js-menu-dropdown');
@@ -404,7 +409,7 @@ async function loadAlbumSongs(albumId) {
     const container = document.getElementById('albumSongsListContainer');
     container.innerHTML =
         `<div class="text-center py-3">
-            <div class="spinner-border spinner-border-sm" style="color:var(--pm-purple);"></div>
+            <div class="spinner-border spinner-border-sm" style="color:var(--pm-theme);"></div>
          </div>`;
 
     try {
@@ -534,7 +539,7 @@ function searchMySongs(query) {
                 <div class="song-title-sm" style="font-size:.82rem;">${escHtml(s.title)}</div>
             </div>
             <i class="bi bi-plus-circle"
-                style="color:var(--pm-purple);font-size:1.1rem;flex-shrink:0;"></i>`;
+                style="color:var(--pm-theme);font-size:1.1rem;flex-shrink:0;"></i>`;
         row.onclick = () => addSongToAlbum(s.id, s.title);
         container.appendChild(row);
     });

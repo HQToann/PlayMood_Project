@@ -667,16 +667,10 @@ class Album(models.Model):
         songs = [
             {
                 'order': asong.order,
-                'song': {
-                    'id': str(asong.song.id),
-                    'title': asong.song.title,
-                    'cover_image': asong.song.cover_image.url if asong.song.cover_image else None,
-                    'duration': asong.song.duration,
-                    'play_count': asong.song.play_count,
-                    'status': asong.song.status,
-                }
+                'added_at': asong.added_at.isoformat() if asong.added_at else None,
+                'song': asong.song.to_dict(viewer=viewer, include_stats=False, include_viewer_state=True)
             }
-            for asong in self.album_songs.select_related('song').order_by('order', 'added_at')
+            for asong in self.album_songs.select_related('song', 'song__artist').order_by('order', 'added_at')
         ]
         # Fallback cover: dùng cover bài đầu tiên nếu album chưa có cover
         cover_url = self.cover_image.url if self.cover_image else (

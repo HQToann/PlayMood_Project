@@ -139,7 +139,7 @@
     <script src="{% static 'js/main.js' %}?v=2.5"></script>
 
     <script>
-        window.CURRENT_USER_AUTHENTICATED = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
+        window.CURRENT_USER_AUTHENTICATED = "{{ request.user.is_authenticated }}" === "True";
     </script>
     <script src="{% static 'js/playlist.js' %}?v=1"></script>
 </body>

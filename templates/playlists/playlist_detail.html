@@ -185,14 +185,15 @@
                         <button id="btn-play-playlist" class="btn-play-large">
                             <i class="bi bi-play-fill" style="margin-left: 2px;"></i>
                         </button>
-                        <i class="bi bi-heart action-icon position-relative hover-text-white" id="btn-like-playlist" style="z-index: 2; cursor: pointer; transition: color 0.2s;"></i>
-                        <div class="position-relative" id="playlist-menu-wrapper" style="display: none;">
+                        <i class="bi bi-plus-circle action-icon position-relative hover-text-white" id="btn-add-to-library" style="z-index: 2; cursor: pointer; transition: color 0.2s;" title="Thêm vào danh sách phát"></i>
+                        <div class="position-relative" id="playlist-menu-wrapper">
                             <div class="custom-dropdown-toggle" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
-                                <i class="bi bi-three-dots-vertical action-icon"></i>
+                                <i class="bi bi-three-dots action-icon" title="Tùy chọn khác"></i>
                             </div>
                             <ul class="custom-dropdown-menu dropdown-menu-dark shadow" style="display: none; position: absolute; left: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 160px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050;">
-                                <li><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white" href="#" id="btn-edit-playlist"><i class="bi bi-pencil"></i> Sửa Playlist</a></li>
-                                <li><a class="dropdown-item text-danger d-flex align-items-center gap-2 py-2 px-3 text-decoration-none" href="#" id="btn-delete-playlist"><i class="bi bi-trash"></i> Xóa Playlist</a></li>
+                                <li id="li-edit-playlist" style="display: none;"><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white" href="#" id="btn-edit-playlist"><i class="bi bi-pencil"></i> Sửa Playlist</a></li>
+                                <li id="li-delete-playlist" style="display: none;"><a class="dropdown-item text-danger d-flex align-items-center gap-2 py-2 px-3 text-decoration-none" href="#" id="btn-delete-playlist"><i class="bi bi-trash"></i> Xóa Playlist</a></li>
+                                <li id="li-report-playlist"><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white" href="#" id="btn-report-playlist"><i class="bi bi-flag"></i> Báo cáo</a></li>
                             </ul>
                         </div>
                     </div>

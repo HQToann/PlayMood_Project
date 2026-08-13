@@ -338,6 +338,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         };
                     }
+                    if (window.syncPlayerUI) {
+                        window.syncPlayerUI();
+                    }
 
                 } else {
                     document.getElementById('detail-title').textContent = "Không tìm thấy bài hát";

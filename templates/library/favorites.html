@@ -14,30 +14,29 @@
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <style>
         .hero-library {
-            padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, rgba(80,30,50,0.8), rgba(30,10,20,0.9));
-            border-radius: 12px;
-            margin: -1rem 2rem 1rem 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-        }
-        .hero-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #4b14e6, #8e44ad);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            margin: -30px -30px 0 -30px;
+            padding: 1.5rem 30px;
+            background: linear-gradient(135deg,
+                rgba(140,225,178,.15) 0%,
+                rgba(140,225,178,.05) 60%,
+                rgba(0,0,0,.2) 100%);
+            border-bottom: 1px solid var(--pm-border);
+            border-radius: 0 0 12px 12px;
+            display: flex; align-items: center; gap: 1.25rem;
+            backdrop-filter: blur(12px);
+            position: relative; overflow: hidden;
         }
         .hero-info h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 0.2rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 2rem; font-weight: 800; margin: 0 0 .25rem;
+            background: linear-gradient(120deg, #fff 40%, var(--pm-theme));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .hero-label {
+            font-size: .72rem; font-weight: 700; letter-spacing: 2.5px;
+            text-transform: uppercase; color: var(--pm-muted); margin-bottom: .3rem;
+        }
+        .hero-meta { font-size: .9rem; color: rgba(255,255,255,.75); }
         .playlist-header-row {
             display: grid;
             grid-template-columns: 50px minmax(0, 1fr) minmax(0, 0.7fr) minmax(0, 0.5fr) 100px 50px 50px;
@@ -72,15 +71,13 @@
                 
                 <div class="content-scroll pb-5">
                     <div class="hero-library">
-                        <div class="hero-icon">
-                            <i class="bi bi-heart-fill text-accent"></i>
-                        </div>
                         <div class="hero-info">
-                            <div class="text-uppercase fw-bold text-secondary mb-2" style="font-size: 0.85rem; letter-spacing: 2px;">Danh sách phát</div>
+                            <div class="hero-label">Danh sách phát</div>
                             <h1>Bài hát đã thích</h1>
-                            <div class="text-white mt-2">
-                                <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=30&q=80{% endif %}" class="rounded-circle me-2" alt="user" style="width: 24px; height: 24px;">
-                                <span class="fw-bold">{{ request.user.get_display_name }}</span> • <span id="songCountText">0 bài hát</span>
+                            <div class="hero-meta">
+                                <b>{{ request.user.get_display_name }}</b>
+                                <span class="mx-1">•</span>
+                                <span id="songCountText">0 bài hát</span>
                             </div>
                         </div>
                     </div>
