@@ -192,11 +192,10 @@
 
     {% include 'includes/player_bar.html' %}
 
-    <meta id="auth-meta" data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}?v=2.5"></script>
     <script>
-        window.USER_IS_AUTHENTICATED = document.getElementById('auth-meta').dataset.authenticated === 'true';
+        window.USER_IS_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
     </script>
     <script src="{% static 'js/home.js' %}"></script>
 </body>

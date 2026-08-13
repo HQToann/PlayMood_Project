@@ -29,7 +29,7 @@
         .hero-info h1 {
             font-family: 'Inter', sans-serif;
             font-size: 2rem; font-weight: 800; margin: 0 0 .25rem;
-            background: linear-gradient(120deg, #fff 40%, var(--pm-theme));
+            background: linear-gradient(120deg, #fff 40%, var(--accent-color));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .hero-label {
@@ -83,9 +83,7 @@
                     </div>
                     
                     <div class="px-4 mb-4 d-flex align-items-center">
-                        <button class="btn-play-large">
-                            <i class="bi bi-play-fill" style="margin-left: 2px;"></i>
-                        </button>
+
                         <button class="btn text-white border-0 ms-auto d-none fw-bold p-0" id="bulkDeleteBtn" onclick="bulkDeleteLiked()">
                             Xoá (<span id="selectedCount">0</span>)
                         </button>

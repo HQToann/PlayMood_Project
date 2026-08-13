@@ -1,5 +1,3 @@
-/* eslint-env browser, es6 */
-/* global Promise, fetch, URL, DOMParser, bootstrap */
 (function () {
     "use strict";
 
@@ -197,12 +195,12 @@
 
     // ─── Core navigate ───────────────────────────────────────────────────────────
     function cleanupBootstrap() {
-        if (typeof window.bootstrap !== 'undefined') {
+        if (typeof bootstrap !== 'undefined') {
             document.querySelectorAll('.offcanvas.show, .modal.show').forEach(function(el) {
                 try {
-                    var bsOffcanvas = window.bootstrap.Offcanvas.getInstance(el);
+                    var bsOffcanvas = bootstrap.Offcanvas.getInstance(el);
                     if (bsOffcanvas) bsOffcanvas.hide();
-                    var bsModal = window.bootstrap.Modal.getInstance(el);
+                    var bsModal = bootstrap.Modal.getInstance(el);
                     if (bsModal) bsModal.hide();
                 } catch(e) {}
             });
@@ -232,7 +230,7 @@
         // Get HTML — use prefetch cache if available
         var htmlPromise = _prefetchCache[url]
             ? _prefetchCache[url]
-            : fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin", cache: "no-store" })
+            : fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin", cache: "no-store" , cache: \'no-store\'})
                 .then(function (r) {
                     if (!r.ok) throw new Error(r.status);
                     if (!shouldIntercept(r.url)) { window.location.href = r.url; return Promise.reject("redirect"); }

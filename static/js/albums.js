@@ -102,7 +102,7 @@ function renderGrid(albums) {
 function buildAlbumCard(album, index) {
     const albumId = String(album.id);
     const card    = document.createElement('div');
-    card.className       = 'playlist-grid playlist-grid-row py-2 px-3 rounded position-relative';
+    card.className       = 'playlist-grid album-list-grid playlist-grid-row py-2 px-3 rounded position-relative';
     card.dataset.albumId = albumId;
 
     const coverHtml = album.cover_image
@@ -110,6 +110,13 @@ function buildAlbumCard(album, index) {
         : `<div class="rounded flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #2a2a2a; color: rgba(255,255,255,0.2);"><i class="bi bi-vinyl-fill"></i></div>`;
 
     const isPub = album.status === 'published';
+    
+    // Format created_at to DD/MM/YYYY
+    let createdStr = '';
+    if (album.created_at) {
+        const d = new Date(album.created_at);
+        createdStr = d.toLocaleDateString('vi-VN');
+    }
 
     card.innerHTML = `
         <div class="text-secondary text-center">${index}</div>
@@ -121,15 +128,14 @@ function buildAlbumCard(album, index) {
             </div>
         </div>
         <div class="text-secondary hide-md text-truncate">
-            <span class="badge-status ${isPub ? 'badge-published' : 'badge-draft'}">
-                ${isPub ? 'Phát hành' : 'Nháp'}
-            </span>
+            ${isPub ? 'Phát hành' : 'Nháp'}
         </div>
         <div class="text-secondary hide-lg text-truncate">
             ${album.song_count} bài hát
         </div>
-        <div></div>
-        <div></div>
+        <div class="text-secondary hide-lg text-center">
+            ${createdStr}
+        </div>
         <div class="text-secondary text-center">
             <div style="position:relative; display:inline-block;">
                 <i class="bi bi-three-dots hover-text-white card-menu-btn js-menu-btn" title="Tùy chọn" style="cursor: pointer; font-size: 1.1rem; z-index: 3; transition: color 0.2s; position:relative; background:transparent; border:none; color:var(--pm-muted); padding:0;"></i>

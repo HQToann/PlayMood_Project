@@ -103,6 +103,20 @@
         /* ══════════════════════════════════════
            ALBUM GRID
         ══════════════════════════════════════ */
+        .album-list-grid {
+            grid-template-columns: 30px minmax(200px, 4fr) minmax(100px, 1.5fr) minmax(100px, 1.5fr) minmax(120px, 1.5fr) 40px !important;
+        }
+        @media (max-width: 991px) {
+            .album-list-grid {
+                grid-template-columns: 30px minmax(200px, 4fr) minmax(100px, 1.5fr) 40px !important;
+            }
+        }
+        @media (max-width: 767px) {
+            .album-list-grid {
+                grid-template-columns: 30px minmax(150px, 1fr) 40px !important;
+            }
+        }
+
         .album-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -187,11 +201,14 @@
 
         .card-menu-dropdown {
             position: absolute; bottom: 100%; right: 0; margin-bottom: 8px;
-            background: #282828;
-            border-radius: 8px;
-            padding: 4px;
-            min-width: 165px;
-            box-shadow: 0 8px 28px rgba(0,0,0,.55);
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--pm-radius);
+            padding: 6px;
+            min-width: 180px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.6);
             z-index: 20;
             opacity: 0; transform: scale(.9) translateY(6px);
             pointer-events: none;
@@ -203,17 +220,18 @@
             pointer-events: auto;
         }
         .card-menu-item {
-            display: flex; align-items: center; gap: .6rem;
-            padding: .5rem .75rem; border-radius: 4px;
-            font-size: .82rem; font-weight: 500; color: rgba(255,255,255,.85);
+            display: flex; align-items: center; gap: .75rem;
+            padding: .6rem .85rem; border-radius: var(--pm-radius-sm);
+            font-size: .85rem; font-weight: 500; color: rgba(255,255,255,.85);
             cursor: pointer; transition: background var(--transition);
             border: none; background: none; width: 100%; text-align: left;
         }
         .card-menu-item:hover { background: rgba(255,255,255,.1); color: #fff; }
         .card-menu-item.danger { color: #f87171; }
-        .card-menu-item.danger:hover { background: rgba(239,68,68,.12); }
-        .card-menu-item i { width: 16px; text-align: center; font-size: .88rem; }
-        .card-menu-divider { height: 1px; background: rgba(255,255,255,.1); margin: 4px 0; }
+        .card-menu-item.danger:hover { background: rgba(239,68,68,.15); color: #f87171; }
+        .card-menu-item i { width: 18px; text-align: center; font-size: 1rem; opacity: 0.8; }
+        .card-menu-item:hover i { opacity: 1; }
+        .card-menu-divider { height: 1px; background: rgba(255,255,255,.08); margin: 6px 0; }
 
         .album-body { padding: 0; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
         .album-name {
@@ -252,7 +270,7 @@
            MODALS – shared
         ══════════════════════════════════════ */
         .pm-modal .modal-content {
-            background: #13102a;
+            background: var(--bg-card);
             border: 1px solid var(--pm-border);
             border-radius: var(--pm-radius); overflow: hidden;
         }
@@ -297,7 +315,7 @@
         .cover-preview-box {
             width: 84px; height: 84px; flex-shrink: 0;
             border-radius: 10px;
-            background: linear-gradient(135deg, #2a1060, #0f0820);
+            background: var(--bg-app);
             overflow: hidden;
             display: flex; align-items: center; justify-content: center;
             border: 1px solid var(--pm-border);
@@ -442,15 +460,14 @@
                 </div>
 
                 <!-- ── List ── -->
-                <div class="px-4 pb-4">
-                    <div class="playlist-grid py-2 px-3 text-secondary border-bottom border-secondary border-opacity-25 mb-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
+                <div class="px-4 pb-4 mt-4">
+                    <div class="playlist-grid album-list-grid py-2 px-3 text-secondary border-bottom border-secondary border-opacity-25 mb-2" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">
                         <div class="text-center">#</div>
                         <div>Tiêu đề</div>
                         <div class="hide-md">Trạng thái</div>
                         <div class="hide-lg">Bài hát</div>
+                        <div class="hide-lg text-center">Ngày tạo</div>
                         <div></div>
-                        <div></div>
-                        <div class="text-center"><i class="bi bi-clock"></i></div>
                     </div>
                     
                     <div class="d-flex flex-column gap-1" id="albumGrid">
@@ -627,18 +644,16 @@
 </div>
 
 
-<meta id="album-meta" data-user-id="{{ request.user.id }}" data-is-artist="{{ request.user.role|yesno:'true,false,false'|default:'false' }}">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/main.js' %}?v=2.5"></script>
 <script>
 /* Biến cấu hình từ Django – đọc bởi albums.js */
-const albumMeta = document.getElementById('album-meta');
 window.ALBUM_CONFIG = {
-    userId:   albumMeta.dataset.userId,
-    isArtist: albumMeta.dataset.isArtist === 'true',
+    userId:   "{{ request.user.id }}",
+    isArtist: "{{ request.user.role|yesno:'true,false,false'|default:'false' }}" === "true",
 };
 </script>
-<script src="{% static 'js/albums.js' %}?v=3.1"></script>
+<script src="{% static 'js/albums.js' %}?v=3.3"></script>
 
 </body>
 </html>

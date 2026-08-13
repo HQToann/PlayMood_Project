@@ -1,7 +1,8 @@
 // static/js/player.js
-// Global audio player logic for PlayMood — Full Featured
+// window.globalAudio được tạo một lần duy nhất để âm thanh không bị ngắt khi navigate
+window.globalAudio = window.globalAudio || new Audio();
+const globalAudio = window.globalAudio;
 
-const globalAudio = new Audio();
 let currentSongId = null;
 let isPlaying = false;
 let isShuffle = localStorage.getItem("pm_shuffle") === "true";

@@ -55,19 +55,19 @@
                             if (hiddenByAdmin) {
                                 statusHtml = '<span class="text-secondary">Bị khoá</span>';
                                 if (song.is_appealed) {
-                                    actionHtml = `<li><a class="dropdown-item py-2 disabled" href="#"><i class="bi bi-hourglass-split me-3 text-muted-custom"></i> Đang chờ xử lý khiếu nại</a></li>`;
+                                    actionHtml = `<li><a class="dropdown-item py-2 disabled" href="#" style="border-radius: 8px; margin-bottom: 2px;"><i class="bi bi-hourglass-split me-3 text-muted-custom"></i> Đang chờ xử lý khiếu nại</a></li>`;
                                 } else {
-                                    actionHtml = `<li><a class="dropdown-item py-2 action-appeal-song" href="#" data-bs-toggle="modal" data-bs-target="#appealSongModal" data-song-id="${song.id}" data-hidden-reason="${song.hidden_reason || 'Vi phạm chính sách'}"><i class="bi bi-exclamation-triangle me-3 text-muted-custom"></i> Lý do và kiến nghị</a></li>`;
+                                    actionHtml = `<li><a class="dropdown-item py-2 action-appeal-song" href="#" data-bs-toggle="modal" data-bs-target="#appealSongModal" data-song-id="${song.id}" data-hidden-reason="${song.hidden_reason || 'Vi phạm chính sách'}" style="border-radius: 8px; margin-bottom: 2px;"><i class="bi bi-exclamation-triangle me-3 text-muted-custom"></i> Lý do và kiến nghị</a></li>`;
                                 }
                             } else if (isDraft) {
                                 statusHtml = '<span class="text-secondary">Bản nháp</span>';
-                                actionHtml = `<li><a class="dropdown-item py-2 action-publish-song" href="#" data-song-id="${song.id}"><i class="bi bi-send-check me-3 text-muted-custom"></i> Phát hành ngay</a></li>`;
+                                actionHtml = `<li><a class="dropdown-item py-2 action-publish-song" href="#" data-song-id="${song.id}" style="border-radius: 8px; margin-bottom: 2px;"><i class="bi bi-send-check me-3 text-muted-custom"></i> Phát hành ngay</a></li>`;
                             } else if (isHidden) {
                                 statusHtml = '<span class="text-secondary">Đã ẩn</span>';
-                                actionHtml = `<li><a class="dropdown-item py-2 action-publish-song" href="#" data-song-id="${song.id}"><i class="bi bi-eye me-3 text-muted-custom"></i> Hiện lại bài hát</a></li>`;
+                                actionHtml = `<li><a class="dropdown-item py-2 action-publish-song" href="#" data-song-id="${song.id}" style="border-radius: 8px; margin-bottom: 2px;"><i class="bi bi-eye me-3 text-muted-custom"></i> Hiện lại bài hát</a></li>`;
                             } else {
                                 statusHtml = '<span class="text-secondary">Phát hành</span>';
-                                actionHtml = `<li><a class="dropdown-item py-2 action-hide-song" href="#" data-song-id="${song.id}"><i class="bi bi-eye-slash me-3 text-muted-custom"></i> Ẩn bài hát</a></li>`;
+                                actionHtml = `<li><a class="dropdown-item py-2 action-hide-song" href="#" data-song-id="${song.id}" style="border-radius: 8px; margin-bottom: 2px;"><i class="bi bi-eye-slash me-3 text-muted-custom"></i> Ẩn bài hát</a></li>`;
                             }
 
                             const html = `
@@ -94,11 +94,11 @@
                                             <button class="btn btn-sm btn-link text-light p-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="bi bi-three-dots-vertical fs-5"></i>
                                             </button>
-                                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="background-color: var(--bg-card); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                                                <li><a class="dropdown-item py-2 action-edit-song" href="#" data-bs-toggle="modal" data-bs-target="#editSongModal" data-song-id="${song.id}"><i class="bi bi-pencil me-3 text-muted-custom"></i> Chỉnh sửa</a></li>
+                                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); padding: 6px;">
+                                                <li><a class="dropdown-item py-2 action-edit-song" href="#" data-bs-toggle="modal" data-bs-target="#editSongModal" data-song-id="${song.id}" style="border-radius: 8px; margin-bottom: 2px;"><i class="bi bi-pencil me-3 text-muted-custom"></i> Chỉnh sửa</a></li>
                                                 ${actionHtml}
-                                                <li><hr class="dropdown-divider border-secondary opacity-25"></li>
-                                                <li><a class="dropdown-item py-2 text-danger action-delete-song" href="#" data-bs-toggle="modal" data-bs-target="#deleteSongConfirmModal" data-song-id="${song.id}"><i class="bi bi-trash me-3"></i> Xóa bài hát</a></li>
+                                                <li><hr class="dropdown-divider" style="border-color: rgba(255,255,255,0.08); margin: 6px 0;"></li>
+                                                <li><a class="dropdown-item py-2 text-danger action-delete-song" href="#" data-bs-toggle="modal" data-bs-target="#deleteSongConfirmModal" data-song-id="${song.id}" style="border-radius: 8px;" onmouseover="this.style.backgroundColor='rgba(239,68,68,0.15)'" onmouseout="this.style.backgroundColor='transparent'"><i class="bi bi-trash me-3"></i> Xóa bài hát</a></li>
                                             </ul>
                                         </div>
                                     </div>

@@ -107,16 +107,18 @@
         <div>Đang tải bài hát...</div>
     </div>
 </div>
-</div>
-                </div>
-            </div>
-        </div>
-        </main>
-    </div>
-
-    <!-- PLAYER BAR -->
-    {% include 'includes/player_bar.html' %}
-</div>
+                                </div> <!-- close manage-songs-list -->
+                            </div> <!-- close home-section mb-5 -->
+                        </div> <!-- close px-2 -->
+                    </div> <!-- close content-scroll -->
+                </main>
+                <!-- Include right sidebar INSIDE main-wrapper -->
+                {% include 'includes/right_sidebar.html' %}
+            </div> <!-- close main-wrapper -->
+        
+        <!-- PLAYER BAR OUTSIDE main-wrapper -->
+        {% include 'includes/player_bar.html' %}
+    </div> <!-- close app-container -->
 
         <!-- Edit Song Modal -->
     <div class="modal fade custom-modal" id="editSongModal" tabindex="-1" aria-labelledby="editSongModalLabel" aria-hidden="true">
