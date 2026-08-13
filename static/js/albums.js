@@ -21,9 +21,12 @@ let deleteTargetId   = null;
 /** Map<string, albumObject> – tránh JSON.stringify inline trong onclick */
 const albumCache = new Map();
 
-/** Danh sách bài hát published của artist – load lazy 1 lần */
 let myPublishedSongs  = null;   // null = chưa load
 let songSearchTimeout = null;
+let currentSearchQuery = '';
+let currentSearchResults = [];
+let currentSearchPage = 0;
+const SEARCH_PAGE_SIZE = 5;
 
 /* ══════════════════════════════════════════════
    HELPERS
@@ -62,40 +65,71 @@ function closeAllMenus() {
 /* ══════════════════════════════════════════════
    LOAD ALBUMS
 ══════════════════════════════════════════════ */
-async function loadAlbums() {
+let currentAlbumPage = 1;
+let isFetchingAlbums = false;
+let hasMoreAlbums = true;
+
+async function loadAlbums(reset = true) {
+    if (isFetchingAlbums || (!hasMoreAlbums && !reset)) return;
+    
+    if (reset) {
+        currentAlbumPage = 1;
+        hasMoreAlbums = true;
+        albumCache.clear();
+    }
+
+    isFetchingAlbums = true;
     try {
-        const res  = await fetch(`/api/v1/music/users/${CURRENT_USER_ID}/albums/`);
+        const res  = await fetch(`/api/v1/music/users/${CURRENT_USER_ID}/albums/?page=${currentAlbumPage}&page_size=10`);
         const data = await res.json();
         if (!data.success) return;
 
-        const albums = data.data.items || [];
+        let albums = [];
+        let pagination = null;
+        
+        if (Array.isArray(data.data)) {
+            // Trường hợp backend chưa update phân trang (hoặc lỗi fallback)
+            albums = data.data;
+            hasMoreAlbums = false;
+        } else if (data.data.items) {
+            albums = data.data.items;
+            pagination = data.data.pagination;
+            if (pagination) {
+                hasMoreAlbums = currentAlbumPage < pagination.total_pages;
+                const badge = document.getElementById('albumCountBadge');
+                if (badge) badge.textContent = `${pagination.total} album`;
+            } else {
+                hasMoreAlbums = false;
+            }
+        }
 
-        const badge = document.getElementById('albumCountBadge');
-        if (badge) badge.textContent = `${albums.length} album`;
-
-        albumCache.clear();
         albums.forEach(a => albumCache.set(String(a.id), a));
 
-        renderGrid(albums);
+        renderGrid(albums, !reset);
+        
+        currentAlbumPage++;
     } catch (err) {
         console.error('loadAlbums:', err);
+    } finally {
+        isFetchingAlbums = false;
     }
 }
 
-function renderGrid(albums) {
+function renderGrid(albums, append = false) {
     const grid  = document.getElementById('albumGrid');
     const noMsg = document.getElementById('noAlbumsMsg');
     if (!grid) return;
 
-    grid.innerHTML = '';
+    if (!append) grid.innerHTML = '';
 
-    if (albums.length === 0) {
+    if (!append && albums.length === 0) {
         if (noMsg) noMsg.classList.remove('d-none');
         return;
     }
     if (noMsg) noMsg.classList.add('d-none');
 
-    albums.forEach((album, index) => grid.appendChild(buildAlbumCard(album, index + 1)));
+    const startIndex = append ? grid.children.length : 0;
+    albums.forEach((album, index) => grid.appendChild(buildAlbumCard(album, startIndex + index + 1)));
 }
 
 /* ── Build card – nút ⋮ cố định + dropdown menu (thân thiện mobile) ── */
@@ -133,12 +167,12 @@ function buildAlbumCard(album, index) {
         <div class="text-secondary hide-lg text-truncate">
             ${album.song_count} bài hát
         </div>
-        <div class="text-secondary hide-lg text-center">
+        <div class="text-secondary hide-lg">
             ${createdStr}
         </div>
         <div class="text-secondary text-center">
             <div style="position:relative; display:inline-block;">
-                <i class="bi bi-three-dots hover-text-white card-menu-btn js-menu-btn" title="Tùy chọn" style="cursor: pointer; font-size: 1.1rem; z-index: 3; transition: color 0.2s; position:relative; background:transparent; border:none; color:var(--pm-muted); padding:0;"></i>
+                <i class="bi bi-three-dots-vertical hover-text-white card-menu-btn js-menu-btn" title="Tùy chọn" style="cursor: pointer; font-size: 1.1rem; z-index: 3; transition: color 0.2s; position:relative; background:transparent; border:none; color:var(--pm-muted); padding:0;"></i>
                 <div class="card-menu-dropdown js-menu-dropdown">
                     <button class="card-menu-item js-songs">
                         <i class="bi bi-music-note-list"></i> Quản lý bài hát
@@ -177,8 +211,8 @@ function buildAlbumCard(album, index) {
         e.stopPropagation(); closeAllMenus(); askDeleteAlbum(albumId);
     };
 
-    /* Click vào card → phát album */
-    card.onclick = () => playAlbum(albumId, album.title);
+    /* Click vào card → đi tới trang chi tiết album */
+    card.onclick = () => window.location.href = `/album/detail/?id=${albumId}`;
     return card;
 }
 
@@ -277,9 +311,9 @@ function openEditAlbum(albumId) {
     const statusDiv = document.getElementById('editAlbumStatusActions');
     if (statusDiv) {
         if (album.status === 'draft') {
-            statusDiv.innerHTML = `<button type="button" class="btn-pm-success" onclick="publishAlbum('${album.id}', 'edit')">Phát hành</button>`;
+            statusDiv.innerHTML = `<button type="button" class="btn-save-album" onclick="publishAlbum('${album.id}', 'edit')">Phát hành</button>`;
         } else {
-            statusDiv.innerHTML = `<button type="button" class="btn-pm-amber" onclick="unpublishAlbum('${album.id}', 'edit')">Ẩn album</button>`;
+            statusDiv.innerHTML = `<button type="button" class="btn-pm-outline" onclick="unpublishAlbum('${album.id}', 'edit')">Ẩn album</button>`;
         }
     }
     
@@ -454,15 +488,10 @@ async function loadAlbumSongs(albumId) {
                     <div class="song-dur">${fmtDuration(s.duration)}</div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 btn-queue-next" title="Phát tiếp theo">
-                        <i class="bi bi-music-note-list"></i>
-                    </button>
                     <button class="btn-rm-song" title="Xoá khỏi album">
                         <i class="bi bi-x-lg" style="font-size:.8rem;"></i>
                     </button>
                 </div>`;
-
-            row.querySelector('.btn-queue-next').onclick = (e) => window.queueNext(s.id, e);
 
             row.querySelector('.btn-rm-song').onclick =
                 () => removeSongFromAlbum(albumId, s.id);
@@ -507,7 +536,13 @@ function debouncedSearch(q) {
 function searchMySongs(query) {
     const container = document.getElementById('songSearchResults');
     const q = query.trim().toLowerCase();
-    if (!q) { container.innerHTML = ''; return; }
+    
+    currentSearchQuery = q;
+    currentSearchPage = 0;
+    currentSearchResults = [];
+    container.innerHTML = '';
+
+    if (!q) return;
 
     if (!myPublishedSongs || myPublishedSongs.length === 0) {
         container.innerHTML =
@@ -516,18 +551,26 @@ function searchMySongs(query) {
         return;
     }
 
-    const results = myPublishedSongs
-        .filter(s => s.title.toLowerCase().includes(q))
-        .slice(0, 8);
+    currentSearchResults = myPublishedSongs.filter(s => s.title.toLowerCase().includes(q));
 
-    if (results.length === 0) {
+    if (currentSearchResults.length === 0) {
         container.innerHTML =
             `<div class="song-row text-secondary" style="font-size:.78rem;">
                 Không tìm thấy bài hát</div>`;
         return;
     }
 
-    container.innerHTML = '';
+    renderSearchPage();
+}
+
+function renderSearchPage() {
+    const container = document.getElementById('songSearchResults');
+    const start = currentSearchPage * SEARCH_PAGE_SIZE;
+    const end = start + SEARCH_PAGE_SIZE;
+    const results = currentSearchResults.slice(start, end);
+    
+    if (results.length === 0) return;
+
     results.forEach(s => {
         const row = document.createElement('div');
         row.className    = 'song-row';
@@ -544,11 +587,13 @@ function searchMySongs(query) {
             <div class="song-info">
                 <div class="song-title-sm" style="font-size:.82rem;">${escHtml(s.title)}</div>
             </div>
-            <i class="bi bi-plus-circle"
-                style="color:var(--pm-theme);font-size:1.1rem;flex-shrink:0;"></i>`;
+            <i class="bi bi-plus-circle text-white"
+                style="font-size:1.1rem;flex-shrink:0;"></i>`;
         row.onclick = () => addSongToAlbum(s.id, s.title);
         container.appendChild(row);
     });
+    
+    currentSearchPage++;
 }
 
 async function addSongToAlbum(songId, songTitle) {
@@ -687,5 +732,28 @@ document.addEventListener('DOMContentLoaded', () => {
     /* Đóng tất cả dropdown khi click bên ngoài card */
     document.addEventListener('click', closeAllMenus);
 
-    if (IS_ARTIST) loadAlbums();
+    /* Scroll pagination */
+    const handleScroll = function(e) {
+        const target = e.target;
+        if (target && target.classList && target.classList.contains('content-scroll')) {
+            if (target.scrollHeight - target.scrollTop <= target.clientHeight + 150) {
+                loadAlbums(false);
+            }
+        }
+    };
+    
+    document.addEventListener('scroll', handleScroll, true);
+
+    const searchResultsContainer = document.getElementById('songSearchResults');
+    if (searchResultsContainer) {
+        searchResultsContainer.addEventListener('scroll', function() {
+            if (this.scrollHeight - this.scrollTop <= this.clientHeight + 20) {
+                if (currentSearchPage * SEARCH_PAGE_SIZE < currentSearchResults.length) {
+                    renderSearchPage();
+                }
+            }
+        });
+    }
+
+    if (IS_ARTIST) loadAlbums(true);
 });

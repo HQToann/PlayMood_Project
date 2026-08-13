@@ -950,12 +950,18 @@ class ArtistAlbumsView(View):
             except User.DoesNotExist:
                 return JsonResponse({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Nghệ sĩ không tồn tại'}}, status=404)
 
+            page = int(request.GET.get('page', 0))
+            page_size = int(request.GET.get('page_size', 10))
+
             # Owner xem được cả draft
             if request.user.is_authenticated and str(request.user.id) == str(user_id):
-                albums = list_albums(artist=artist)
+                result = list_albums(artist=artist, page=page if page > 0 else None, page_size=page_size)
             else:
-                albums = list_albums(artist=artist, status=Album.STATUS_PUBLISHED)
+                result = list_albums(artist=artist, status=Album.STATUS_PUBLISHED, page=page if page > 0 else None, page_size=page_size)
 
-            return JsonResponse({'success': True, 'data': {'items': albums, 'total': len(albums)}})
+            if page > 0:
+                return JsonResponse({'success': True, 'data': result})
+            else:
+                return JsonResponse({'success': True, 'data': {'items': result, 'total': len(result)}})
         except Exception as e:
             return handle_exception(e)

@@ -369,15 +369,32 @@ def list_user_liked_songs(target_user_id, viewer=None, limit=5) -> list:
 
 
 # ALBUM
-def list_albums(artist=None, status=None, include_songs=True) -> list:
+def list_albums(artist=None, status=None, include_songs=True, page=None, page_size=10) -> list | dict:
     """
     Liệt kê album, có thể lọc theo artist và/hoặc status.
     """
+    import math
     qs = Album.objects.select_related('artist').prefetch_related('album_songs__song')
     if artist is not None:
         qs = qs.filter(artist=artist)
     if status is not None:
         qs = qs.filter(status=status)
+        
+    qs = qs.order_by('-created_at')
+    
+    if page:
+        total = qs.count()
+        start = (page - 1) * page_size
+        qs = qs[start:start + page_size]
+        return {
+            'items': [album.to_dict() for album in qs],
+            'pagination': {
+                'page': page,
+                'page_size': page_size,
+                'total': total,
+                'total_pages': math.ceil(total / page_size) if total > 0 else 1,
+            }
+        }
     return [album.to_dict() for album in qs]
 
 

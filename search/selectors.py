@@ -66,7 +66,28 @@ def search_artists(q='', viewer=None, page=1, page_size=20) -> dict:
     qs = qs.order_by('-created_at')
     total = qs.count()
     start = (page - 1) * page_size
-    items = [a.to_dict(viewer=viewer) for a in qs[start:start + page_size]]
+    
+    following_ids = set()
+    requested_ids = set()
+    viewer_is_auth = bool(viewer_id and getattr(viewer, 'is_authenticated', False))
+    if viewer_is_auth:
+        from social.models import Follow, FollowRequest
+        following_ids = set(Follow.objects.filter(follower_id=viewer_id).values_list('following_id', flat=True))
+        requested_ids = set(FollowRequest.objects.filter(sender_id=viewer_id).values_list('receiver_id', flat=True))
+        
+    items = []
+    for a in qs[start:start + page_size]:
+        a_dict = a.to_dict(viewer=viewer)
+        if viewer_is_auth:
+            if a.user_id in following_ids:
+                a_dict['follow_status'] = 'following'
+            elif a.user_id in requested_ids:
+                a_dict['follow_status'] = 'requested'
+            else:
+                a_dict['follow_status'] = 'none'
+        else:
+            a_dict['follow_status'] = 'none'
+        items.append(a_dict)
 
     return {
         'items': items,

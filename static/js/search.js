@@ -68,7 +68,7 @@ window.applyFilter = function(type) {
 function renderFilteredResults() {
     const { songs, artists, playlists, albums, users } = globalSearchData;
     
-    let combinedUsers = [...artists, ...users];
+    let combinedUsers = [...artists];
     let uniqueUsers = [];
     let seenUserIds = new Set();
     combinedUsers.forEach(u => {
@@ -98,7 +98,7 @@ function renderFilteredResults() {
             listTitle.textContent = 'Tất cả Bài hát';
             renderList(songs, 'song');
         } else if (currentFilter === 'artists') {
-            listTitle.textContent = 'Nghệ sĩ & Người dùng';
+            listTitle.textContent = 'Nghệ sĩ';
             renderList(uniqueUsers, 'artist');
         } else if (currentFilter === 'playlists') {
             listTitle.textContent = 'Playlists';
@@ -138,6 +138,16 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             const profileLink = topItem.user ? `/profile/${topItem.user.id}` : `/profile/${topItem.id}`;
             const userId = topItem.user ? topItem.user.id : topItem.id;
             
+            let followBtnClass = "btn-outline-light text-white";
+            let followBtnText = "Theo dõi";
+            if (topItem.follow_status === 'following') {
+                followBtnClass = "btn-light text-dark";
+                followBtnText = "Đang theo dõi";
+            } else if (topItem.follow_status === 'requested') {
+                followBtnClass = "btn-light text-dark";
+                followBtnText = "Đã yêu cầu";
+            }
+            
             topHtml = `
                 <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='${profileLink}'">
                     <img src="${avatar}" alt="Avatar" class="rounded-circle mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
@@ -146,8 +156,8 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
                         <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">${subtitle}</span>
                     </div>
                     
-                    <button class="btn btn-outline-light rounded-pill fw-bold position-absolute px-4 py-2" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);">
-                        Theo dõi
+                    <button class="btn ${followBtnClass} rounded-pill fw-bold position-absolute px-4 py-2" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);">
+                        ${followBtnText}
                     </button>
                 </div>
             `;
@@ -233,7 +243,7 @@ function renderList(items, type) {
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <button class="btn btn-link text-muted-custom p-0 text-decoration-none" style="font-size: 1.2rem;" onclick="event.stopPropagation(); window.addToQueue('${item.id}', '${item.title.replace(/'/g, "\\'")}', '${artist.replace(/'/g, "\\'")}', '${img}');" title="Thêm vào danh sách chờ">
+                            <button class="btn btn-link text-muted-custom p-0 text-decoration-none" style="font-size: 1.2rem;" onclick="event.stopPropagation(); window.addToQueue('${item.id}', '${item.title.replace(/'/g, `\\'`)}', '${artist.replace(/'/g, `\\'`)}', '${img}', null, true); window.showToast('Đã thêm &quot;' + '${item.title.replace(/'/g, `\\'`)}' + '&quot; vào danh sách chờ', 'success');" title="Thêm vào danh sách chờ">
                                 <i class="bi bi-plus-circle"></i>
                             </button>
                         </div>
@@ -246,6 +256,15 @@ function renderList(items, type) {
                 const subtitle = isArtist ? 'Nghệ sĩ' : 'Người dùng';
                 const profileLink = item.user ? `/profile/${item.user.id}` : `/profile/${item.id}`;
                 const userId = item.user ? item.user.id : item.id;
+                let followBtnClass = "btn-outline-light";
+                let followBtnText = "Theo dõi";
+                if (item.follow_status === 'following') {
+                    followBtnClass = "btn-light text-dark";
+                    followBtnText = "Đang theo dõi";
+                } else if (item.follow_status === 'requested') {
+                    followBtnClass = "btn-light text-dark";
+                    followBtnText = "Đã yêu cầu";
+                }
                 
                 html += `
                     <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.location.href='${profileLink}'">
@@ -258,8 +277,8 @@ function renderList(items, type) {
                                 <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">${subtitle}</div>
                             </div>
                         </div>
-                        <button class="btn btn-outline-light rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3);">
-                            Theo dõi
+                        <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3);">
+                            ${followBtnText}
                         </button>
                     </div>
                 `;

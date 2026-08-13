@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const playlists = data.data.playlists || [];
                         const users = data.data.users || [];
                         
-                        let combinedUsers = [...artists, ...users];
+                        let combinedUsers = [...artists];
                         let uniqueUsers = [];
                         let seenUserIds = new Set();
                         combinedUsers.forEach(u => {
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         });
                         
-                        // Gộp kết quả, ưu tiên 2 nghệ sĩ/người dùng đầu, 1 album, 1 playlist, sau đó đến bài hát
+                        // Gộp kết quả, ưu tiên 2 nghệ sĩ đầu, 1 album, 1 playlist, sau đó đến bài hát
                         let items = [...uniqueUsers.slice(0,2), ...albums.slice(0,1), ...playlists.slice(0,1), ...songs].slice(0,5);
                         
                         let html = '';
@@ -102,6 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const profileLink = item.user ? `/profile/${item.user.id}` : `/profile/${item.id}`;
                                     const userId = item.user ? item.user.id : item.id;
                                     
+                                    let followBtnClass = "btn-outline-light";
+                                    let followBtnText = "Theo dõi";
+                                    if (item.follow_status === 'following') {
+                                        followBtnClass = "btn-light text-dark";
+                                        followBtnText = "Đang theo dõi";
+                                    } else if (item.follow_status === 'requested') {
+                                        followBtnClass = "btn-light text-dark";
+                                        followBtnText = "Đã yêu cầu";
+                                    }
+                                    
                                     html += `
                                         <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between" style="cursor: pointer; transition: background 0.2s;" onclick="window.goToPage('${profileLink}')">
                                             <div class="d-flex align-items-center gap-3">
@@ -113,8 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     <div style="font-size: 0.85rem; color: var(--text-secondary);">${subtitle}</div>
                                                 </div>
                                             </div>
-                                            <button class="btn btn-outline-light rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3);">
-                                                Theo dõi
+                                            <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3);">
+                                                ${followBtnText}
                                             </button>
                                         </div>
                                     `;
@@ -153,6 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     <div style="font-size: 0.85rem; color: var(--text-secondary);">Playlist • ${owner}</div>
                                                 </div>
                                             </div>
+                                            <button class="btn btn-link text-muted-custom p-0 text-decoration-none" onclick="event.stopPropagation(); if(window.playPlaylist) window.playPlaylist('${item.id}', event, '${item.title.replace(/'/g, `\\'`)}');" style="font-size: 1.5rem;" title="Phát playlist">
+                                                <i class="bi bi-play-circle"></i>
+                                            </button>
                                         </div>
                                     `;
                                 } else {
@@ -170,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     <div style="font-size: 0.85rem; color: var(--text-secondary);">${artist}</div>
                                                 </div>
                                             </div>
-                                            <button class="btn btn-link text-muted-custom p-0 text-decoration-none" onclick="event.stopPropagation(); window.openAddToPlaylistModal('${item.id}');" style="font-size: 1.2rem;">
+                                            <button class="btn btn-link text-muted-custom p-0 text-decoration-none" onclick="event.stopPropagation(); window.addToQueue('${item.id}', '${item.title.replace(/'/g, `\\'`)}', '${artist.replace(/'/g, `\\'`)}', '${img}', 'Từ tìm kiếm', true); window.showToast('Đã thêm &quot;' + '${item.title.replace(/'/g, `\\'`)}' + '&quot; vào danh sách chờ', 'success');" style="font-size: 1.5rem;" title="Thêm vào danh sách phát">
                                                 <i class="bi bi-plus-circle"></i>
                                             </button>
                                         </div>

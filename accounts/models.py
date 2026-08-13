@@ -144,7 +144,13 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
     def get_display_name(self):
-        """Trả tên hiển thị, fallback về username nếu chưa đặt."""
+        """Trả tên hiển thị. Nếu là artist trả stage_name, fallback về display_name hoặc username."""
+        if self.role == self.ROLE_ARTIST:
+            try:
+                if hasattr(self, 'artist_profile') and self.artist_profile.stage_name:
+                    return self.artist_profile.stage_name
+            except Exception:
+                pass
         return self.display_name or self.username
 
     

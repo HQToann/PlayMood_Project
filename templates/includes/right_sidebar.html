@@ -20,10 +20,10 @@
                             {% if request.user.avatar %}
                             <img src="{{ request.user.avatar.url }}" alt="avatar" class="user-avatar" id="headerUserAvatar" style="object-fit: cover;">
                             {% else %}
-                            <img src="https://ui-avatars.com/api/?name={{ request.user.display_name|default:request.user.username|urlencode }}&background=random" alt="avatar" class="user-avatar" id="headerUserAvatar" style="object-fit: cover;">
+                            <img src="https://ui-avatars.com/api/?name={{ request.user.get_display_name|urlencode }}&background=random" alt="avatar" class="user-avatar" id="headerUserAvatar" style="object-fit: cover;">
                             {% endif %}
                             <span style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                                <span style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.display_name|default:request.user.username }}</span>
+                                <span style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.get_display_name }}</span>
                                 <i class="bi bi-chevron-down small"></i>
                             </span>
                         </div>
