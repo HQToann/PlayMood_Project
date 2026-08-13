@@ -53,6 +53,18 @@
             background-color: var(--bs-primary) !important;
             border-color: var(--bs-primary) !important;
         }
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg,
+                rgba(255,255,255,.05) 25%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
 <body data-bs-theme="dark">
@@ -93,10 +105,10 @@
                             </div>
                         </div>
                         <div class="d-flex flex-column gap-1" id="recentSongsContainer">
-                            <div class="text-center text-muted-custom py-4">
-                                <div class="spinner-border spinner-border-sm" role="status"></div>
-                                <span class="ms-2 small">Đang tải...</span>
-                            </div>
+                            <!-- Skeleton placeholders -->
+                            <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                            <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                            <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
                         </div>
                     </div>
                 </div>
@@ -108,6 +120,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}?v=2.5"></script>
-    <script src="{% static 'js/recent.js' %}?v=1"></script>
+    <script src="{% static 'js/recent.js' %}?v=1.4"></script>
 </body>
 </html>

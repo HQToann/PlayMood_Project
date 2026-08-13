@@ -459,8 +459,9 @@ class UserLikedSongsView(View):
     def get(self, request, user_id):
         try:
             from music.selectors import list_user_liked_songs
-            limit = int(request.GET.get('limit', 5))
-            items = list_user_liked_songs(user_id, viewer=request.user, limit=limit)
+            limit = int(request.GET.get('limit', 20))
+            page = int(request.GET.get('page', 1))
+            items = list_user_liked_songs(user_id, viewer=request.user, page=page, page_size=limit)
             return JsonResponse({'success': True, 'data': items})
         except Exception as e:
             return handle_exception(e)

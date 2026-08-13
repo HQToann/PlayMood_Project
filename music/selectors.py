@@ -330,7 +330,8 @@ def get_report_by_id(report_id) -> Report:
 
 
 #lấy danh sách bài hát yêu thích của user
-def list_user_liked_songs(target_user_id, viewer=None, limit=5) -> list:
+def list_user_liked_songs(target_user_id, viewer=None, page=1, page_size=20) -> dict:
+    import math
     qs = (
         Like.objects.filter(user_id=target_user_id)
         .select_related('song', 'song__artist', 'song__genre')
@@ -340,7 +341,7 @@ def list_user_liked_songs(target_user_id, viewer=None, limit=5) -> list:
     viewer_id = getattr(viewer, 'id', None)
     viewer_is_auth = bool(viewer_id and getattr(viewer, 'is_authenticated', False))
     
-    items = []
+    all_valid_likes = []
     for like in qs:
         song = like.song
         
@@ -359,13 +360,27 @@ def list_user_liked_songs(target_user_id, viewer=None, limit=5) -> list:
         if viewer_is_auth and is_blocked(viewer_id, song.artist_id):
             continue
             
-        song_dict = song.to_dict(viewer=viewer, include_stats=True)
+        all_valid_likes.append(like)
+        
+    total = len(all_valid_likes)
+    start = (page - 1) * page_size
+    paged_likes = all_valid_likes[start:start + page_size]
+    
+    items = []
+    for like in paged_likes:
+        song_dict = like.song.to_dict(viewer=viewer, include_stats=True)
         song_dict['liked_at'] = like.created_at.isoformat()
         items.append(song_dict)
-        if len(items) >= limit:
-            break
             
-    return items
+    return {
+        'items': items,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'total_pages': math.ceil(total / page_size) if total > 0 else 1,
+        },
+    }
 
 
 # ALBUM
