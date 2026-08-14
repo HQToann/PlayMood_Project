@@ -217,3 +217,118 @@ document.querySelectorAll('.profile-tab').forEach(tab => {
         if (section) section.style.display = 'block';
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarPreview = document.getElementById('avatarPreview');
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    const coverInput = document.getElementById('coverInput');
+    const coverPreview = document.getElementById('coverPreview');
+    if (coverInput && coverPreview) {
+        coverInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    coverPreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+
+async function saveImages() {
+    const avatarInput = document.getElementById('avatarInput');
+    const coverInput = document.getElementById('coverInput');
+    
+    const formData = new FormData();
+    let hasFile = false;
+    
+    if (avatarInput && avatarInput.files.length > 0) {
+        formData.append('avatar', avatarInput.files[0]);
+        hasFile = true;
+    }
+    
+    if (coverInput && coverInput.files.length > 0) {
+        formData.append('cover', coverInput.files[0]);
+        hasFile = true;
+    }
+    
+    if (!hasFile) {
+        return;
+    }
+    
+    try {
+        const csrfToken = getCookie('csrftoken');
+        const response = await fetch('/api/v1/accounts/me/images/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        });
+        
+        const result = await response.json();
+        if (response.ok && result.success) {
+            window.location.reload();
+        } else {
+            console.error('Lỗi khi lưu hình ảnh:', result);
+            alert(result.error?.message || 'Có lỗi xảy ra khi lưu hình ảnh');
+        }
+    } catch (e) {
+        console.error('Lỗi khi lưu hình ảnh:', e);
+        alert('Có lỗi xảy ra khi lưu hình ảnh');
+    }
+}
+
+async function saveSocials() {
+    const websiteInput = document.getElementById('websiteInput');
+    const facebookInput = document.getElementById('facebookInput');
+    const youtubeInput = document.getElementById('youtubeInput');
+
+    if (!websiteInput && !facebookInput && !youtubeInput) return;
+
+    const website = websiteInput ? websiteInput.value.trim() : '';
+    const facebook = facebookInput ? facebookInput.value.trim() : '';
+    const youtube = youtubeInput ? youtubeInput.value.trim() : '';
+
+    try {
+        const res = await fetch('/api/v1/artists/me/', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                website_url: website,
+                facebook_url: facebook,
+                youtube_url: youtube
+            })
+        });
+        const json = await res.json();
+        if (json.success || res.ok) {
+            if (window.showToast) window.showToast('Đã cập nhật liên kết thành công!', true);
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            if (window.showToast) window.showToast(json.error?.message || 'Lỗi cập nhật liên kết', false);
+            else alert(json.error?.message || 'Lỗi cập nhật liên kết');
+        }
+    } catch (e) {
+        console.error(e);
+        if (window.showToast) window.showToast('Lỗi kết nối', false);
+        else alert('Lỗi kết nối');
+    }
+}

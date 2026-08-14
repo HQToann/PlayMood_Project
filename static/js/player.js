@@ -338,10 +338,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 pbLyricsBtn.style.color = 'var(--accent-color)';
             }
         } else {
-            panel.style.top = '100vh'; // Slide down
-            if (pbLyricsBtn) {
-                pbLyricsBtn.style.color = '';
-            }
+            window.hideLyricsPanel();
+        }
+    };
+
+    window.hideLyricsPanel = function () {
+        const panel = document.getElementById('lyricsPanel');
+        if (panel) panel.style.top = '100vh'; // Slide down
+        isLyricsOpen = false;
+        if (typeof pbLyricsBtn !== 'undefined' && pbLyricsBtn) {
+            pbLyricsBtn.style.color = '';
+        } else {
+            const btn = document.getElementById('pbLyricsBtn');
+            if (btn) btn.style.color = '';
         }
     };
     if (pbLyricsBtn) {
@@ -1142,7 +1151,21 @@ function renderQueue() {
     body.innerHTML = html;
 }
 
-// Gọi render 1 lần khi load trang để phục hồi queue UI
+// Hàm đóng tất cả các panel (ngăn chặn lỗi block màn hình khi chuyển trang)
+window.closeAllPlayerPanels = function () {
+    if (typeof window.hideQueuePanel === 'function') window.hideQueuePanel();
+    if (typeof window.hideDevicePanel === 'function') window.hideDevicePanel();
+    if (typeof window.hideLyricsPanel === 'function') window.hideLyricsPanel();
+};
+
+// Reset panels khi chuyển trang (tương thích HTMX, Turbo, reload bình thường)
+window.addEventListener('beforeunload', window.closeAllPlayerPanels);
+document.addEventListener('htmx:beforeRequest', window.closeAllPlayerPanels);
+document.addEventListener('turbo:before-visit', window.closeAllPlayerPanels);
+document.addEventListener('turbolinks:before-visit', window.closeAllPlayerPanels);
+
+// Gọi render 1 lần khi load trang để phục hồi queue UI và dọn dẹp các wrapper
 document.addEventListener('DOMContentLoaded', () => {
+    window.closeAllPlayerPanels();
     setTimeout(renderQueue, 150);
 });

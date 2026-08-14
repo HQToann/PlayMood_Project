@@ -94,15 +94,13 @@
                         </div>
                     </div>
                     {% else %}
-                    <!-- Bảng Xếp Hạng Section (static for guests) -->
+                    <!-- Bảng Xếp Hạng Section -->
                     <div class="home-section">
                         <div class="section-title-container">
                             <h2 class="section-title">Bảng xếp hạng</h2>
                         </div>
                         <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;">
-                            {% include 'components/card.html' with style='playlist' title='Trending 20 Việt Nam' subtitle='20 video thịnh hành tại Việt Nam' image='https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='playlist' title='Daily Top 100' subtitle='Các bài hát hàng đầu trong ngày' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
-                            {% include 'components/card.html' with style='playlist' title='Global Top 100' subtitle='100 bài hát hàng đầu trên thế giới' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
+                            <div class="text-secondary py-3 small w-100" style="grid-column: 1/-1;">Chưa có bảng xếp hạng nào.</div>
                         </div>
                     </div>
                     {% endif %}

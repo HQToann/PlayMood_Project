@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -44,19 +44,21 @@
                         <div class="settings-section mb-5">
                             <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Tài khoản</h4>
                             <div class="settings-card">
-                                <div class="settings-item opacity-50 user-select-none">
+                                <div class="settings-item px-4 opacity-50 user-select-none">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Tên đăng nhập (Username)</div>
                                         <div class="settings-item-desc">@{{ request.user.username }}</div>
                                     </div>
+                                    <div class="settings-item-action"></div>
                                 </div>
-                                <div class="settings-item opacity-50 user-select-none">
+                                <div class="settings-item px-4 opacity-50 user-select-none">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Email</div>
                                         <div class="settings-item-desc">{{ request.user.email }}</div>
                                     </div>
+                                    <div class="settings-item-action"></div>
                                 </div>
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Mật khẩu</div>
                                         <div class="settings-item-desc">Đổi mật khẩu bảo vệ tài khoản của bạn</div>
@@ -65,7 +67,7 @@
                                         <button class="btn btn-outline-light rounded-pill btn-sm px-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Cập nhật</button>
                                     </div>
                                 </div>
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Tên hiển thị</div>
                                         <div class="settings-item-desc">Tên người dùng được hiển thị trên PlayMood</div>
@@ -75,7 +77,7 @@
                                     </div>
                                 </div>
                                 {% if request.user.role == 'artist' %}
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Liên kết Mạng xã hội</div>
                                         <div class="settings-item-desc">Website, Facebook, YouTube hiển thị trên trang Nghệ sĩ</div>
@@ -86,7 +88,7 @@
                                     </div>
                                 </div>
                                 {% else %}
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info" id="artist-register-info">
                                         <div class="settings-item-title">Đăng ký trở thành Nghệ sĩ</div>
                                         <div class="settings-item-desc">Chia sẻ âm nhạc của bạn và tiếp cận hàng triệu
@@ -99,7 +101,7 @@
                                     </div>
                                 </div>
                                 {% endif %}
-                                <div class="settings-item"
+                                <div class="settings-item px-4"
                                     style="border-top: 1px solid rgba(255, 107, 107, 0.2); background-color: rgba(255, 107, 107, 0.05);">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title text-danger">Đăng xuất</div>
@@ -122,7 +124,7 @@
                         <div class="settings-section mb-5">
                             <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Thông báo</h4>
                             <div class="settings-card">
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Thông báo bài hát mới</div>
                                         <div class="settings-item-desc">Nhận thông báo khi nghệ sĩ yêu thích ra bài hát
@@ -134,7 +136,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Email gợi ý nhạc</div>
                                         <div class="settings-item-desc">Nhận email gợi ý nhạc dựa trên cảm xúc của bạn
@@ -153,7 +155,7 @@
                         <div class="settings-section mb-5">
                             <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Quyền riêng tư</h4>
                             <div class="settings-card">
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Hiển thị Playlist cá nhân</div>
                                         <div class="settings-item-desc">Người khác có thể xem danh sách phát của bạn
@@ -165,7 +167,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Hiển thị cảm xúc</div>
                                         <div class="settings-item-desc">Hiển thị bong bóng cảm xúc hiện tại của bạn
@@ -177,7 +179,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="settings-item">
+                                <div class="settings-item px-4">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Danh sách chặn</div>
                                         <div class="settings-item-desc">Quản lý các tài khoản bạn đã chặn</div>
@@ -195,7 +197,7 @@
                                 <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Quản lý Bạn bè</h4>
                                 <div class="settings-card">
                                     <!-- Yêu cầu nhận được -->
-                                    <div class="settings-item">
+                                    <div class="settings-item px-4">
                                         <div class="settings-item-info">
                                             <div class="settings-item-title">
                                                 Yêu cầu kết bạn nhận được
@@ -213,7 +215,7 @@
                                         </div>
                                     </div>
                                     <!-- Yêu cầu đã gửi -->
-                                    <div class="settings-item">
+                                    <div class="settings-item px-4">
                                         <div class="settings-item-info">
                                             <div class="settings-item-title">Yêu cầu kết bạn đã gửi</div>
                                             <div class="settings-item-desc">Xem các yêu cầu đang chờ và hủy nếu muốn
@@ -227,7 +229,7 @@
                                         </div>
                                     </div>
                                     <!-- Danh sách bạn bè -->
-                                    <div class="settings-item">
+                                    <div class="settings-item px-4">
                                         <div class="settings-item-info">
                                             <div class="settings-item-title">Danh sách Bạn bè</div>
                                             <div class="settings-item-desc">Quản lý bạn bè và hủy kết bạn</div>
