@@ -88,34 +88,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Replicate the card logic from mood.js
             let cardHtml = '';
             if (type === 'songs') {
-                const coverUrl = item.cover_image_url || '/static/images/default_cover.jpg';
-                const defaultAvatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.artist?.display_name || 'A') + '&background=random';
-                const artistAvatar = item.artist?.avatar_url || defaultAvatar;
+                const coverUrl = item.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';
+                const artist = item.artist ? item.artist.display_name : 'Nghệ sĩ';
 
                 cardHtml = `
-                    <div class="playlist-card" onclick="window.location.href='/song/${item.id}'">
-                        <img src="${coverUrl}" alt="Song cover">
-                        <h6 class="mt-3 mb-1 text-white text-truncate fw-bold">${item.title}</h6>
-                        <p class="mb-0 text-truncate d-flex align-items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
-                            <img src="${artistAvatar}" alt="Artist" class="rounded-circle" style="width: 20px; height: 20px; object-fit: cover;">
-                            ${item.artist?.display_name || 'Unknown Artist'}
-                        </p>
+                    <div class="music-card" onclick="window.goToPage('/song/?id=${item.id}')" style="cursor:pointer; width: 100%; min-width: 0;">
+                        <div class="music-card-img-wrap">
+                            <img src="${coverUrl}" alt="${item.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';">
+                        </div>
+                        <div class="music-card-title">${item.title}</div>
+                        <div class="music-card-artist">${artist}</div>
                     </div>
                 `;
             } else if (type === 'playlists') {
-                const coverUrl = item.cover_image_url || '/static/images/default_playlist.png';
-                const defaultAvatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.owner?.display_name || 'U') + '&background=random';
-                const ownerAvatar = item.owner?.avatar_url || defaultAvatar;
+                const coverUrl = item.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';
+                const owner = item.owner ? item.owner.display_name : '';
+                const songCount = item.song_count ? ` • ${item.song_count} bài` : '';
 
                 cardHtml = `
-                    <div class="playlist-card" onclick="window.location.href='/playlist/detail/?id=${item.id}'">
-                        <img src="${coverUrl}" alt="Playlist cover" style="aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; width: 100%;">
-                        <h6 class="mt-3 mb-1 text-white text-truncate fw-bold">${item.name}</h6>
-                        <p class="mb-0 text-truncate d-flex align-items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
-                            <img src="${ownerAvatar}" alt="Owner" class="rounded-circle" style="width: 20px; height: 20px; object-fit: cover;">
-                            ${item.owner?.display_name || 'Unknown User'}
-                        </p>
-                    </div>
+                    <a href="/playlist/detail/?id=${item.id}" class="playlist-mood-card" style="width: 100%;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
+                        <div style="position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                            <img src="${coverUrl}" alt="${item.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';">
+                        </div>
+                        <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${item.title || item.name}</div>
+                        <div style="color:rgba(255,255,255,0.5);font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bởi ${owner}${songCount}</div>
+                    </a>
                 `;
             }
             

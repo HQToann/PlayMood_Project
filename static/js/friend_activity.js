@@ -59,13 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         const statusText = friend.mood.status_text ? ` <span style="color: rgba(255,255,255,0.85);">${friend.mood.status_text}</span>` : '';
                         activityText = `${moodEmoji}${statusText}`;
                         if (activity && activity.activity_type === 'playing' && activity.song) {
-                            activityText += `<br><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-top: 2px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${activity.song.title}</div>`;
+                            activityText += `<br><div style="margin-top: 2px; display: flex; align-items: center;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> <div class="marquee-wrapper" style="flex-grow: 1; min-width: 0; max-width: 120px; height: 16px;"><div class="marquee-left"><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${activity.song.title}</span><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${activity.song.title}</span></div></div></div>`;
                         } else if (friend.mood.song) {
-                            activityText += `<br><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-top: 2px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${friend.mood.song.title}</div>`;
+                            activityText += `<br><div style="margin-top: 2px; display: flex; align-items: center;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> <div class="marquee-wrapper" style="flex-grow: 1; min-width: 0; max-width: 120px; height: 16px;"><div class="marquee-left"><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${friend.mood.song.title}</span><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${friend.mood.song.title}</span></div></div></div>`;
                         }
                     } else if (activity) {
                         if (activity.activity_type === 'playing' && activity.song)
-                            activityText = `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${activity.song.title}</div>`;
+                            activityText = `<div style="display: flex; align-items: center;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> <div class="marquee-wrapper" style="flex-grow: 1; min-width: 0; max-width: 120px; height: 16px;"><div class="marquee-left"><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${activity.song.title}</span><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${activity.song.title}</span></div></div></div>`;
                         else if (activity.activity_type === 'mood')
                             activityText = `<i class="bi bi-emoji-smile text-warning"></i> ${activity.extra_text}`;
                     }
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const statusText = friend.mood.status_text ? ` <span style="color: rgba(255,255,255,0.85);">${friend.mood.status_text}</span>` : '';
                     activityText = `${moodEmoji}${statusText}`;
                     if (friend.mood.song) {
-                        activityText += `<br><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-top: 2px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${friend.mood.song.title}</div>`;
+                        activityText += `<br><div style="margin-top: 2px; display: flex; align-items: center;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> <div class="marquee-wrapper" style="flex-grow: 1; min-width: 0; max-width: 120px; height: 16px;"><div class="marquee-left"><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${friend.mood.song.title}</span><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${friend.mood.song.title}</span></div></div></div>`;
                     }
                 }
 
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const opacityClass = friend.isOnline ? '' : 'opacity-75';
                 const dotHtml = `<div class="online-dot" style="background-color: ${friend.isOnline ? 'rgb(140, 225, 178)' : 'white'}; border-color: #121929;"></div>`;
                 const activityHtml = friend.activityText
-                    ? `<div class="friend-song mt-1 text-muted-custom" style="font-size:0.75rem;overflow:hidden;text-overflow:ellipsis;max-width:150px;" title="${friend.activityText.replace(/<[^>]*>?/gm, '')}">${friend.activityText}</div>`
+                    ? `<div class="friend-song mt-1 text-muted-custom" style="font-size:0.75rem;" title="${friend.activityText.replace(/<[^>]*>?/gm, '')}">${friend.activityText}</div>`
                     : '';
                 const grayscaleClass = friend.isOnline ? '' : 'grayscale';
                 const timeHtml = `<div class="friend-time mt-1 text-muted-custom" style="font-size:0.7rem;">${friend.timeText}</div>`;

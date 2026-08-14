@@ -160,7 +160,7 @@ async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
                     const cover = song.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
-                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer;min-width:160px;width:160px;">
+                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer; width: 100%; min-width: 0;">
                                                     <div class="music-card-img-wrap">
                                                         <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';">
 
@@ -182,7 +182,7 @@ async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
                     const owner = pl.owner ? pl.owner.display_name : '';
                     const songCount = pl.song_count ? ` • ${pl.song_count} bài` : '';
                     return `
-                                                <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
+                                                <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="width: 100%;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
                                                     <div style="position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
                                                         <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';">
 
@@ -195,6 +195,17 @@ async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
                 playlistContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Chưa có playlist nào phù hợp.</div>';
             }
         }
+
+        // Cập nhật link "Xem tất cả"
+        const seeAllSongsBtn = document.getElementById('seeAllSongs');
+        if (seeAllSongsBtn) {
+            seeAllSongsBtn.href = `/mood/explore/?mood_id=${moodTypeId}&type=songs&mood_name=${encodeURIComponent(moodName)}`;
+        }
+        const seeAllPlaylistsBtn = document.getElementById('seeAllPlaylists');
+        if (seeAllPlaylistsBtn) {
+            seeAllPlaylistsBtn.href = `/mood/explore/?mood_id=${moodTypeId}&type=playlists&mood_name=${encodeURIComponent(moodName)}`;
+        }
+
     } catch (err) {
         console.error('Lỗi tải gợi ý theo tâm trạng:', err);
         if (songsContainer) songsContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Không thể tải dữ liệu.</div>';
@@ -239,7 +250,7 @@ async function loadDefaultRecommendations() {
                     const cover = song.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
-                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer;min-width:160px;width:160px;">
+                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer; width:100%; min-width: 0;">
                                                     <div class="music-card-img-wrap">
                                                         <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';">
 
@@ -261,7 +272,7 @@ async function loadDefaultRecommendations() {
                     const owner = pl.owner ? pl.owner.display_name : '';
                     const songCount = pl.song_count ? ` • ${pl.song_count} bài` : '';
                     return `
-                                                <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
+                                                <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="width:100%;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
                                                     <div style="position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
                                                         <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';">
 

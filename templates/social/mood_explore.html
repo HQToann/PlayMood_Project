@@ -1,36 +1,81 @@
-{% extends "base.html" %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="vi">
 
-{% block content %}
-<div class="content-scroll" id="mainContent">
-    <div class="d-flex align-items-center mb-4">
-        <button class="btn text-white me-3 p-0" onclick="history.back()" style="background: none; border: none; outline: none; font-size: 1.5rem;">
-            <i class="bi bi-arrow-left"></i>
-        </button>
-        <div>
-            <p class="mb-0 text-accent small fw-bold text-uppercase" style="letter-spacing: 1px;" id="exploreTypeLabel">GỢI Ý CHO BẠN</p>
-            <h2 class="fw-bold text-white mb-0" id="exploreTitle">Khám Phá Cảm Xúc</h2>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Khám Phá Cảm Xúc</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}?v=5" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/explore.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            {% include 'includes/left_sidebar.html' with active_page='mood' %}
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                {% include 'includes/top_header.html' %}
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll" id="mainContent">
+                    <div style="padding: 0 32px 140px 32px;">
+
+                        <div class="d-flex align-items-center mb-4" style="margin-top: -15px;">
+                            <button class="btn text-white me-3 p-0" onclick="history.back()" style="background: none; border: none; outline: none; font-size: 1.5rem;">
+                                <i class="bi bi-arrow-left"></i>
+                            </button>
+                            <div>
+                                <p class="mb-0 text-accent small fw-bold text-uppercase" style="letter-spacing: 1px;" id="exploreTypeLabel">GỢI Ý CHO BẠN</p>
+                                <h2 class="fw-bold text-white mb-0" id="exploreTitle">Khám Phá Cảm Xúc</h2>
+                            </div>
+                        </div>
+
+                        <!-- Grid Container -->
+                        <div id="exploreGrid" class="d-grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
+                            <!-- Rendered by JS -->
+                        </div>
+
+                        <!-- Loading Spinner (for initial and infinite scroll) -->
+                        <div id="loadingSpinner" class="text-center py-5">
+                            <div class="spinner-border text-light" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- No more data message -->
+                        <div id="endMessage" class="text-center py-4 text-secondary d-none">
+                            Bạn đã xem hết danh sách.
+                        </div>
+
+                    </div>
+                </div>
+            </main>
+
+            <!-- RIGHT SIDEBAR (Friend Activity) -->
+            {% include 'includes/right_sidebar.html' %}
         </div>
+
+        <!-- MUSIC PLAYER (Fixed Bottom) -->
+        {% include 'includes/player_bar.html' %}
     </div>
 
-    <!-- Grid Container -->
-    <div id="exploreGrid" class="d-grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
-        <!-- Rendered by JS -->
-    </div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script src="{% static 'js/mood_explore.js' %}?v=1.1"></script>
+</body>
 
-    <!-- Loading Spinner (for initial and infinite scroll) -->
-    <div id="loadingSpinner" class="text-center py-5">
-        <div class="spinner-border text-light" role="status">
-            <span class="visually-hidden">Đang tải...</span>
-        </div>
-    </div>
-    
-    <!-- No more data message -->
-    <div id="endMessage" class="text-center py-4 text-secondary d-none">
-        Bạn đã xem hết danh sách.
-    </div>
-</div>
-
-<script src="{% static 'js/components/card.js' %}?v=1.0"></script>
-<script src="{% static 'js/mood_explore.js' %}?v=1.0"></script>
-{% endblock %}
+</html>
