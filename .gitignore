@@ -1,11 +1,10 @@
-cat > .gitignore << 'EOF'
 # Virtual environment
 Pipfile
-pipfile.lock
+Pipfile.lock
 
 # Biến môi trường — chứa secret keys, KHÔNG commit
 .env
-
+.env_TN
 
 # Python cache
 __pycache__/
@@ -29,10 +28,5 @@ Thumbs.db
 
 # Logs
 *.log
-EOF
 
 settings.TN.py
-.env_TN
-db_test.sqlite3
-Pipfile
-Pipfile.lock

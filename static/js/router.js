@@ -201,9 +201,17 @@
             document.querySelectorAll('.offcanvas.show, .modal.show').forEach(function(el) {
                 try {
                     var bsOffcanvas = window.bootstrap.Offcanvas.getInstance(el);
-                    if (bsOffcanvas) bsOffcanvas.hide();
+                    if (bsOffcanvas) {
+                        el.classList.remove('show');
+                        el.style.display = 'none';
+                        bsOffcanvas.dispose();
+                    }
                     var bsModal = window.bootstrap.Modal.getInstance(el);
-                    if (bsModal) bsModal.hide();
+                    if (bsModal) {
+                        el.classList.remove('show');
+                        el.style.display = 'none';
+                        bsModal.dispose();
+                    }
                 } catch(e) {}
             });
         }
@@ -220,6 +228,11 @@
 
         showLoader();
         cleanupBootstrap();
+        
+        // Đóng các panel của player (Queue, Devices, Lyrics) để tránh block màn hình
+        if (typeof window.closeAllPlayerPanels === 'function') {
+            window.closeAllPlayerPanels();
+        }
 
         var currMain = document.querySelector("main.main-content");
 
@@ -245,12 +258,33 @@
         Promise.all([htmlPromise, fadePromise])
             .then(function (results) {
                 var html = results[0];
-                if (!html) return Promise.reject("redirect");
+                if (!html) {
+                    window.location.href = url;
+                    return Promise.reject("redirect");
+                }
 
                 var doc = new DOMParser().parseFromString(html, "text/html");
                 var newMain = doc.querySelector("main.main-content");
                 currMain = document.querySelector("main.main-content");
                 if (!newMain || !currMain) { window.location.href = url; return Promise.reject("bad-structure"); }
+
+                // Swap content
+                currMain.innerHTML = newMain.innerHTML;
+                
+                // Swap Modals and Offcanvas (excluding global ones)
+                var globalIds = ["createPlaylistModal", "leftSidebar"];
+                var oldOverlays = Array.from(document.querySelectorAll("body > .modal, body > .offcanvas"));
+                oldOverlays.forEach(function (m) {
+                    if (m.id && globalIds.indexOf(m.id) === -1) {
+                        m.remove();
+                    }
+                });
+                var newOverlays = Array.from(doc.querySelectorAll("body > .modal, body > .offcanvas"));
+                newOverlays.forEach(function (m) {
+                    if (m.id && globalIds.indexOf(m.id) === -1) {
+                        document.body.appendChild(m);
+                    }
+                });
 
                 // Update title
                 var t = doc.querySelector("title");
@@ -334,6 +368,7 @@
                 updateActive(new URL(url, window.location.origin).pathname);
             })
             .catch(function (err) {
+                if (currMain) currMain.style.opacity = "1";
                 if (err !== "redirect" && err !== "bad-structure") {
                     console.warn("[Router] fallback:", err);
                     window.location.href = url;

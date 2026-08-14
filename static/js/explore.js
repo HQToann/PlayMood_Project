@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function renderGenres(page) {
             if (allGenres.length === 0) {
-                container.innerHTML = renderStaticGenres();
+                container.innerHTML = '<div class="text-center text-muted py-4 w-100">Chưa có dữ liệu thể loại.</div>';
                 if (prevBtn) prevBtn.disabled = true;
                 if (nextBtn) nextBtn.disabled = true;
                 return;
@@ -155,23 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })();
 
-    function renderStaticGenres() {
-        var genres = [
-            {name:'Pop',bg:'linear-gradient(135deg,#FF416C,#FF4B2B)'},
-            {name:'Chill / Lofi',bg:'linear-gradient(135deg,#36D1DC,#5B86E5)'},
-            {name:'Hip Hop',bg:'linear-gradient(135deg,#F09819,#EDDE5D)',tc:'#000'},
-            {name:'Electronic',bg:'linear-gradient(135deg,#8A2387,#E94057,#F27121)'},
-            {name:'R&B',bg:'linear-gradient(135deg,#11998e,#38ef7d)'},
-            {name:'Rock',bg:'linear-gradient(135deg,#FC5C7D,#6A82FB)'},
-            {name:'Jazz',bg:'linear-gradient(135deg,#4776E6,#8E54E9)'},
-            {name:'Classical',bg:'linear-gradient(135deg,#2c3e50,#3498db)'},
-        ];
-        return genres.map(function(g) {
-            var tc = g.tc ? 'color:' + g.tc + ';' : '';
-            return '<a href="#" class="genre-card" style="background:' + g.bg + ';' + tc + '">' +
-                '<div class="genre-title" style="' + tc + '">' + g.name + '</div></a>';
-        }).join('');
-    }
+    // Removed renderStaticGenres function
 
     // -- TOP PLAYLIST NỔI BẬT
     (async function() {

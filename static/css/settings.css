@@ -5,17 +5,15 @@
 /* Main Container */
 .settings-container {
     max-width: 800px;
-    margin-left: auto;
-    margin-right: 0;
+    margin: 0 auto;
     padding-bottom: 80px;
 }
 
 .settings-header {
     max-width: 800px;
-    margin-left: auto;
-    margin-right: 0;
+    margin: 0 auto;
     margin-bottom: 2rem;
-    text-align: right;
+    text-align: left;
 }
 
 .settings-header h1 {
