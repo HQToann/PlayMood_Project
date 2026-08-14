@@ -33,3 +33,6 @@ EOF
 
 settings.TN.py
 .env_TN
+db_test.sqlite3
+Pipfile
+Pipfile.lock
