@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -275,11 +275,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}?v=2.5"></script>
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
     <script>
         window.ARTIST_MANAGE_URL = "{% url 'artist_manage_page' %}";
     </script>
-    <script src="{% static 'js/artist_upload.js' %}?v=1.0"></script>
+    <script src="{% static 'js/artist_upload.js' %}?v=2.1"></script>
     <!-- Add Friend Modal -->
     <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 450px;">
@@ -309,6 +309,6 @@
     <script>
         window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
     </script>
-    <script src="{% static 'js/friend_activity.js' %}?v=1.1"></script>
+    <script src="{% static 'js/friend_activity.js' %}?v=2.1"></script>
 </body>
 </html>

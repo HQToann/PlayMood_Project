@@ -85,114 +85,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         
                         // Populate Edit Modal
-                            const editModalBtn = document.getElementById('btn-edit-playlist');
-                            const editTitleInput = document.getElementById('editPlaylistTitle');
-                            const editCoverPreview = document.getElementById('editPlaylistCoverPreview');
-                            const editCoverUpload = document.getElementById('editPlaylistCoverUpload');
-                            let selectedCoverFile = null;
-
-                            if (editModalBtn) {
-                                editModalBtn.addEventListener('click', (e) => {
-                                    e.preventDefault();
-                                    // Đóng menu dropdown
-                                    const menu = editModalBtn.closest('.custom-dropdown-menu');
-                                    if (menu) menu.style.display = 'none';
-                                    
-                                    // Nạp dữ liệu vào form
-                                    editTitleInput.value = playlist.title || '';
-                                    editCoverPreview.src = playlist.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80';
-                                    selectedCoverFile = null; // reset
-                                    
-                                    // Hiển thị modal
-                                    const modalEl = document.getElementById('editPlaylistModal');
-                                    const modal = new bootstrap.Modal(modalEl);
-                                    modal.show();
-                                });
-                            }
-
-                            if (editCoverUpload) {
-                                editCoverUpload.addEventListener('change', function() {
-                                    if (this.files && this.files[0]) {
-                                        selectedCoverFile = this.files[0];
-                                        const reader = new FileReader();
-                                        reader.onload = (e) => editCoverPreview.src = e.target.result;
-                                        reader.readAsDataURL(selectedCoverFile);
-                                    }
-                                });
-                            }
-
-                            const saveBtn = document.getElementById('btn-save-edit-playlist');
-                            if (saveBtn) {
-                                saveBtn.addEventListener('click', async function() {
-                                    const originalBtnText = this.innerHTML;
-                                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
-                                    this.disabled = true;
-
-                                    let hasUpdates = false;
-
-                                    // Update Title
-                                    const newTitle = editTitleInput.value.trim();
-                                    if (newTitle && newTitle !== playlist.title) {
-                                        try {
-                                            const res = await fetch(`/api/v1/playlists/${playlistId}/`, {
-                                                method: 'PATCH',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'X-CSRFToken': getCookie('csrftoken')
-                                                },
-                                                body: JSON.stringify({ title: newTitle })
-                                            });
-                                            if (res.ok) {
-                                                playlist.title = newTitle;
-                                                document.getElementById('detail-playlist-title').textContent = newTitle;
-                                                hasUpdates = true;
-                                            }
-                                        } catch (e) {
-                                            console.error(e);
-                                        }
-                                    }
-
-                                    // Update Cover
-                                    if (selectedCoverFile) {
-                                        try {
-                                            const formData = new FormData();
-                                            formData.append('cover_image', selectedCoverFile);
-                                            const res = await fetch(`/api/v1/playlists/${playlistId}/cover/`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'X-CSRFToken': getCookie('csrftoken')
-                                                },
-                                                body: formData
-                                            });
-                                            const data = await res.json();
-                                            if (res.ok && data.success) {
-                                                playlist.cover_image = data.data.cover_image;
-                                                imgEl.src = playlist.cover_image;
-                                                hasUpdates = true;
-                                            }
-                                        } catch (e) {
-                                            console.error(e);
-                                        }
-                                    }
-
-                                    this.innerHTML = originalBtnText;
-                                    this.disabled = false;
-
-                                    if (hasUpdates) {
-                                        if (window.showToast) showToast('Đã lưu thay đổi', 'success');
-                                        // Quick update sidebar
-                                        const sbTitle = document.querySelector(`.playlist-item a[href*="${playlistId}"] .text-truncate`);
-                                        if(sbTitle && playlist.title) sbTitle.textContent = playlist.title;
-                                        const sbImg = document.querySelector(`.playlist-item a[href*="${playlistId}"] img`);
-                                        if(sbImg && playlist.cover_image) sbImg.src = playlist.cover_image;
-                                    }
-                                    
-                                    // Close modal
-                                    const modalEl = document.getElementById('editPlaylistModal');
-                                    const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                                    modalInstance.hide();
-                                });
-                            }
+                        const editModalBtn = document.getElementById('btn-edit-playlist');
+                        if (editModalBtn) {
+                            editModalBtn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                // Đóng menu dropdown
+                                const menu = editModalBtn.closest('.custom-dropdown-menu');
+                                if (menu) menu.style.display = 'none';
+                                
+                                if (typeof window.openPlaylistFormModal === 'function') {
+                                    window.openPlaylistFormModal(window._currentPlaylist);
+                                }
+                            });
+                        }
                         } else {
                             const addSongsSection = document.querySelector('.playlist-add-songs-section');
                             if (addSongsSection) addSongsSection.style.display = 'none';

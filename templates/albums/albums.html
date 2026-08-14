@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,24 +12,6 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <style>
-        /* ══════════════════════════════════════
-           DESIGN TOKENS
-        ══════════════════════════════════════ */
-        :root {
-            --pm-theme:         var(--accent-color);
-            --pm-theme-dk:      #1ed760;
-            --pm-theme-bg:      rgba(140,225,178,0.15);
-            --pm-theme-border:  rgba(140,225,178,0.3);
-            --pm-amber:         #f59e0b;
-            --pm-red:           #ef4444;
-            --pm-card:          rgba(255,255,255,0.02);
-            --pm-card-hover:    rgba(255,255,255,0.06);
-            --pm-border:        rgba(255,255,255,0.05);
-            --pm-muted:         rgba(255,255,255,0.5);
-            --pm-radius:        12px;
-            --pm-radius-sm:     8px;
-            --transition:       0.25s ease;
-        }
 
         /* ══════════════════════════════════════
            HERO BANNER
@@ -263,160 +245,6 @@
         .empty-state i { font-size: 3.5rem; opacity: .25; }
         .empty-state p { margin-top: .75rem; font-size: .9rem; }
 
-        /* ══════════════════════════════════════
-           MODALS – shared
-        ══════════════════════════════════════ */
-        .pm-modal .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--pm-border);
-            border-radius: var(--pm-radius); overflow: hidden;
-        }
-        .pm-modal .modal-header {
-            border-bottom: 1px solid var(--pm-border);
-            padding: 1.25rem 1.5rem 1rem;
-        }
-        .pm-modal .modal-title {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.05rem; font-weight: 700;
-        }
-        .pm-modal .modal-body  { padding: 1.25rem 1.5rem; }
-        .pm-modal .modal-footer {
-            border-top: 1px solid var(--pm-border);
-            padding: 1rem 1.5rem;
-        }
-
-        /* Form */
-        .pm-label {
-            font-size: .78rem; font-weight: 600;
-            color: var(--pm-muted);
-            text-transform: uppercase; letter-spacing: .8px;
-            margin-bottom: .45rem; display: block;
-        }
-        .pm-input {
-            width: 100%;
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.1);
-            border-radius: 10px;
-            color: #fff; font-size: .9rem;
-            padding: .6rem .9rem;
-            transition: border-color var(--transition);
-            outline: none;
-        }
-        .pm-input:focus {
-            border-color: var(--pm-theme);
-            box-shadow: 0 0 0 3px rgba(140,225,178,.15);
-        }
-        .pm-input::placeholder { color: rgba(255,255,255,.25); }
-        textarea.pm-input { resize: none; }
-
-        .cover-preview-box {
-            width: 84px; height: 84px; flex-shrink: 0;
-            border-radius: 10px;
-            background: var(--bg-app);
-            overflow: hidden;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid var(--pm-border);
-        }
-        .cover-preview-box img { width: 100%; height: 100%; object-fit: cover; }
-        .cover-preview-box i  { font-size: 1.6rem; color: rgba(255,255,255,.2); }
-
-        /* Song rows */
-        .song-row {
-            display: flex; align-items: center; gap: .75rem;
-            padding: .5rem .6rem; border-radius: 10px;
-            transition: background var(--transition);
-        }
-        .song-row:hover { background: rgba(255,255,255,.05); }
-        .song-num {
-            width: 20px; text-align: center;
-            font-size: .75rem; color: var(--pm-muted); flex-shrink: 0;
-        }
-        .song-thumb {
-            width: 38px; height: 38px; flex-shrink: 0;
-            border-radius: 7px; object-fit: cover; background: #1a0a3a;
-        }
-        .song-thumb-ph {
-            width: 38px; height: 38px; flex-shrink: 0;
-            border-radius: 7px; background: #1a0a3a;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .9rem; color: rgba(255,255,255,.2);
-        }
-        .song-info { flex: 1; min-width: 0; }
-        .song-title-sm {
-            font-size: .875rem; font-weight: 600; color: #fff;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .song-dur { font-size: .72rem; color: var(--pm-muted); }
-        .btn-rm-song {
-            background: none; border: none;
-            color: rgba(255,255,255,.6);
-            padding: 4px 7px; border-radius: 6px;
-            cursor: pointer; transition: var(--transition);
-        }
-        .btn-rm-song:hover { color: #fff; background: rgba(255,255,255,.1); }
-
-        #songSearchResults { max-height: 180px; overflow-y: auto; }
-        #songSearchResults::-webkit-scrollbar { width: 4px; }
-        #songSearchResults::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,.2); border-radius: 4px;
-        }
-        #songSearchResults .song-row { cursor: pointer; }
-        #songSearchResults .song-row:hover { background: rgba(255,255,255,.1); }
-
-        /* Buttons */
-        .btn-pm-primary {
-            background: linear-gradient(135deg, var(--pm-theme), var(--pm-theme-dk));
-            color: #fff; border: none; border-radius: 30px;
-            padding: .5rem 1.5rem; font-size: .88rem; font-weight: 700;
-            cursor: pointer; transition: var(--transition);
-        }
-        .btn-pm-primary:disabled { opacity: .6; cursor: not-allowed; }
-        .btn-pm-primary:not(:disabled):hover {
-            box-shadow: 0 6px 18px rgba(124,58,237,.45); transform: translateY(-1px);
-        }
-        
-        .btn-save-album {
-            background-color: var(--accent-color);
-            color: var(--bg-app); border: none; border-radius: 30px;
-            padding: .5rem 1.5rem; font-size: .88rem; font-weight: 700;
-            cursor: pointer; transition: var(--transition);
-        }
-        .btn-save-album:not(:disabled):hover {
-            box-shadow: 0 6px 18px rgba(30,215,96,.35); transform: translateY(-1px);
-        }
-        .btn-pm-outline {
-            background: transparent;
-            color: rgba(255,255,255,.7);
-            border: 1px solid rgba(255,255,255,.15);
-            border-radius: 30px; padding: .5rem 1.25rem;
-            font-size: .88rem; font-weight: 500; cursor: pointer;
-            transition: var(--transition);
-        }
-        .btn-pm-outline:hover { background: rgba(255,255,255,.06); color: #fff; }
-        .btn-pm-success {
-            background: linear-gradient(135deg, #22c55e, #15803d);
-            color: #fff; border: none; border-radius: 30px;
-            padding: .45rem 1.25rem; font-size: .82rem; font-weight: 700;
-            cursor: pointer; transition: var(--transition);
-        }
-        .btn-pm-success:hover {
-            box-shadow: 0 4px 14px rgba(34,197,94,.35); transform: translateY(-1px);
-        }
-        .btn-pm-amber {
-            background: rgba(245,158,11,.12); color: var(--pm-amber);
-            border: 1px solid rgba(245,158,11,.28);
-            border-radius: 30px; padding: .45rem 1.1rem; font-size: .82rem; font-weight: 600;
-            cursor: pointer; transition: var(--transition);
-        }
-        .btn-pm-amber:hover { background: rgba(245,158,11,.22); }
-        .btn-pm-edit {
-            background: var(--pm-theme-bg); color: var(--pm-theme);
-            border: 1px solid var(--pm-theme-border);
-            border-radius: 30px; padding: .45rem 1.1rem; font-size: .82rem; font-weight: 600;
-            cursor: pointer; transition: var(--transition);
-        }
-        .btn-pm-edit:hover { background: rgba(168,85,247,.22); }
-
         /* Skeleton */
         .skeleton {
             background: linear-gradient(90deg,
@@ -499,13 +327,7 @@
                 {% endif %}
 
             </div>
-        </main>
-        {% include 'includes/right_sidebar.html' %}
-    </div>
-    {% include 'includes/player_bar.html' %}
-</div>
-
-
+        
 <!-- ══════════════════════════════════════════════
      MODAL: Tạo / Chỉnh sửa Album
 ══════════════════════════════════════════════ -->
@@ -651,8 +473,16 @@
 </div>
 
 
+
+</main>
+        {% include 'includes/right_sidebar.html' %}
+    </div>
+    {% include 'includes/player_bar.html' %}
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{% static 'js/main.js' %}?v=2.5"></script>
+<script src="{% static 'js/main.js' %}?v=2.2"></script>
 <script>
 /* Biến cấu hình từ Django – đọc bởi albums.js */
 window.ALBUM_CONFIG = {
@@ -660,7 +490,7 @@ window.ALBUM_CONFIG = {
     isArtist: "{{ request.user.role|yesno:'true,false,false'|default:'false' }}" === "true",
 };
 </script>
-<script src="{% static 'js/albums.js' %}?v=3.5"></script>
+<script src="{% static 'js/albums.js' %}?v=2.1"></script>
 
 </body>
 </html>

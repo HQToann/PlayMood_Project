@@ -12,21 +12,21 @@
 /* ══════════════════════════════════════════════
    STATE (lấy config từ template qua window.ALBUM_CONFIG)
 ══════════════════════════════════════════════ */
-const CURRENT_USER_ID = window.ALBUM_CONFIG?.userId   || '';
-const IS_ARTIST       = window.ALBUM_CONFIG?.isArtist || false;
+var CURRENT_USER_ID = window.ALBUM_CONFIG?.userId   || '';
+var IS_ARTIST       = window.ALBUM_CONFIG?.isArtist || false;
 
-let currentAlbumId   = null;
-let deleteTargetId   = null;
+var currentAlbumId   = null;
+var deleteTargetId   = null;
 
 /** Map<string, albumObject> – tránh JSON.stringify inline trong onclick */
-const albumCache = new Map();
+var albumCache = new Map();
 
-let myPublishedSongs  = null;   // null = chưa load
-let songSearchTimeout = null;
-let currentSearchQuery = '';
-let currentSearchResults = [];
-let currentSearchPage = 0;
-const SEARCH_PAGE_SIZE = 5;
+var myPublishedSongs  = null;   // null = chưa load
+var songSearchTimeout = null;
+var currentSearchQuery = '';
+var currentSearchResults = [];
+var currentSearchPage = 0;
+var SEARCH_PAGE_SIZE = 5;
 
 /* ══════════════════════════════════════════════
    HELPERS
@@ -65,9 +65,9 @@ function closeAllMenus() {
 /* ══════════════════════════════════════════════
    LOAD ALBUMS
 ══════════════════════════════════════════════ */
-let currentAlbumPage = 1;
-let isFetchingAlbums = false;
-let hasMoreAlbums = true;
+var currentAlbumPage = 1;
+var isFetchingAlbums = false;
+var hasMoreAlbums = true;
 
 async function loadAlbums(reset = true) {
     if (isFetchingAlbums || (!hasMoreAlbums && !reset)) return;

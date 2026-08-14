@@ -267,8 +267,8 @@ function followBack(btn, userId) {
     }).catch(err => console.warn('followBack error:', err));
 }
 
-let frActionModalInstance = null;
-let currentFrActionBtn = null;
+var frActionModalInstance = null;
+var currentFrActionBtn = null;
 
 function openFrModal(btn) {
     const senderId = btn.dataset.senderId;
@@ -372,8 +372,8 @@ function decrementBadge() {
 // Render list
 // ─────────────────────────────────────────
 
-const LIST_CONTAINER_ID = 'notificationListContainer';
-const EMPTY_MSG_ID = 'notificationEmptyMsg';
+var LIST_CONTAINER_ID = 'notificationListContainer';
+var EMPTY_MSG_ID = 'notificationEmptyMsg';
 
 function renderList(items) {
     const container = document.getElementById(LIST_CONTAINER_ID);
@@ -500,7 +500,7 @@ async function initNotificationsPage() {
 }
 
 // CSS animation pulse
-const style = document.createElement('style');
+var style = document.createElement('style');
 style.textContent = `
 @keyframes pulse {
     0%, 100% { opacity: 0.1; }

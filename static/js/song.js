@@ -401,19 +401,19 @@ document.addEventListener('DOMContentLoaded', function () {
 // ──────────────────────────────────────────────────────────────
 // BÌNH LUẬN (COMMENTS)
 // ──────────────────────────────────────────────────────────────
-const commentUrlParams = new URLSearchParams(window.location.search);
-const commentSongId = commentUrlParams.get('id');
+var commentUrlParams = new URLSearchParams(window.location.search);
+var commentSongId = commentUrlParams.get('id');
 
 // Global user id already provided in window object usually, if not fallback to template variable if needed.
 // Wait, we can't use Django template variables directly in external JS.
 // I will access it via window.CURRENT_USER_ID if it exists, otherwise get it from DOM or assume no user.
-const currentUserId = window.CURRENT_USER_ID || '';
+var currentUserId = window.CURRENT_USER_ID || '';
 
-const commentsListContainer = document.getElementById('commentsListContainer');
-const commentCountDisplay = document.getElementById('commentCountDisplay');
-const commentInput = document.getElementById('commentInput');
-const commentSubmitBtn = document.getElementById('commentSubmitBtn');
-let currentReplyParentId = null; // Nếu đang trả lời bình luận nào đó
+var commentsListContainer = document.getElementById('commentsListContainer');
+var commentCountDisplay = document.getElementById('commentCountDisplay');
+var commentInput = document.getElementById('commentInput');
+var commentSubmitBtn = document.getElementById('commentSubmitBtn');
+var currentReplyParentId = null; // Nếu đang trả lời bình luận nào đó
 
 // Hàm render 1 comment HTML (đệ quy nếu có replies)
 function renderCommentHTML(comment, isReply = false) {

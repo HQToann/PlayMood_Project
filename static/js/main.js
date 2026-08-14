@@ -50,18 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-window.openCreatePlaylistModal = function(event) {
-    if (event) event.preventDefault();
-    if (!window.CURRENT_USER_AUTHENTICATED) {
-        window.location.href = window.LOGIN_URL || '/auth/login/';
-        return;
-    }
-    const modalEl = document.getElementById('createPlaylistModal');
-    if (modalEl) {
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-    }
-};
+
 
 // Global logout handler
 async function handleLogout(event) {

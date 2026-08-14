@@ -140,7 +140,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join('');
     }
 
-    // -- 4. PLAYLIST GỢI Ý
+    // -- TOP PLAYLIST NỔI BẬT
+    (async function() {
+        var container = document.getElementById('topPlaylistsContainer');
+        try {
+            var res = await fetch('/api/v1/playlists/?scope=public&limit=10');
+            var data = await res.json();
+            if (data.success && data.data && data.data.items && data.data.items.length > 0) {
+                container.innerHTML = data.data.items.map(renderPlaylistCard).join('');
+            } else {
+                container.innerHTML = renderError('Chua co playlist noi bat nao.');
+            }
+        } catch(e) {
+            container.innerHTML = renderError('Khong the tai playlist noi bat.');
+        }
+    })();
+
+    // -- 4. PLAYLIST GỢI Ý (PHÙ HỢP DÀNH CHO BẠN)
     (async function() {
         var container = document.getElementById('playlistsContainer');
         try {

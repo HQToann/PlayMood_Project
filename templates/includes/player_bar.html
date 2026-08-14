@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
         <!-- PLAYER BAR -->
         <style>
             /* Idle state (no song selected) */
@@ -231,5 +231,6 @@
             window.CURRENT_USER_AUTHENTICATED = "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";
             window.LOGIN_URL = "/auth/login/";
         </script>
-        <script src="{% static 'js/player.js' %}?v=1.2"></script>
-        <script src="{% static 'js/router.js' %}?v=1.2"></script>
+        <script src="{% static 'js/player.js' %}?v=2.1"></script>
+        <script src="{% static 'js/create_playlist.js' %}?v=2.4"></script>
+        <script src="{% static 'js/router.js' %}?v=2.1"></script>

@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -97,9 +97,17 @@
                             {% for i in "12345678" %}<div class="genre-card skeleton" style="height:110px;border-radius:12px;"></div>{% endfor %}
                         </div>
 
-                        <!-- PLAYLIST GỢI Ý -->
+                        <!-- TOP PLAYLIST NỔI BẬT -->
                         <div class="section-header mt-4">
-                            <h2 class="section-title">Playlist Gợi Ý</h2>
+                            <h2 class="section-title">Top Playlist Nổi Bật</h2>
+                        </div>
+                        <div class="horizontal-scroll mb-5" id="topPlaylistsContainer">
+                            {% for i in "12345" %}<div class="skeleton-card"><div class="skeleton sk-img"></div><div class="skeleton sk-title"></div><div class="skeleton sk-sub"></div></div>{% endfor %}
+                        </div>
+
+                        <!-- PLAYLIST GỢI Ý (PHÙ HỢP DÀNH CHO BẠN) -->
+                        <div class="section-header mt-4">
+                            <h2 class="section-title">Playlist Phù Hợp Dành Cho Bạn</h2>
                         </div>
                         <div class="horizontal-scroll mb-5" id="playlistsContainer">
                             {% for i in "12345" %}<div class="skeleton-card"><div class="skeleton sk-img"></div><div class="skeleton sk-title"></div><div class="skeleton sk-sub"></div></div>{% endfor %}
@@ -127,11 +135,11 @@
             {% include 'includes/right_sidebar.html' %}
         </div>
         {% include 'includes/player_bar.html' %}
-        {% include 'includes/create_playlist_modal.html' %}
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}?v=2.5"></script>
-    <script src="{% static 'js/explore.js' %}"></script>
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script src="{% static 'js/explore.js' %}?v=2.1"></script>
 </body>
 </html>

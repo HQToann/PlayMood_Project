@@ -1,11 +1,11 @@
 // ============================================
 // Fetch data từ API
 // ============================================
-let MOOD_THEMES = [];
-let MOOD_TYPES = [];
+var MOOD_THEMES = [];
+var MOOD_TYPES = [];
 
-let selectedMoodId = null;
-let selectedThemeId = null;
+var selectedMoodId = null;
+var selectedThemeId = null;
 
 function renderThemes() {
     const picker = document.getElementById('themeColorPicker');
@@ -435,7 +435,7 @@ async function handlePostMood(event) {
 }
 
 // Handle Search Music
-let searchTimeout = null;
+var searchTimeout = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('musicSearchInput');

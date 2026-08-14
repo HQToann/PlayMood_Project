@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -414,13 +414,13 @@
     {% include 'includes/player_bar.html' %}
 
     <!-- Bootstrap 5 JS Bundle -->
-    <script src="{% static 'js/main.js' %}?v=2.5"></script>
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script>
         window.CURRENT_USER_ID = '{{ user.id|default_if_none:"" }}';
     </script>
-    <script src="{% static 'js/song.js' %}?v=1"></script>
+    <script src="{% static 'js/song.js' %}?v=2.1"></script>
 </body>
 
 </html>

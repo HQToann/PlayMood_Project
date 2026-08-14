@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!-- LEFT SIDEBAR -->
 <aside class="sidebar-left py-3 d-none d-lg-flex">
     <div class="px-3 mb-4 flex-shrink-0">
@@ -19,9 +19,7 @@
             <a href="{% url 'mood_page' %}" class="nav-link-custom {% if active_page == 'mood' %}active{% endif %}">
                 <i class="bi bi-emoji-smile"></i> Tâm trạng
             </a>
-            <a href="{% url 'playlist_page' %}" class="nav-link-custom {% if active_page == 'playlist' %}active{% endif %}">
-                <i class="bi bi-music-note-list"></i> Playlist
-            </a>
+
             {% if request.user.role == 'artist' %}
             <a href="{% url 'artist_manage_page' %}" class="nav-link-custom {% if active_page == 'artist_manage' %}active{% endif %}">
                 <i class="bi bi-kanban"></i> Quản lý bài hát
@@ -42,6 +40,9 @@
                 <i class="bi bi-vinyl"></i> Album
             </a>
             {% endif %}
+            <a href="{% url 'playlist_page' %}" class="nav-link-custom {% if active_page == 'playlist' %}active{% endif %}">
+                <i class="bi bi-music-note-list"></i> Playlist
+            </a>
         </div>
 
         <div class="nav-section-title mt-4">PLAYLIST CỦA BẠN</div>
@@ -57,4 +58,4 @@
     </div>
 </aside>
 
-<script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/sidebar.js' %}?v=2.1"></script>

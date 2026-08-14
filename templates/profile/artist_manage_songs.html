@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -14,6 +14,20 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+    <style>
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg,
+                rgba(255,255,255,.05) 25%, rgba(255,255,255,.09) 50%, rgba(255,255,255,.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
 </head>
 
 <body>
@@ -99,14 +113,11 @@
                             </div>
                             <hr class="border-secondary opacity-25 mt-0 mb-4 d-none d-md-block">
 
-                            <div id="songsListContainer">
-    <div class="text-center text-secondary py-5">
-        <div class="spinner-border text-secondary mb-3" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <div>Đang tải bài hát...</div>
-    </div>
-</div>
+                            <div id="songsListContainer" class="d-flex flex-column gap-1">
+                                <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                                <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                                <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                            </div>
                                 </div> <!-- close manage-songs-list -->
                             </div> <!-- close home-section mb-5 -->
                         </div> <!-- close px-2 -->
@@ -183,7 +194,7 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}?v=2.5"></script>
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
 
     <!-- Mobile Offcanvas Menu -->
     <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
@@ -303,7 +314,7 @@
         window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
         window.CURRENT_USER_DISPLAY_NAME = "{{ request.user.get_display_name|escapejs }}";
     </script>
-    <script src="{% static 'js/artist_manage_songs.js' %}?v=1.1"></script>
+    <script src="{% static 'js/artist_manage_songs.js' %}?v=2.1"></script>
 
     <!-- Add Friend Modal -->
     <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">
@@ -331,6 +342,6 @@
     </div>
 
     <!-- Friend Activity JS -->
-    <script src="{% static 'js/friend_activity.js' %}?v=1.1"></script>
+    <script src="{% static 'js/friend_activity.js' %}?v=2.1"></script>
 </body>
 </html>

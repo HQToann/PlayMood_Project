@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-let globalSearchData = { songs: [], artists: [], playlists: [], albums: [], users: [] };
-let currentFilter = 'all';
+var globalSearchData = { songs: [], artists: [], playlists: [], albums: [], users: [] };
+var currentFilter = 'all';
 
 async function performSearch(query) {
     try {

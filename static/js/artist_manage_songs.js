@@ -24,18 +24,62 @@
             let currentActionSongId = null;
             let originalEditValues = {};
 
-            async function loadSongs() {
+            let currentManagePage = 1;
+            let isFetchingManage = false;
+            let hasMoreManage = true;
+
+            async function loadSongs(reset = false) {
+                if (isFetchingManage || (!hasMoreManage && !reset)) return;
+
+                if (reset) {
+                    currentManagePage = 1;
+                    hasMoreManage = true;
+                    songsContainer.innerHTML = `
+                        <div id="manageLoadingIndicator" class="d-flex flex-column gap-1 w-100">
+                            <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                            <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                            <div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>
+                        </div>`;
+                } else {
+                    const loadingDiv = document.createElement('div');
+                    loadingDiv.id = 'manageLoadingIndicator';
+                    loadingDiv.className = 'w-100 mt-2';
+                    loadingDiv.innerHTML = `<div class="skeleton" style="border-radius:10px;height:56px;width:100%;"></div>`;
+                    songsContainer.appendChild(loadingDiv);
+                }
+
+                isFetchingManage = true;
+
                 try {
-                    const response = await fetch(`/api/v1/music/songs/?artist_id=${userId}`);
+                    const response = await fetch(`/api/v1/music/songs/?artist_id=${userId}&page=${currentManagePage}&limit=10`);
                     const data = await response.json();
                     
+                    const loadingIndicator = document.getElementById('manageLoadingIndicator');
+                    if (loadingIndicator) loadingIndicator.remove();
+                    
                     if (data.success) {
-                        const songs = data.data.items;
-                        songsContainer.innerHTML = '';
-                        
-                        if (!songs || songs.length === 0) {
+                        let songs = [];
+                        if (Array.isArray(data.data)) {
+                            songs = data.data;
+                            hasMoreManage = false;
+                        } else if (data.data.items) {
+                            songs = data.data.items;
+                            const pagination = data.data.pagination;
+                            if (pagination) {
+                                hasMoreManage = currentManagePage < pagination.total_pages;
+                            } else {
+                                hasMoreManage = false;
+                            }
+                        }
+
+                        if (reset && songs.length === 0) {
                             songsContainer.innerHTML = '<div class="text-center text-secondary py-5">Bạn chưa có bài hát nào. Hãy tải bài hát đầu tiên lên!</div>';
+                            isFetchingManage = false;
                             return;
+                        }
+
+                        if (reset) {
+                            songsContainer.innerHTML = '';
                         }
 
                         songs.forEach(song => {
@@ -106,12 +150,17 @@
                             `;
                             songsContainer.insertAdjacentHTML('beforeend', html);
                         });
+                        currentManagePage++;
                     } else {
-                        songsContainer.innerHTML = '<div class="text-danger py-3 text-center">Lỗi tải danh sách bài hát.</div>';
+                        if (reset) songsContainer.innerHTML = '<div class="text-danger py-3 text-center">Lỗi tải danh sách bài hát.</div>';
                     }
                 } catch (err) {
                     console.error(err);
-                    songsContainer.innerHTML = '<div class="text-danger py-3 text-center">Lỗi kết nối máy chủ.</div>';
+                    const loadingIndicator = document.getElementById('manageLoadingIndicator');
+                    if (loadingIndicator) loadingIndicator.remove();
+                    if (reset) songsContainer.innerHTML = '<div class="text-danger py-3 text-center">Lỗi kết nối máy chủ.</div>';
+                } finally {
+                    isFetchingManage = false;
                 }
             }
 
@@ -136,7 +185,18 @@
 
             loadGenres();
 
-            loadSongs();
+            loadSongs(true);
+            
+            const handleManageScroll = function(e) {
+                const target = e.target;
+                if (target && target.classList && target.classList.contains('content-scroll')) {
+                    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 150) {
+                        loadSongs(false);
+                    }
+                }
+            };
+            
+            document.addEventListener('scroll', handleManageScroll, true);
 
             // Event Delegation for action clicks
             document.body.addEventListener('click', async function(e) {
@@ -164,7 +224,7 @@
                         });
                         const data = await response.json();
                         if (data.success) {
-                            loadSongs();
+                            loadSongs(true);
                             showToast(isPublish ? 'Phát hành bài hát thành công!' : 'Đã ẩn bài hát thành công!');
                         } else {
                             showToast('Lỗi: ' + (data.error?.message || 'Có lỗi xảy ra'), false);
@@ -249,7 +309,7 @@
                         if (response.ok) {
                             const m = bootstrap.Modal.getInstance(document.getElementById('deleteSongConfirmModal'));
                             if (m) m.hide();
-                            loadSongs();
+                            loadSongs(true);
                             showToast('Xóa bài hát thành công!');
                         } else {
                             showToast('Xóa thất bại', false);
@@ -291,7 +351,7 @@
                         const data = await res.json();
                         if (data.success) {
                             if (appealModal) appealModal.hide();
-                            loadSongs();
+                            loadSongs(true);
                             showToast('Gửi khiếu nại thành công! Vui lòng chờ admin xử lý.');
                         } else {
                             showToast('Lỗi: ' + (data.error?.message || 'Có lỗi xảy ra'), false);
@@ -354,7 +414,7 @@
                         const data = await res.json();
                         if (data.success) {
                             if (editSongModal) editSongModal.hide();
-                            loadSongs();
+                            loadSongs(true);
                             showToast('Đã lưu thay đổi thành công!');
                         } else {
                             showToast('Lỗi: ' + (data.error?.message || 'Lưu thất bại'), false);

@@ -1,11 +1,11 @@
 // static/js/player.js
 // window.globalAudio được tạo một lần duy nhất để âm thanh không bị ngắt khi navigate
 window.globalAudio = window.globalAudio || new Audio();
-const globalAudio = window.globalAudio;
+var globalAudio = window.globalAudio;
 
-let currentSongId = null;
-let isPlaying = false;
-let isShuffle = localStorage.getItem("pm_shuffle") === "true";
+var currentSongId = null;
+var isPlaying = false;
+var isShuffle = localStorage.getItem("pm_shuffle") === "true";
 // ─────────────────────────────────────────────
 // Khởi tạo queueNext
 // ─────────────────────────────────────────────
@@ -61,20 +61,20 @@ window.queueNext = async function(songId, event) {
     }
 };
 
-let repeatMode = parseInt(localStorage.getItem("pm_repeat")) || 0; // 0=off, 1=repeat-one, 2=repeat-all
-let playHistory = []; // Lịch sử bài đã phát
+var repeatMode = parseInt(localStorage.getItem("pm_repeat")) || 0; // 0=off, 1=repeat-one, 2=repeat-all
+var playHistory = []; // Lịch sử bài đã phát
 try {
-    const phStr = localStorage.getItem('pm_history');
+    var phStr = localStorage.getItem('pm_history');
     if (phStr) playHistory = JSON.parse(phStr);
 } catch (e) { }
 
 // DOM Elements
-let pbCover, pbTitle, pbArtist, pbPlayBtn, pbPlayIcon;
-let pbCurrentTime, pbDuration, pbProgressBg, pbProgressFill;
-let pbMuteBtn, pbMuteIcon, pbVolumeBg, pbVolumeFill;
-let pbHeartBtn, pbHeartIcon;
-let pbShuffleBtn, pbPrevBtn, pbNextBtn, pbRepeatBtn, pbRepeatIcon;
-let pbLyricsBtn;
+var pbCover, pbTitle, pbArtist, pbPlayBtn, pbPlayIcon;
+var pbCurrentTime, pbDuration, pbProgressBg, pbProgressFill;
+var pbMuteBtn, pbMuteIcon, pbVolumeBg, pbVolumeFill;
+var pbHeartBtn, pbHeartIcon;
+var pbShuffleBtn, pbPrevBtn, pbNextBtn, pbRepeatBtn, pbRepeatIcon;
+var pbLyricsBtn;
 
 document.addEventListener('DOMContentLoaded', () => {
     pbCover = document.getElementById('pbCover');
@@ -653,7 +653,7 @@ function playPrev() {
 // ─────────────────────────────────────────────
 // Like
 // ─────────────────────────────────────────────
-let _isLiked = false; // Trạng thái like hiện tại
+var _isLiked = false; // Trạng thái like hiện tại
 
 async function toggleLike() {
     if (!currentSongId) return;
@@ -979,7 +979,7 @@ window.playPlaylist = async function (playlistId, event, contextTitle = 'Playlis
 // Queue Panel Logic
 // ─────────────────────────────────────────────
 window._queueVisible = false;
-let savedQueue = [];
+var savedQueue = [];
 try {
     const qStr = localStorage.getItem('pm_queue');
     if (qStr) savedQueue = JSON.parse(qStr);

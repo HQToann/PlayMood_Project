@@ -132,10 +132,10 @@ window.toggleLikeFav = async function(event, songId, removeOnUnlike = false) {
     }
 }
 
-let currentFavPage = 1;
-let isFetchingFav = false;
-let hasMoreFav = true;
-let totalFavSongs = 0;
+var currentFavPage = 1;
+var isFetchingFav = false;
+var hasMoreFav = true;
+var totalFavSongs = 0;
 
 window.loadFavorites = async function(reset = false) {
     if (isFetchingFav || (!hasMoreFav && !reset)) return;

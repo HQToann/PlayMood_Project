@@ -66,9 +66,9 @@ window.toggleLikeRecent = async function(event, songId) {
         } else { if (window.showToast) showToast(data.error?.message || 'Có lỗi xảy ra', false); }
     } catch (e) { if (window.showToast) showToast('Lỗi kết nối', false); }
 };
-let currentRecentPage = 1;
-let isFetchingRecent = false;
-let hasMoreRecent = true;
+var currentRecentPage = 1;
+var isFetchingRecent = false;
+var hasMoreRecent = true;
 
 window.loadRecentHistory = async function(reset = false) {
     if (isFetchingRecent || (!hasMoreRecent && !reset)) return;
