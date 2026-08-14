@@ -30,3 +30,5 @@ django-anymail
 resend
 cloudinary
 django-cloudinary-storage
+dj-database-url
+gunicorn
