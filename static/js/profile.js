@@ -1,122 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const bioInput = document.getElementById('bioInput');
-    const bioCharCount = document.getElementById('bioCharCount');
-    if (bioInput && bioCharCount) {
-        const updateCount = () => {
-            bioCharCount.textContent = bioInput.value.length;
-        };
-        bioInput.addEventListener('input', updateCount);
-        updateCount();
-    }
-});
-
-async function saveBio() {
-    const bio = document.getElementById('bioInput').value.trim();
-    try {
-        const res = await fetch('/api/v1/accounts/me/', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-            body: JSON.stringify({ bio })
-        });
-        
-        if (res.ok) {
-            document.getElementById('bioText').textContent = bio || 'Thêm tiểu sử...';
-            if (window.showToast) showToast('Đã cập nhật tiểu sử!', 'success');
-        } else {
-            const json = await res.json().catch(() => ({}));
-            if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật', 'error');
-        }
-    } catch (e) {
-        if (window.showToast) showToast('Lỗi kết nối', 'error');
-    }
-}
-
-// Preview avatar
-document.getElementById('avatarInput')?.addEventListener('change', function(e) {
-    if (e.target.files && e.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('avatarPreview').src = e.target.result;
-        }
-        reader.readAsDataURL(e.target.files[0]);
-    }
-});
-
-// Preview cover
-document.getElementById('coverInput')?.addEventListener('change', function(e) {
-    if (e.target.files && e.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('coverPreview').src = e.target.result;
-        }
-        reader.readAsDataURL(e.target.files[0]);
-    }
-});
-
-async function saveImages() {
-    const avatarFile = document.getElementById('avatarInput')?.files[0];
-    const coverFile = document.getElementById('coverInput')?.files[0];
-    
-    if (!avatarFile && !coverFile) {
-        if (window.showToast) showToast('Chưa chọn ảnh nào để cập nhật', 'info');
-        return;
-    }
-
-    const formData = new FormData();
-    if (avatarFile) formData.append('avatar', avatarFile);
-    if (coverFile) formData.append('cover', coverFile);
-
-    try {
-        const res = await fetch('/api/v1/accounts/me/images/', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') },
-            body: formData
-        });
-        const json = await res.json();
-        if (json.success || res.ok) {
-            if (window.showToast) showToast('Đã cập nhật ảnh thành công!', 'success');
-            setTimeout(() => window.location.reload(), 1000);
-        } else {
-            if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật ảnh', 'error');
-        }
-    } catch (e) {
-        if (window.showToast) showToast('Lỗi kết nối', 'error');
-    }
-}
-
-async function saveSocials() {
-    const website = document.getElementById('websiteInput')?.value.trim();
-    const facebook = document.getElementById('facebookInput')?.value.trim();
-    const youtube = document.getElementById('youtubeInput')?.value.trim();
-
-    try {
-        const res = await fetch('/api/v1/artists/me/', {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                website_url: website,
-                facebook_url: facebook,
-                youtube_url: youtube
-            })
-        });
-        const json = await res.json();
-        if (json.success || res.ok) {
-            if (window.showToast) showToast('Đã cập nhật liên kết thành công!', 'success');
-            setTimeout(() => window.location.reload(), 1000);
-        } else {
-            if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật liên kết', 'error');
-        }
-    } catch (e) {
-        if (window.showToast) showToast('Lỗi kết nối', 'error');
-    }
-}
-
 function formatNumber(num) {
-    if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1).replace('.0', '') + 'K';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toString();
 }
 
@@ -132,7 +16,6 @@ async function loadStats() {
             if (followingEl) followingEl.innerText = formatNumber(data.data.following_count || 0);
         }
         
-        // Load artist stats if element exists
         const likesEl = document.getElementById('totalLikesCount');
         if (likesEl) {
             const statsRes = await fetch('/api/v1/artists/me/stats/');
@@ -148,118 +31,182 @@ async function loadStats() {
     }
 }
 
-async function loadLikedSongs() {
-    const containers = ['likedSongsContainer', 'allLikedSongsContainer'].map(id => document.getElementById(id)).filter(Boolean);
-    if (!containers.length) return;
+class ProfilePaginator {
+    constructor(config) {
+        this.url = config.url;
+        this.allContainerId = config.allContainerId;
+        this.overviewContainerId = config.overviewContainerId;
+        this.renderItem = config.renderItem;
+        this.emptyMsg = config.emptyMsg;
+        this.onItemsLoaded = config.onItemsLoaded;
+        
+        this.page = 1;
+        this.limit = 20;
+        this.hasMore = true;
+        this.isLoading = false;
+        this.items = [];
+        
+        this.init();
+    }
+    
+    async init() {
+        await this.loadMore();
+        this.setupObserver();
+    }
+    
+    async loadMore() {
+        if (this.isLoading || !this.hasMore) return;
+        this.isLoading = true;
+        
+        try {
+            const sep = this.url.includes('?') ? '&' : '?';
+            const res = await fetch(`${this.url}${sep}limit=${this.limit}&page=${this.page}`);
+            const json = await res.json();
+            let newItems = [];
+            if (json.success && json.data) {
+                newItems = Array.isArray(json.data) ? json.data : (json.data.items || []);
+            }
+            
+            if (newItems.length < this.limit) {
+                this.hasMore = false;
+            }
+            
+            this.items = [...this.items, ...newItems];
+            if (this.onItemsLoaded) this.onItemsLoaded(this.items);
+            this.render();
+            this.page++;
+        } catch (e) {
+            console.error('Error loading', this.url, e);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+    
+    render() {
+        const allContainer = document.getElementById(this.allContainerId);
+        const overviewContainer = document.getElementById(this.overviewContainerId);
+        
+        if (this.items.length === 0) {
+            const emptyHtml = `<div class="text-secondary py-3 text-center small w-100" style="grid-column: 1/-1;">${this.emptyMsg}</div>`;
+            if (allContainer) allContainer.innerHTML = emptyHtml;
+            if (overviewContainer) overviewContainer.innerHTML = emptyHtml;
+            return;
+        }
+        
+        const htmlAll = this.items.map(this.renderItem).join('');
+        const htmlOverview = this.items.slice(0, 5).map(this.renderItem).join('');
+        
+        if (allContainer) {
+            allContainer.innerHTML = htmlAll;
+            if (this.hasMore) {
+                allContainer.innerHTML += `<div id="sentinel-${this.allContainerId}" class="w-100 py-3 text-center" style="grid-column: 1/-1;"><div class="spinner-border spinner-border-sm text-secondary"></div></div>`;
+            }
+        }
+        if (overviewContainer) overviewContainer.innerHTML = htmlOverview;
+    }
+    
+    setupObserver() {
+        const allContainer = document.getElementById(this.allContainerId);
+        if (!allContainer) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                this.loadMore();
+            }
+        }, { rootMargin: '100px' });
+        
+        const mo = new MutationObserver(() => {
+            const sentinel = document.getElementById(`sentinel-${this.allContainerId}`);
+            if (sentinel) observer.observe(sentinel);
+        });
+        mo.observe(allContainer, { childList: true });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadStats();
+    
     const targetUserId = window.TARGET_USER_ID;
-    try {
-        const res = await fetch(`/api/v1/music/users/${targetUserId}/likes/?limit=20`);
-        const data = await res.json();
-        const songs = (data.success && data.data) ? data.data : [];
-        const html = songs.length > 0
-            ? songs.map(song => `
-                <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                    <div class="card-image-wrapper">
-                        <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
+    
+    new ProfilePaginator({
+        url: `/api/v1/music/users/${targetUserId}/likes/`,
+        allContainerId: 'allLikedSongsContainer',
+        overviewContainerId: 'likedSongsContainer',
+        emptyMsg: 'Chưa có bài hát yêu thích nào',
+        renderItem: song => `
+            <div class="playlist-card position-relative" style="width: 100%; min-width: 0;">
+                <div class="card-image-wrapper">
+                    <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
+                </div>
+                <div class="card-title">${song.title}</div>
+                <div class="card-subtitle">${song.artist?.display_name || ''}</div>
+                <a href="/song/?id=${song.id}" class="stretched-link"></a>
+            </div>`
+    });
+    
+    new ProfilePaginator({
+        url: `/api/v1/music/users/${targetUserId}/albums/`,
+        allContainerId: 'allAlbumsContainer',
+        overviewContainerId: 'albumsContainer',
+        emptyMsg: 'Chưa có album nào',
+        renderItem: album => `
+            <div class="playlist-card position-relative" style="width: 100%; min-width: 0; cursor: pointer;" onclick="window.location.href='/album/detail/?id=${album.id}'">
+                <div class="card-image-wrapper">
+                    <img src="${album.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${album.title}">
+                </div>
+                <div class="card-title">${album.title}</div>
+                <div class="card-subtitle">${album.song_count} bài hát</div>
+            </div>`
+    });
+    
+    new ProfilePaginator({
+        url: `/api/v1/playlists/?user_id=${targetUserId}`,
+        allContainerId: 'allPlaylistContainer',
+        overviewContainerId: 'overviewPlaylistContainer',
+        emptyMsg: 'Chưa có playlist nào',
+        onItemsLoaded: (items) => {
+            const el = document.getElementById('overviewPlaylistCount');
+            if (el) el.textContent = items.length > 0 ? `(${items.length})` : '';
+        },
+        renderItem: pl => `
+            <div class="playlist-card position-relative" style="width: 100%; min-width: 0;">
+                <div class="card-image-wrapper">
+                    <img src="${pl.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${pl.title}">
+                </div>
+                <div class="card-title">${pl.title}</div>
+                <div class="card-subtitle">${pl.song_count !== undefined ? pl.song_count + ' bài' : ''}</div>
+                <a href="/playlist/detail/?id=${pl.id}" class="stretched-link"></a>
+            </div>`
+    });
+    
+    new ProfilePaginator({
+        url: `/api/v1/music/me/history/`,
+        allContainerId: 'allRecentContainer',
+        overviewContainerId: 'recentSongsContainerOverview',
+        emptyMsg: 'Chưa có lịch sử nghe',
+        renderItem: item => {
+            const song = item.song || item;
+            return `
+            <div class="playlist-card position-relative" style="width: 100%; min-width: 0;">
+                <div class="card-image-wrapper">
+                    <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
+                </div>
+                <div class="card-title">${song.title}</div>
+                <div class="card-subtitle">${song.artist?.display_name || ''}</div>
+                <a href="/song/?id=${song.id}" class="stretched-link"></a>
+            </div>`;
+        }
+    });
+});
 
-                    </div>
-                    <div class="card-title">${song.title}</div>
-                    <div class="card-subtitle">${song.artist?.display_name || ''}</div>
-                    <a href="/song/?id=${song.id}" class="stretched-link"></a>
-                </div>`).join('')
-            : '<div class="text-secondary py-3 text-center small w-100">Chưa có bài hát yêu thích nào</div>';
-        containers.forEach(c => c.innerHTML = html);
-    } catch (e) {
-        console.error('Lỗi khi tải bài hát yêu thích', e);
-        containers.forEach(c => c.innerHTML = '<div class="text-danger py-3 text-center small">Lỗi khi tải bài hát</div>');
+window.switchToTab = function(tabName) {
+    const tab = document.querySelector(`.profile-tab[data-tab="${tabName}"]`);
+    if (tab) {
+        tab.click();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-}
+};
 
-async function loadAlbums() {
-    const containers = ['albumsContainer', 'allAlbumsContainer'].map(id => document.getElementById(id)).filter(Boolean);
-    if (!containers.length) return;
-    const targetUserId = window.TARGET_USER_ID;
-    try {
-        const res = await fetch(`/api/v1/music/users/${targetUserId}/albums/`);
-        const data = await res.json();
-        const albums = (data.success && data.data && data.data.items) ? data.data.items : [];
-        const html = albums.length > 0
-            ? albums.map(album => `
-                <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px; cursor: pointer;" onclick="window.location.href='/album/detail/?id=${album.id}'">
-                    <div class="card-image-wrapper">
-                        <img src="${album.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${album.title}">
-
-                    </div>
-                    <div class="card-title">${album.title}</div>
-                    <div class="card-subtitle">${album.song_count} bài hát</div>
-                </div>`).join('')
-            : '<div class="text-secondary py-3 text-center small w-100">Chưa có album nào</div>';
-        containers.forEach(c => c.innerHTML = html);
-    } catch (e) {
-        console.error('Lỗi khi tải album', e);
-        containers.forEach(c => c.innerHTML = '<div class="text-danger py-3 text-center small w-100">Lỗi khi tải album</div>');
-    }
-}
-
-async function loadPlaylists() {
-    const containers = ['overviewPlaylistContainer', 'allPlaylistContainer'].map(id => document.getElementById(id)).filter(Boolean);
-    if (!containers.length) return;
-    const targetUserId = window.TARGET_USER_ID;
-    try {
-        const res = await fetch(`/api/v1/playlists/?user_id=${targetUserId}`);
-        const data = await res.json();
-        const playlists = (data.success && data.data && data.data.items) ? data.data.items : [];
-
-        const el = document.getElementById('overviewPlaylistCount');
-        if (el) el.textContent = playlists.length > 0 ? `(${playlists.length})` : '';
-
-        const html = playlists.length > 0
-            ? playlists.map(pl => `
-                <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                    <div class="card-image-wrapper">
-                        <img src="${pl.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${pl.title}">
-
-                    </div>
-                    <div class="card-title">${pl.title}</div>
-                    <div class="card-subtitle">${pl.song_count !== undefined ? pl.song_count + ' bài' : ''}</div>
-                    <a href="/playlist/detail/?id=${pl.id}" class="stretched-link"></a>
-                </div>`).join('')
-            : '<div class="text-secondary py-3 text-center small w-100">Chưa có playlist nào</div>';
-        containers.forEach(c => c.innerHTML = html);
-    } catch (e) {
-        console.error('Lỗi khi tải playlist', e);
-    }
-}
-
-async function loadRecentSongs() {
-    const containers = ['recentSongsContainerOverview', 'allRecentContainer'].map(id => document.getElementById(id)).filter(Boolean);
-    if (!containers.length) return;
-    try {
-        const res = await fetch('/api/v1/music/me/history/?limit=20');
-        const data = await res.json();
-        const items = (data.success && data.data && data.data.items) ? data.data.items : [];
-
-        const html = items.length > 0
-            ? items.map(item => {
-                const song = item.song || item;
-                return `
-                <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                    <div class="card-image-wrapper">
-                        <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
-
-                    </div>
-                    <div class="card-title">${song.title}</div>
-                    <div class="card-subtitle">${song.artist?.display_name || ''}</div>
-                    <a href="/song/?id=${song.id}" class="stretched-link"></a>
-                </div>`;}).join('')
-            : '<div class="text-secondary py-3 text-center small w-100">Chưa có lịch sử nghe</div>';
-        containers.forEach(c => c.innerHTML = html);
-    } catch (e) {
-        console.error('Lỗi khi tải lịch sử nghe', e);
-    }
-}
-
-// Tab switching
 document.querySelectorAll('.profile-tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
@@ -269,12 +216,4 @@ document.querySelectorAll('.profile-tab').forEach(tab => {
         const section = document.getElementById(targetId);
         if (section) section.style.display = 'block';
     });
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadStats();
-    loadLikedSongs();
-    loadAlbums();
-    loadPlaylists();
-    loadRecentSongs();
 });

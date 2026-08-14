@@ -14,6 +14,25 @@ function getCookie(name) {
     return cookieValue;
 }
 
+window.togglePlaylistVisibility = function(btn) {
+    const statusInput = document.getElementById('playlistStatus');
+    if (!statusInput || !btn) return;
+    
+    if (statusInput.value === 'public') {
+        statusInput.value = 'private';
+        btn.textContent = 'Riêng tư';
+        btn.style.background = 'rgba(255, 255, 255, 0.1)';
+        btn.style.color = '#fff';
+        btn.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    } else {
+        statusInput.value = 'public';
+        btn.textContent = 'Công khai';
+        btn.style.background = 'rgba(140,225,178,.15)';
+        btn.style.color = 'var(--accent-color)';
+        btn.style.border = '1px solid rgba(140,225,178,.3)';
+    }
+};
+
 window.openPlaylistFormModal = function(playlist, event) {
     playlist = playlist || null;
     event = event || null;
@@ -33,6 +52,8 @@ window.openPlaylistFormModal = function(playlist, event) {
     var coverEl = document.getElementById('playlistCover');
     var coverPreview = document.getElementById('playlistCoverPreview');
     var coverPlaceholder = document.getElementById('playlistCoverPlaceholder');
+    var statusInput = document.getElementById('playlistStatus');
+    var btnToggle = document.getElementById('btnTogglePlaylistVisibility');
 
     if (labelEl) labelEl.textContent = isEdit ? 'Chỉnh sửa Playlist' : 'Tạo Playlist mới';
     if (saveBtnEl) saveBtnEl.textContent = isEdit ? 'Lưu' : 'Tạo mới';
@@ -40,6 +61,22 @@ window.openPlaylistFormModal = function(playlist, event) {
     if (nameEl) nameEl.value = isEdit ? (playlist.title || '') : '';
     if (descEl) descEl.value = isEdit ? (playlist.description || '') : '';
     if (coverEl) coverEl.value = '';
+    
+    var isPublic = isEdit ? (playlist.is_public !== false) : true;
+    if (statusInput) statusInput.value = isPublic ? 'public' : 'private';
+    if (btnToggle) {
+        if (isPublic) {
+            btnToggle.textContent = 'Công khai';
+            btnToggle.style.background = 'rgba(140,225,178,.15)';
+            btnToggle.style.color = 'var(--accent-color)';
+            btnToggle.style.border = '1px solid rgba(140,225,178,.3)';
+        } else {
+            btnToggle.textContent = 'Riêng tư';
+            btnToggle.style.background = 'rgba(255, 255, 255, 0.1)';
+            btnToggle.style.color = '#fff';
+            btnToggle.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+        }
+    }
     
     if (coverPreview && coverPlaceholder) {
         if (isEdit && playlist.cover_image) {

@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!-- Hidden trigger for playlist modal -->
 <button id="triggerPlaylistModal" data-bs-toggle="modal" data-bs-target="#playlistFormModal" style="display:none;" aria-hidden="true"></button>
 
@@ -62,7 +62,7 @@
             </div>
             <div class="modal-footer justify-content-between gap-2">
                 <div>
-                    <button type="button" class="btn-save-album" style="background: rgba(140,225,178,.15); color: var(--accent-color); border: 1px solid rgba(140,225,178,.3); pointer-events: none;">Công khai</button>
+                    <button type="button" id="btnTogglePlaylistVisibility" class="btn-save-album" style="background: rgba(140,225,178,.15); color: var(--accent-color); border: 1px solid rgba(140,225,178,.3);" onclick="togglePlaylistVisibility(this)">Công khai</button>
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn-pm-outline" data-bs-dismiss="modal">Hủy</button>

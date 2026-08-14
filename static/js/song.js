@@ -351,53 +351,99 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('detail-title').textContent = "Lỗi tải dữ liệu";
             });
         
-        // Fetch Similar Songs
+        // Fetch Similar Songs Overview
         fetch(`/api/v1/recommendations/similar/${songId}/?limit=5`)
             .then(response => response.json())
             .then(data => {
-                const container = document.getElementById('similar-songs-container');
+                const overviewContainer = document.getElementById('overviewRecommendations');
+                if (!overviewContainer) return;
+                
                 if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                    container.innerHTML = '';
+                    overviewContainer.innerHTML = '';
                     
                     data.data.items.forEach((item, index) => {
                         const song = item.song || item;
                         const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-                        const coverImg = song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=40&h=40&fit=crop';
-                        const duration = formatDuration(song.duration || 0);
-                        const isLiked = song.is_liked ? 'bi-heart-fill text-accent' : 'bi-heart';
+                        const coverImg = song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=300&h=300&fit=crop';
                         
                         const html = `
-                        <div class="d-flex align-items-center justify-content-between py-2 px-3 hover-bg-light rounded position-relative" style="transition: background-color 0.2s;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="text-secondary" style="width: 20px;">${index + 1}</div>
-                                <img src="${coverImg}" class="rounded object-fit-cover" alt="cover" style="width: 40px; height: 40px;">
-                                <div>
-                                    <div class="fw-semibold text-white">${song.title}</div>
-                                    <div class="small text-secondary">${artistName}</div>
-                                </div>
+                        <div class="playlist-card position-relative" style="width: 100%; min-width: 0;">
+                            <div class="card-image-wrapper">
+                                <img src="${coverImg}" alt="${song.title}">
                             </div>
-                            <div class="d-flex align-items-center gap-4 text-secondary">
-                                <i class="bi bi-play-circle fs-5 hover-text-white" onclick="playSong('${song.id}', event)" style="position:relative; z-index:2; cursor:pointer;" title="Phát bài hát"></i>
-                                <span>${duration}</span>
-                                <i class="bi ${isLiked}"></i>
-                            </div>
+                            <div class="card-title">${song.title}</div>
+                            <div class="card-subtitle">${artistName}</div>
                             <a href="/song/?id=${song.id}" class="stretched-link"></a>
                         </div>
                         `;
-                        container.insertAdjacentHTML('beforeend', html);
+                        overviewContainer.insertAdjacentHTML('beforeend', html);
                     });
                 } else {
-                    container.innerHTML = '<div class="text-secondary small">Chưa có bài hát tương tự.</div>';
+                    overviewContainer.innerHTML = '<div class="text-secondary small w-100 text-center py-3" style="grid-column: 1/-1;">Chưa có bài hát tương tự.</div>';
+                    const btnViewAll = document.getElementById('btnViewAllRecommendations');
+                    if (btnViewAll) btnViewAll.style.display = 'none';
                 }
             })
             .catch(error => {
                 console.error('Lỗi lấy bài hát tương tự:', error);
-                document.getElementById('similar-songs-container').innerHTML = '';
+                const overviewContainer = document.getElementById('overviewRecommendations');
+                if (overviewContainer) overviewContainer.innerHTML = '<div class="text-secondary small w-100 text-center py-3" style="grid-column: 1/-1;">Lỗi tải bài hát tương tự.</div>';
             });
     } else {
         document.getElementById('detail-title').textContent = "Không tìm thấy bài hát (Thiếu ID)";
     }
 });
+
+window.showAllRecommendations = function() {
+    const btn = document.getElementById('btnViewAllRecommendations');
+    const overviewContainer = document.getElementById('overviewRecommendations');
+    const allContainer = document.getElementById('allRecommendations');
+    
+    if (btn) btn.style.display = 'none';
+    if (overviewContainer) overviewContainer.style.display = 'none';
+    if (allContainer) {
+        allContainer.style.display = 'grid';
+        allContainer.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center w-100 py-4" style="grid-column: 1/-1;">
+                <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+            </div>`;
+            
+        const urlParams = new URLSearchParams(window.location.search);
+        const songId = urlParams.get('id');
+        if (!songId) return;
+        
+        fetch(`/api/v1/recommendations/similar/${songId}/?limit=100`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data && data.data.items && data.data.items.length > 0) {
+                    allContainer.innerHTML = '';
+                    data.data.items.forEach((item, index) => {
+                        const song = item.song || item;
+                        const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
+                        const coverImg = song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&w=300&h=300&fit=crop';
+                        
+                        const html = `
+                        <div class="playlist-card position-relative" style="width: 100%; min-width: 0;">
+                            <div class="card-image-wrapper">
+                                <img src="${coverImg}" alt="${song.title}">
+                            </div>
+                            <div class="card-title">${song.title}</div>
+                            <div class="card-subtitle">${artistName}</div>
+                            <a href="/song/?id=${song.id}" class="stretched-link"></a>
+                        </div>
+                        `;
+                        allContainer.insertAdjacentHTML('beforeend', html);
+                    });
+                } else {
+                    allContainer.innerHTML = '<div class="text-secondary small w-100 text-center py-3" style="grid-column: 1/-1;">Không có thêm bài hát tương tự.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi lấy bài hát tương tự:', error);
+                allContainer.innerHTML = '<div class="text-secondary small w-100 text-center py-3" style="grid-column: 1/-1;">Lỗi tải bài hát tương tự.</div>';
+            });
+    }
+};
 // ──────────────────────────────────────────────────────────────
 // BÌNH LUẬN (COMMENTS)
 // ──────────────────────────────────────────────────────────────
@@ -481,7 +527,10 @@ async function fetchComments() {
         const res = await fetch(`/api/v1/music/songs/${commentSongId}/comments/`);
         const data = await res.json();
         if (data.success) {
-            if (commentCountDisplay) commentCountDisplay.textContent = `(${data.data.total})`;
+            if (commentCountDisplay) {
+                const total = data.data.total !== undefined ? data.data.total : (data.data.items ? data.data.items.length : 0);
+                commentCountDisplay.textContent = `(${total})`;
+            }
             const comments = data.data.items;
             if (comments.length === 0) {
                 commentsListContainer.innerHTML = '<div class="text-center text-secondary py-3">Chưa có bình luận nào. Hãy là người đầu tiên!</div>';

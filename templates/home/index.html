@@ -10,8 +10,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=4" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=5" rel="stylesheet">
     <link href="{% static 'css/home.css' %}?v=1.2" rel="stylesheet">
+    <link href="{% static 'css/explore.css' %}?v=2" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
@@ -28,6 +29,7 @@
                 
                 <!-- Scrollable Content -->
                 <div class="content-scroll">
+                    <div class="explore-container">
                     
                     <!-- Bài hát thịnh hành Section -->
                     <div class="home-section">
@@ -35,7 +37,7 @@
                             <h2 class="section-title">Bài hát thịnh hành</h2>
                             <a href="{% url 'explore_list_page' %}?section=trending" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="horizontal-scroll-container" id="trending-songs-container">
+                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="trending-songs-container">
                             <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                 <div class="spinner-border text-secondary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -51,7 +53,7 @@
                             <h2 class="section-title">Gợi ý cho bạn</h2>
                             <a href="{% url 'explore_list_page' %}?section=for_you" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="horizontal-scroll-container" id="foryou-songs-container">
+                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="foryou-songs-container">
                             <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                 <div class="spinner-border text-secondary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -66,8 +68,9 @@
                     <div class="home-section" id="artists-section" style="display: none;">
                         <div class="section-title-container">
                             <h2 class="section-title">Nghệ sĩ đề xuất</h2>
+                            <a href="{% url 'explore_list_page' %}?section=featured_artists" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="horizontal-scroll-container" id="recommended-artists-container">
+                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="recommended-artists-container">
                             <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                 <div class="spinner-border text-secondary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -80,8 +83,9 @@
                     <div class="home-section" id="playlists-section" style="display: none;">
                         <div class="section-title-container">
                             <h2 class="section-title">Playlist gợi ý</h2>
+                            <a href="{% url 'explore_list_page' %}?section=for_you_playlists" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="horizontal-scroll-container" id="recommended-playlists-container">
+                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="recommended-playlists-container">
                             <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                 <div class="spinner-border text-secondary" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -95,7 +99,7 @@
                         <div class="section-title-container">
                             <h2 class="section-title">Bảng xếp hạng</h2>
                         </div>
-                        <div class="horizontal-scroll-container">
+                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;">
                             {% include 'components/card.html' with style='playlist' title='Trending 20 Việt Nam' subtitle='20 video thịnh hành tại Việt Nam' image='https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
                             {% include 'components/card.html' with style='playlist' title='Daily Top 100' subtitle='Các bài hát hàng đầu trong ngày' image='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
                             {% include 'components/card.html' with style='playlist' title='Global Top 100' subtitle='100 bài hát hàng đầu trên thế giới' image='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' url='#' %}
@@ -103,6 +107,7 @@
                     </div>
                     {% endif %}
                     
+                    </div>
                 </div>
             </main>
             

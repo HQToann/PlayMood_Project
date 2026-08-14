@@ -185,8 +185,8 @@
                     <div id="tab-overview" class="tab-section">
                         {% if is_own_profile %}
                         <div class="home-section mb-5">
-                            <h2 class="profile-section-title">Bài hát yêu thích gần đây</h2>
-                            <div class="horizontal-scroll-container" id="likedSongsContainer">
+                            <div class="section-title-container"><h2 class="profile-section-title mb-0">Bài hát yêu thích gần đây</h2><a href="javascript:void(0)" onclick="switchToTab('liked')" class="section-more-btn" style="text-decoration:none;">Xem tất cả</a></div>
+                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="likedSongsContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -196,10 +196,11 @@
 
                         <!-- Playlist của user -->
                         <div class="home-section mb-5">
-                            <h2 class="profile-section-title">Playlist
-                                <span class="text-secondary fw-normal fs-6" style="margin-left:8px;" id="overviewPlaylistCount"></span>
-                            </h2>
-                            <div class="horizontal-scroll-container" id="overviewPlaylistContainer">
+                            <div class="section-title-container">
+                                <h2 class="profile-section-title mb-0">Playlist <span class="text-secondary fw-normal fs-6" style="margin-left:8px;" id="overviewPlaylistCount"></span></h2>
+                                <a href="javascript:void(0)" onclick="switchToTab('playlists')" class="section-more-btn" style="text-decoration:none;">Xem tất cả</a>
+                            </div>
+                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="overviewPlaylistContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -209,8 +210,8 @@
                         {% if is_own_profile %}
                         <!-- Nghe gần đây (rút gọn) -->
                         <div class="home-section mb-5">
-                            <h2 class="profile-section-title">Nghe gần đây</h2>
-                            <div class="horizontal-scroll-container" id="recentSongsContainerOverview">
+                            <div class="section-title-container"><h2 class="profile-section-title mb-0">Nghe gần đây</h2><a href="javascript:void(0)" onclick="switchToTab('recent')" class="section-more-btn" style="text-decoration:none;">Xem tất cả</a></div>
+                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="recentSongsContainerOverview">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -223,7 +224,7 @@
                     <div id="tab-playlists" class="tab-section" style="display:none;">
                         <div class="home-section mb-5">
                             <h2 class="profile-section-title">Tất cả Playlist</h2>
-                            <div class="horizontal-scroll-container" id="allPlaylistContainer">
+                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="allPlaylistContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -236,7 +237,7 @@
                     <div id="tab-liked" class="tab-section" style="display:none;">
                         <div class="home-section mb-5">
                             <h2 class="profile-section-title">Bài hát yêu thích</h2>
-                            <div class="horizontal-scroll-container" id="allLikedSongsContainer">
+                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="allLikedSongsContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -248,7 +249,7 @@
                     <div id="tab-recent" class="tab-section" style="display:none;">
                         <div class="home-section mb-5">
                             <h2 class="profile-section-title">Lịch sử nghe</h2>
-                            <div class="horizontal-scroll-container" id="allRecentContainer">
+                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="allRecentContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>

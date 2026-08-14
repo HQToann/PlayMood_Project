@@ -736,7 +736,7 @@ body {
 }
 .marquee-left {
     display: flex;
-    animation: marquee-left-anim 6s linear infinite;
+    animation: marquee-left-anim 12s linear infinite;
 }
 @keyframes marquee-left-anim {
     0% { transform: translateX(0); }

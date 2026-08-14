@@ -1,34 +1,58 @@
 document.addEventListener('DOMContentLoaded', function() {
+    var DEFAULT_COVER = 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
+    var DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
+    var DEFAULT_PL_COVER = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
+
+    function esc(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderSongCard(song) {
+        var cover = song.cover_image || DEFAULT_COVER;
+        var artist = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
+        return '<div class="music-card" onclick="window.goToPage(\'/song/?id=' + song.id + '\')" style="cursor:pointer;">' +
+            '<div class="music-card-img-wrap">' +
+            '<img src="' + esc(cover) + '" alt="' + esc(song.title) + '" class="music-card-img" loading="lazy">' +
+            '</div>' +
+            '<div class="music-card-title">' + esc(song.title) + '</div>' +
+            '<div class="music-card-artist">' + esc(artist) + '</div>' +
+            '</div>';
+    }
+
+    function renderPlaylistCard(pl) {
+        var cover = pl.cover_image || DEFAULT_PL_COVER;
+        var owner = pl.owner ? pl.owner.display_name : 'Không rõ';
+        var songCount = pl.song_count != null ? pl.song_count + ' bài' : '';
+        return '<a href="/playlist/detail/?id=' + pl.id + '" class="playlist-card">' +
+            '<div class="playlist-card-img-wrap">' +
+            '<img src="' + esc(cover) + '" alt="' + esc(pl.title || pl.name) + '" loading="lazy">' +
+            '</div>' +
+            '<div class="playlist-card-title">' + esc(pl.title || pl.name) + '</div>' +
+            '<div class="playlist-card-sub">bởi ' + esc(owner) + (songCount ? ' - ' + songCount : '') + '</div>' +
+            '</a>';
+    }
+
+    function renderArtistCard(artist) {
+        var avatar = artist.avatar || DEFAULT_AVATAR;
+        return '<a href="/profile/' + (artist.username || artist.id) + '/" class="artist-card">' +
+            '<img src="' + esc(avatar) + '" alt="' + esc(artist.display_name) + '" class="artist-avatar" loading="lazy">' +
+            '<div class="artist-name">' + esc(artist.display_name) + '</div>' +
+            '<div class="artist-role">Nghệ sĩ</div>' +
+            '</a>';
+    }
+
     // Fetch Trending Songs
     fetch('/api/v1/music/songs/trending/')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data && data.data.items) {
                 const container = document.getElementById('trending-songs-container');
-                container.innerHTML = ''; // Xoá loading spinner
+                container.innerHTML = '';
                 
-                data.data.items.forEach(song => {
-                    const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-                    const coverImg = song.cover_image ? song.cover_image : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
-                    
-                    // HTML của Thẻ Bài hát (Card component style='song')
-                    const cardHTML = `
-                    <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                        <div class="card-image-wrapper">
-                            <img src="${coverImg}" alt="${song.title}">
-
-                        </div>
-                        <div class="card-title" title="${song.title}">${song.title}</div>
-                        <div class="card-subtitle" title="${artistName}">${artistName}</div>
-                        <a href="/song/?id=${song.id}" class="stretched-link"></a>
-                    </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', cardHTML);
-                });
-                
-                // Nếu không có bài nào
                 if(data.data.items.length === 0) {
-                    container.innerHTML = '<div class="text-secondary p-3">Chưa có bài hát thịnh hành nào.</div>';
+                    container.innerHTML = '<div class="text-secondary p-3 w-100 text-center" style="grid-column: 1/-1;">Chưa có bài hát thịnh hành nào.</div>';
+                } else {
+                    container.innerHTML = data.data.items.slice(0, 5).map(renderSongCard).join('');
                 }
             }
         })
@@ -42,25 +66,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data && data.data.items && data.data.items.length > 0) {
                     const section = document.getElementById('recommendations-section');
                     const container = document.getElementById('foryou-songs-container');
-                    container.innerHTML = '';
                     section.style.display = 'block';
-                    
-                    data.data.items.forEach(songData => {
-                        const song = songData.song || songData;
-                        const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-                        const coverImg = song.cover_image ? song.cover_image : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
-                        const cardHTML = `
-                        <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                            <div class="card-image-wrapper">
-                                <img src="${coverImg}" alt="${song.title}">
-
-                            </div>
-                            <div class="card-title" title="${song.title}">${song.title}</div>
-                            <div class="card-subtitle" title="${artistName}">${artistName}</div>
-                            <a href="/song/?id=${song.id}" class="stretched-link"></a>
-                        </div>`;
-                        container.insertAdjacentHTML('beforeend', cardHTML);
-                    });
+                    container.innerHTML = data.data.items.slice(0, 5).map(item => renderSongCard(item.song || item)).join('');
                 }
             })
             .catch(error => console.error('Lỗi gợi ý bài hát:', error));
@@ -72,22 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data && data.data.items && data.data.items.length > 0) {
                     const section = document.getElementById('artists-section');
                     const container = document.getElementById('recommended-artists-container');
-                    container.innerHTML = '';
                     section.style.display = 'block';
-
-                    data.data.items.forEach(artist => {
-                        const avatarImg = artist.avatar ? artist.avatar : 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
-                        const cardHTML = `
-                        <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                            <div class="card-image-wrapper" style="border-radius: 50%; overflow: hidden;">
-                                <img src="${avatarImg}" alt="${artist.display_name}" style="object-fit: cover;">
-                            </div>
-                            <div class="card-title" title="${artist.display_name}">${artist.display_name}</div>
-                            <div class="card-subtitle">Nghệ sĩ</div>
-                            <a href="/profile/${artist.username}/" class="stretched-link"></a>
-                        </div>`;
-                        container.insertAdjacentHTML('beforeend', cardHTML);
-                    });
+                    container.innerHTML = data.data.items.slice(0, 5).map(renderArtistCard).join('');
                 }
             })
             .catch(error => console.error('Lỗi gợi ý nghệ sĩ:', error));
@@ -99,25 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data && data.data.items && data.data.items.length > 0) {
                     const section = document.getElementById('playlists-section');
                     const container = document.getElementById('recommended-playlists-container');
-                    container.innerHTML = '';
                     section.style.display = 'block';
-
-                    data.data.items.forEach(playlist => {
-                        const coverImg = playlist.cover_image ? playlist.cover_image : 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
-                        const ownerName = playlist.owner ? playlist.owner.display_name : '';
-                        const songCount = playlist.song_count !== undefined ? `${playlist.song_count} bài` : '';
-                        const cardHTML = `
-                        <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
-                            <div class="card-image-wrapper">
-                                <img src="${coverImg}" alt="${playlist.title}">
-
-                            </div>
-                            <div class="card-title" title="${playlist.title}">${playlist.title}</div>
-                            <div class="card-subtitle">${ownerName} ${songCount ? '&bull; ' + songCount : ''}</div>
-                            <a href="/playlist/detail/?id=${playlist.id}" class="stretched-link"></a>
-                        </div>`;
-                        container.insertAdjacentHTML('beforeend', cardHTML);
-                    });
+                    container.innerHTML = data.data.items.slice(0, 5).map(renderPlaylistCard).join('');
                 }
             })
             .catch(error => console.error('Lỗi gợi ý playlist:', error));
