@@ -16,10 +16,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS = list(ALLOWED_HOSTS) + [RENDER_EXTERNAL_HOSTNAME]
 if 'testserver' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS = list(ALLOWED_HOSTS) + ['testserver']
     
 AUTH_USER_MODEL = 'accounts.User'
+
+# BÁO CHO DJANGO BIẾT NÓ ĐANG CHẠY HTTPS QUA RENDER:
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Ứng dụng đã cài đặc
@@ -33,6 +39,7 @@ INSTALLED_APPS = [
 
     # Third-party
     'corsheaders',
+    'anymail',
     'cloudinary',
     'cloudinary_storage',
 
@@ -50,6 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -91,6 +99,11 @@ DATABASES = {
     }
 }
 
+import dj_database_url
+db_from_env = dj_database_url.config(conn_max_age=600)
+if db_from_env:
+    DATABASES['default'].update(db_from_env)
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -121,6 +134,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -157,6 +171,8 @@ CSRF_TRUSTED_ORIGINS = config(
     default='http://localhost:3000,http://localhost:8080',
     cast=Csv(),
 )
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS = list(CSRF_TRUSTED_ORIGINS) + [f'https://{RENDER_EXTERNAL_HOSTNAME}']
 
 # CORS
 CORS_ALLOWED_ORIGINS = config(
@@ -179,13 +195,11 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Email
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@example.com')
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+ANYMAIL = {
+    "RESEND_API_KEY": config("RESEND_API_KEY", default=""),
+}
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@trainghiemthuhtq.id.vn')
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
 
 
@@ -227,7 +241,9 @@ LOGGING = {
     },
 }
 # Block này tự detect: nếu không có DB_NAME trong .env thì dùng SQLite
-if not config('DB_NAME', default=''):
+import os as _os
+if not _os.environ.get('DATABASE_URL') and not _os.environ.get('DB_NAME'):
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

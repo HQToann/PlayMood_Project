@@ -6,6 +6,7 @@ pipfile.lock
 # Biến môi trường — chứa secret keys, KHÔNG commit
 .env
 
+
 # Python cache
 __pycache__/
 *.py[cod]
@@ -29,3 +30,6 @@ Thumbs.db
 # Logs
 *.log
 EOF
+
+settings.TN.py
+.env_TN
