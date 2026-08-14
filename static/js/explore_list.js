@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'trending': { title: 'Đang Thịnh Hành', type: 'songs', api: '/api/v1/music/songs/trending/' },
         'top_playlists': { title: 'Top Playlist Nổi Bật', type: 'playlists', api: '/api/v1/playlists/?scope=public' },
         'for_you_playlists': { title: 'Playlist Phù Hợp Dành Cho Bạn', type: 'playlists', api: '/api/v1/recommendations/playlists/' },
-        'featured_artists': { title: 'Nghệ Sĩ Nổi Bật', type: 'artists', api: '/api/v1/recommendations/artists/' }
+        'featured_artists': { title: 'Nghệ Sĩ Nổi Bật', type: 'artists', api: '/api/v1/recommendations/artists/' },
+        'genre': { title: params.get('name') ? `Nhạc Thể Loại "${params.get('name')}"` : 'Nhạc Theo Thể Loại', type: 'songs', api: `/api/v1/music/songs/?genre=${params.get('slug')}` }
     };
 
     if (!section || !config[section]) {
@@ -120,8 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const coverUrl = item.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.display_name) + '&background=random';
                 
                 cardHtml += `
-                    <a href="/profile/${item.id}/" class="artist-mood-card" style="width: 100%;background:rgba(255,255,255,0.02);border-radius:12px;padding:1rem;display:flex;flex-direction:column;align-items:center;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
-                        <img src="${coverUrl}" alt="${item.display_name}" style="width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover;margin-bottom:1rem;border:3px solid transparent;" loading="lazy">
+                    <a href="/profile/${item.id}/" class="artist-mood-card" style="width: 100%;display:flex;flex-direction:column;align-items:center;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <img src="${coverUrl}" alt="${item.display_name}" style="width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover;margin-bottom:1rem;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:3px solid transparent;" loading="lazy">
                         <div style="font-weight:600;font-size:1rem;text-align:center;">${item.display_name}</div>
                         <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;">Nghệ sĩ</div>
                     </a>

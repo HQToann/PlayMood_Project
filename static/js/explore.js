@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 var style = GENRE_COLORS[(start + i) % GENRE_COLORS.length];
                 var textColor = style.color ? 'color:' + style.color + ';' : '';
                 var img = genre.cover_image ? '<img src="' + esc(genre.cover_image) + '" class="genre-img" alt="' + esc(genre.name) + '">' : '';
-                return '<a href="/mood/explore/?mood_id=' + genre.id + '&type=songs&mood_name=' + encodeURIComponent(genre.name) + '" class="genre-card" style="background:' + style.bg + ';' + textColor + '">' +
+                return '<a href="/explore/list/?section=genre&slug=' + genre.slug + '&name=' + encodeURIComponent(genre.name) + '" class="genre-card" style="background:' + style.bg + ';' + textColor + '">' +
                     '<div class="genre-title" style="' + textColor + '">' + esc(genre.name) + '</div>' + img + '</a>';
             }).join('');
 
