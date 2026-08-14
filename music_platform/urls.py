@@ -125,6 +125,7 @@ urlpatterns = [
     path('settings/', login_required_view('settings/settings.html'), name='settings_page'),
     path('notifications/', login_required_view('notifications/notifications.html'), name='notifications_page'),
     path('explore/', login_required_view('explore/explore.html'), name='explore_page'),
+    path('explore/list/', login_required_view('explore/explore_list.html'), name='explore_list_page'),
     path('search/', login_required_view('search/search_results.html'), name='search_page'),
     path('mood/', login_required_view('social/mood.html'), name='mood_page'),
     path('mood/explore/', login_required_view('social/mood_explore.html'), name='mood_explore_page'),

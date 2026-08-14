@@ -33,7 +33,7 @@
                     <div class="home-section">
                         <div class="section-title-container">
                             <h2 class="section-title">Bài hát thịnh hành</h2>
-                            <a href="#" class="section-more-btn">Xem tất cả</a>
+                            <a href="{% url 'explore_list_page' %}?section=trending" class="section-more-btn">Xem tất cả</a>
                         </div>
                         <div class="horizontal-scroll-container" id="trending-songs-container">
                             <div class="d-flex justify-content-center align-items-center w-100 py-4">
@@ -49,7 +49,7 @@
                     <div class="home-section" id="recommendations-section" style="display: none;">
                         <div class="section-title-container">
                             <h2 class="section-title">Gợi ý cho bạn</h2>
-                            <a href="#" class="section-more-btn">Xem tất cả</a>
+                            <a href="{% url 'explore_list_page' %}?section=for_you" class="section-more-btn">Xem tất cả</a>
                         </div>
                         <div class="horizontal-scroll-container" id="foryou-songs-container">
                             <div class="d-flex justify-content-center align-items-center w-100 py-4">
@@ -148,7 +148,7 @@
                     </div>
                 </div>
                 
-                <div class="search-bar mb-4 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                <div class="search-bar mb-4 mt-4 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
                     <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
                     <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
                 </div>

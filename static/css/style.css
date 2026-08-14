@@ -156,8 +156,7 @@ body {
 }
 
 .top-header {
-    padding: 0px 30px;
-    margin-top: -10px;
+    padding: 20px 30px 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -173,6 +172,7 @@ body {
     align-items: center;
     width: 400px;
     gap: 10px;
+    transform: translateY(-20px);
 }
 
 .search-bar input {

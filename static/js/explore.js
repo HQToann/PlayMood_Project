@@ -61,23 +61,23 @@ document.addEventListener('DOMContentLoaded', function() {
         var container = document.getElementById('forYouContainer');
         var sourceEl = document.getElementById('forYouSource');
         try {
-            var res = await fetch('/api/v1/recommendations/for-you/?page_size=10');
+            var res = await fetch('/api/v1/recommendations/for-you/?page_size=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                var items = data.data.items;
-                container.innerHTML = items.map(function(item) {
+                container.innerHTML = data.data.items.slice(0, 5).map(function(item) {
                     return renderSongCard(item.song || item);
                 }).join('');
-                sourceEl.textContent = data.data.source === 'trending' ? 'Thinh hanh' : 'Ca nhan hoa';
-                updateHero(items[0].song || items[0]);
+                if (data.data.source === 'trending') {
+                    sourceEl.textContent = 'Thinh hanh';
+                } else {
+                    sourceEl.textContent = '';
+                }
             } else {
                 container.innerHTML = renderError('Chua co goi y nao. Hay nghe mot so bai hat de bat dau!');
-                loadHeroFallback();
             }
         } catch(e) {
             console.error(e);
             container.innerHTML = renderError('Khong the tai goi y.');
-            loadHeroFallback();
         }
     })();
 
@@ -85,10 +85,10 @@ document.addEventListener('DOMContentLoaded', function() {
     (async function() {
         var container = document.getElementById('newReleasesContainer');
         try {
-            var res = await fetch('/api/v1/music/songs/?ordering=-created_at&page_size=10');
+            var res = await fetch('/api/v1/music/songs/?ordering=-created_at&page_size=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.map(renderSongCard).join('');
+                container.innerHTML = data.data.items.slice(0, 5).map(renderSongCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co bai hat nao.');
             }
@@ -100,23 +100,58 @@ document.addEventListener('DOMContentLoaded', function() {
     // -- 3. THỂ LOẠI
     (async function() {
         var container = document.getElementById('genreGrid');
+        var prevBtn = document.getElementById('genrePrevBtn');
+        var nextBtn = document.getElementById('genreNextBtn');
+        var allGenres = [];
+        var currentPage = 1;
+        var pageSize = 4; // Hiển thị 4 mục mỗi trang (1 hàng) để test phân trang
+
+        function renderGenres(page) {
+            if (allGenres.length === 0) {
+                container.innerHTML = renderStaticGenres();
+                if (prevBtn) prevBtn.disabled = true;
+                if (nextBtn) nextBtn.disabled = true;
+                return;
+            }
+
+            var start = (page - 1) * pageSize;
+            var end = start + pageSize;
+            var currentGenres = allGenres.slice(start, end);
+
+            container.innerHTML = currentGenres.map(function(genre, i) {
+                var style = GENRE_COLORS[(start + i) % GENRE_COLORS.length];
+                var textColor = style.color ? 'color:' + style.color + ';' : '';
+                var img = genre.cover_image ? '<img src="' + esc(genre.cover_image) + '" class="genre-img" alt="' + esc(genre.name) + '">' : '';
+                return '<a href="/mood/explore/?mood_id=' + genre.id + '&type=songs&mood_name=' + encodeURIComponent(genre.name) + '" class="genre-card" style="background:' + style.bg + ';' + textColor + '">' +
+                    '<div class="genre-title" style="' + textColor + '">' + esc(genre.name) + '</div>' + img + '</a>';
+            }).join('');
+
+            if (prevBtn) prevBtn.disabled = page === 1;
+            if (nextBtn) nextBtn.disabled = end >= allGenres.length;
+        }
+
         try {
             var res = await fetch('/api/v1/music/genres/');
             var data = await res.json();
-            var genres = data.success && data.data && data.data.items ? data.data.items : [];
-            if (genres.length > 0) {
-                container.innerHTML = genres.slice(0, 8).map(function(genre, i) {
-                    var style = GENRE_COLORS[i % GENRE_COLORS.length];
-                    var textColor = style.color ? 'color:' + style.color + ';' : '';
-                    var img = genre.cover_image ? '<img src="' + esc(genre.cover_image) + '" class="genre-img" alt="' + esc(genre.name) + '">' : '';
-                    return '<a href="#" class="genre-card" style="background:' + style.bg + ';' + textColor + '">' +
-                        '<div class="genre-title" style="' + textColor + '">' + esc(genre.name) + '</div>' + img + '</a>';
-                }).join('');
-            } else {
-                container.innerHTML = renderStaticGenres();
-            }
+            allGenres = data.success && data.data && data.data.items ? data.data.items : [];
+            renderGenres(currentPage);
         } catch(e) {
-            container.innerHTML = renderStaticGenres();
+            renderGenres(currentPage);
+        }
+
+        if (prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderGenres(currentPage);
+                }
+            });
+            nextBtn.addEventListener('click', function() {
+                if (currentPage * pageSize < allGenres.length) {
+                    currentPage++;
+                    renderGenres(currentPage);
+                }
+            });
         }
     })();
 
@@ -142,10 +177,10 @@ document.addEventListener('DOMContentLoaded', function() {
     (async function() {
         var container = document.getElementById('topPlaylistsContainer');
         try {
-            var res = await fetch('/api/v1/playlists/?scope=public&limit=10');
+            var res = await fetch('/api/v1/playlists/?scope=public&limit=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.map(renderPlaylistCard).join('');
+                container.innerHTML = data.data.items.slice(0, 5).map(renderPlaylistCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co playlist noi bat nao.');
             }
@@ -158,10 +193,10 @@ document.addEventListener('DOMContentLoaded', function() {
     (async function() {
         var container = document.getElementById('playlistsContainer');
         try {
-            var res = await fetch('/api/v1/recommendations/playlists/?limit=10');
+            var res = await fetch('/api/v1/recommendations/playlists/?limit=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.map(renderPlaylistCard).join('');
+                container.innerHTML = data.data.items.slice(0, 5).map(renderPlaylistCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co playlist nao. Hay tao playlist cua ban!');
             }
@@ -174,10 +209,10 @@ document.addEventListener('DOMContentLoaded', function() {
     (async function() {
         var container = document.getElementById('featuredArtistsContainer');
         try {
-            var res = await fetch('/api/v1/recommendations/artists/?limit=10');
+            var res = await fetch('/api/v1/recommendations/artists/?limit=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.map(renderArtistCard).join('');
+                container.innerHTML = data.data.items.slice(0, 5).map(renderArtistCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co nghe si nao de goi y.');
             }
@@ -190,10 +225,10 @@ document.addEventListener('DOMContentLoaded', function() {
     (async function() {
         var container = document.getElementById('trendingContainer');
         try {
-            var res = await fetch('/api/v1/music/songs/trending/?page_size=10');
+            var res = await fetch('/api/v1/music/songs/trending/?page_size=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.map(renderSongCard).join('');
+                container.innerHTML = data.data.items.slice(0, 5).map(renderSongCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co bai hat thinh hanh nao.');
             }
@@ -202,40 +237,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })();
 
-    // -- Hero Banner
-    function updateHero(song) {
-        if (!song) return;
-        var banner = document.getElementById('heroBanner');
-        var titleEl = document.getElementById('heroTitle');
-        var tagEl = document.getElementById('heroTag');
-        var btn = document.getElementById('heroBtnPlay');
-        if (song.cover_image) {
-            banner.style.backgroundImage = 'url(' + song.cover_image + ')';
-            banner.style.backgroundSize = 'cover';
-            banner.style.backgroundPosition = 'center';
-        }
-        titleEl.textContent = song.title || 'Kham Pha Am Nhac';
-        var artistName = song.artist ? song.artist.display_name : '';
-        tagEl.textContent = artistName ? artistName + ' - Goi y cho ban' : 'Goi y cho ban';
-        btn.href = '/song/?id=' + song.id;
-        btn.onclick = function(e) {
-            e.preventDefault();
-            if (window.playSong) window.playSong(song.id, e);
-        };
-    }
 
-    async function loadHeroFallback() {
-        try {
-            var res = await fetch('/api/v1/music/songs/trending/?page_size=1');
-            var data = await res.json();
-            if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                updateHero(data.data.items[0]);
-                document.getElementById('heroTag').textContent = 'Noi bat tuan nay';
-            } else {
-                document.getElementById('heroTag').textContent = 'Kham pha am nhac';
-            }
-        } catch(e) {
-            document.getElementById('heroTag').textContent = 'Kham pha am nhac';
-        }
-    }
 });
