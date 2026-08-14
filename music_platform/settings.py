@@ -227,8 +227,7 @@ LOGGING = {
     },
 }
 # Block này tự detect: nếu không có DB_NAME trong .env thì dùng SQLite
-import os as _os
-if not _os.environ.get('DB_NAME'):
+if not config('DB_NAME', default=''):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
