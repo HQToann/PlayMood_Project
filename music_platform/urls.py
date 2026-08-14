@@ -127,6 +127,7 @@ urlpatterns = [
     path('explore/', login_required_view('explore/explore.html'), name='explore_page'),
     path('search/', login_required_view('search/search_results.html'), name='search_page'),
     path('mood/', login_required_view('social/mood.html'), name='mood_page'),
+    path('mood/explore/', login_required_view('social/mood_explore.html'), name='mood_explore_page'),
     path('playlist/', login_required_view('playlists/playlist.html'), name='playlist_page'),
     path('playlist/detail/', login_required_view('playlists/playlist_detail.html'), name='playlist_detail_page'),
     

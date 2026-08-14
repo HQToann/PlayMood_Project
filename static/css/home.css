@@ -123,20 +123,27 @@
     min-width: 180px;
     max-width: 180px;
     cursor: pointer;
-    transition: transform 0.2s;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #fff;
+    display: block;
 }
 
-.playlist-card:hover .card-image-wrapper img {
-    transform: scale(1.05);
+.playlist-card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-4px);
 }
 
 .card-image-wrapper {
     position: relative;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 0.75rem;
     aspect-ratio: 1 / 1;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .card-image-wrapper img {

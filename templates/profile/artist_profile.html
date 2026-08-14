@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -11,7 +11,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=3" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=4" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <link href="{% static 'css/profile.css' %}?v=7" rel="stylesheet">
 </head>
@@ -71,9 +71,36 @@
                                 </div>
                                 {% endif %}
 
+
                                 <!-- Mood Thought Bubble -->
                                 {% if target_user.mood and not target_user.mood.is_expired and target_user.mood.mood_type %}
                                 {% with color_from=target_user.mood.theme.gradient_from|default:target_user.mood.mood_type.theme.gradient_from|default:'#ff758c' color_to=target_user.mood.theme.gradient_to|default:target_user.mood.mood_type.theme.gradient_to|default:'#ff7eb3' %}
+                                <style>
+                                    .mood-badge-dynamic { position: relative; }
+                                    .mood-badge-dynamic::before {
+                                        content: '';
+                                        position: absolute;
+                                        bottom: -6px;
+                                        left: 20px;
+                                        width: 0;
+                                        height: 0;
+                                        border-left: 6px solid transparent;
+                                        border-right: 6px solid transparent;
+                                        border-top: 6px solid var(--mood-from);
+                                        z-index: 1;
+                                    }
+                                    .mood-badge-dynamic::after {
+                                        content: '';
+                                        position: absolute;
+                                        bottom: -12px;
+                                        left: 23.5px;
+                                        width: 5px;
+                                        height: 5px;
+                                        border-radius: 50%;
+                                        background-color: var(--mood-from);
+                                        z-index: 1;
+                                    }
+                                </style>
                                 <div class="profile-mood-bubble"
                                     title="{{ target_user.mood.status_text|default:'Cảm xúc hiện tại' }}"
                                     style="position: absolute; top: -30px; left: 110px; z-index: 3; --mood-from: {{ color_from }}; --mood-to: {{ color_to }};">
@@ -628,7 +655,7 @@
     <script>
         window.TARGET_USER_ID = "{{ target_user.id|default:request.user.id }}";
     </script>
-    <script src="{% static 'js/profile.js' %}?v=2.1"></script>
+    <script src="{% static 'js/profile.js' %}?v=2.2"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

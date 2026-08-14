@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return '<div class="music-card" onclick="window.goToPage(\'/song/?id=' + song.id + '\')" style="cursor:pointer;">' +
             '<div class="music-card-img-wrap">' +
             '<img src="' + esc(cover) + '" alt="' + esc(song.title) + '" class="music-card-img" loading="lazy">' +
-            '<button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong(\'' + song.id + '\',event)"><i class="bi bi-play-fill"></i></button>' +
             '</div>' +
             '<div class="music-card-title">' + esc(song.title) + '</div>' +
             '<div class="music-card-artist">' + esc(artist) + '</div>' +
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return '<a href="/playlist/detail/?id=' + pl.id + '" class="playlist-card">' +
             '<div class="playlist-card-img-wrap">' +
             '<img src="' + esc(cover) + '" alt="' + esc(pl.name) + '" loading="lazy">' +
-            '<button class="btn-card-play-pl" onclick="event.preventDefault();event.stopPropagation();if(window.playPlaylist)window.playPlaylist(\'' + pl.id + '\',event)"><i class="bi bi-play-fill"></i></button>' +
             '</div>' +
             '<div class="playlist-card-title">' + esc(pl.name) + '</div>' +
             '<div class="playlist-card-sub">bởi ' + esc(owner) + (songCount ? ' - ' + songCount : '') + '</div>' +

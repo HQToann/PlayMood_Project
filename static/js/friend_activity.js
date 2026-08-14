@@ -55,24 +55,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     else timeText = `${diffDays} ngày trước`;
 
                     if (friend.mood) {
-                        const moodIcon = friend.mood.mood_type?.emoji ? `<span>${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
-                        activityText = `${moodIcon} ${friend.mood.status_text}`;
+                        const moodEmoji = friend.mood.mood_type?.emoji ? `<span style="font-size: 1.1rem; margin-bottom: 2px; display: inline-block;">${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
+                        const statusText = friend.mood.status_text ? ` <span style="color: rgba(255,255,255,0.85);">${friend.mood.status_text}</span>` : '';
+                        activityText = `${moodEmoji}${statusText}`;
                         if (activity && activity.activity_type === 'playing' && activity.song) {
-                            activityText += `<div class="d-flex align-items-center gap-1 mt-1"><div class="marquee-wrapper flex-grow-1" style="max-width: 130px;"><div class="marquee-left text-accent"><span class="pe-4">${activity.song.title}</span><span class="pe-4">${activity.song.title}</span></div></div></div>`;
+                            activityText += `<br><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-top: 2px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${activity.song.title}</div>`;
                         } else if (friend.mood.song) {
-                            activityText += `<div class="d-flex align-items-center gap-1 mt-1"><div class="marquee-wrapper flex-grow-1" style="max-width: 130px;"><div class="marquee-left text-accent"><span class="pe-4">${friend.mood.song.title}</span><span class="pe-4">${friend.mood.song.title}</span></div></div></div>`;
+                            activityText += `<br><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-top: 2px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${friend.mood.song.title}</div>`;
                         }
                     } else if (activity) {
                         if (activity.activity_type === 'playing' && activity.song)
-                            activityText = `<div class="d-flex align-items-center gap-1"><div class="marquee-wrapper flex-grow-1" style="max-width: 130px;"><div class="marquee-left text-accent"><span class="pe-4">${activity.song.title}</span><span class="pe-4">${activity.song.title}</span></div></div></div>`;
+                            activityText = `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${activity.song.title}</div>`;
                         else if (activity.activity_type === 'mood')
                             activityText = `<i class="bi bi-emoji-smile text-warning"></i> ${activity.extra_text}`;
                     }
                 } else if (friend.mood) {
-                    const moodIcon = friend.mood.mood_type?.emoji ? `<span>${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
-                    activityText = `${moodIcon} ${friend.mood.status_text}`;
+                    const moodEmoji = friend.mood.mood_type?.emoji ? `<span style="font-size: 1.1rem; margin-bottom: 2px; display: inline-block;">${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
+                    const statusText = friend.mood.status_text ? ` <span style="color: rgba(255,255,255,0.85);">${friend.mood.status_text}</span>` : '';
+                    activityText = `${moodEmoji}${statusText}`;
                     if (friend.mood.song) {
-                        activityText += `<div class="d-flex align-items-center gap-1 mt-1"><div class="marquee-wrapper flex-grow-1" style="max-width: 130px;"><div class="marquee-left text-accent"><span class="pe-4">${friend.mood.song.title}</span><span class="pe-4">${friend.mood.song.title}</span></div></div></div>`;
+                        activityText += `<br><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-top: 2px;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> ${friend.mood.song.title}</div>`;
                     }
                 }
 

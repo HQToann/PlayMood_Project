@@ -494,8 +494,7 @@ def get_recommended_playlists(user, limit: int = 10) -> list:
         extras = list(
             base_qs
             .exclude(id__in=seen_ids)
-            .annotate(like_count_agg=Count('likes'))
-            .order_by('-like_count_agg', '-created_at')[:limit - len(playlists)]
+            .order_by('-created_at')[:limit - len(playlists)]
         )
         playlists += extras
 
@@ -588,7 +587,7 @@ def _co_mood_listen_scores(mood_type_id, exclude_ids: set, limit_users: int = 10
     return {row['song_id']: row['cnt'] for row in listen_counts}
 
 
-def get_songs_for_mood(mood_type_id, user=None, limit: int = 20) -> dict:
+def get_songs_for_mood(mood_type_id, user=None, page: int = 1, limit: int = 20) -> dict:
     """
     Gợi ý bài hát phù hợp với 1 loại cảm xúc cụ thể.
 
@@ -600,7 +599,8 @@ def get_songs_for_mood(mood_type_id, user=None, limit: int = 20) -> dict:
     Args:
         mood_type_id: UUID của MoodType
         user:         User đang request (dùng để loại bài đã nghe)
-        limit:        số bài trả về
+        page:         Trang hiện tại (1-indexed)
+        limit:        số bài trả về mỗi trang
 
     Returns:
         dict {items, total, mood_name, source}
@@ -635,9 +635,9 @@ def get_songs_for_mood(mood_type_id, user=None, limit: int = 20) -> dict:
     genre_ids = _match_genre_ids_for_mood(mood_type.name)
     genre_raw: dict = {}
     if genre_ids:
-        for song in base_qs.filter(genre_id__in=genre_ids).only('id', 'genre_id', 'play_count'):
+        for sid, play_count in base_qs.filter(genre_id__in=genre_ids).values_list('id', 'play_count'):
             # Bonus thêm cho bài thịnh hành trong genre đó
-            genre_raw[song.id] = 1.0 + (song.play_count / max(song.play_count, 1)) * 0.2
+            genre_raw[sid] = 1.0 + (play_count / max(play_count, 1)) * 0.2
 
     # ── Tín hiệu 2: Co-Mood Collaborative Filtering ────────────────────────
     co_mood_raw = _co_mood_listen_scores(mood_type_id, exclude_ids)
@@ -647,14 +647,17 @@ def get_songs_for_mood(mood_type_id, user=None, limit: int = 20) -> dict:
 
     all_ids = set(genre_norm) | set(co_mood_norm)
 
+    start = (page - 1) * limit
+    end = start + limit
+
     if not all_ids:
         # Cold-start hoàn toàn: dùng trending
         trending = list(
-            base_qs.order_by('-is_trending', '-play_count')[:limit]
+            base_qs.order_by('-is_trending', '-play_count')[start:end]
         )
         return {
             'items': [s.to_dict(viewer=viewer, include_stats=False) for s in trending],
-            'total': len(trending),
+            'total': len(trending), # This isn't true total but helps frontend know if it's empty
             'mood_name': mood_type.name,
             'source': 'trending',
         }
@@ -666,14 +669,22 @@ def get_songs_for_mood(mood_type_id, user=None, limit: int = 20) -> dict:
         )
         for sid in all_ids
     }
-    ranked_ids = sorted(hybrid, key=lambda k: hybrid[k], reverse=True)[:limit]
+    # Sort all items
+    all_ranked_ids = sorted(hybrid, key=lambda k: hybrid[k], reverse=True)
+    
+    # Get current page
+    ranked_ids = all_ranked_ids[start:end]
 
     # Lấp đầy nếu chưa đủ limit
     if len(ranked_ids) < limit:
+        # Nếu đã hết hybrid items, tính toán xem cần bỏ qua bao nhiêu fallback items
+        fallback_offset = max(0, start - len(all_ranked_ids))
+        fallback_limit = limit - len(ranked_ids)
+        
         fallback = list(
-            base_qs.exclude(id__in=ranked_ids)
+            base_qs.exclude(id__in=all_ranked_ids)
             .order_by('-is_trending', '-play_count')
-            .values_list('id', flat=True)[:limit - len(ranked_ids)]
+            .values_list('id', flat=True)[fallback_offset : fallback_offset + fallback_limit]
         )
         ranked_ids += fallback
 
@@ -697,7 +708,7 @@ def get_songs_for_mood(mood_type_id, user=None, limit: int = 20) -> dict:
     }
 
 
-def get_playlists_for_mood(mood_type_id, user=None, limit: int = 10) -> dict:
+def get_playlists_for_mood(mood_type_id, user=None, page: int = 1, limit: int = 10) -> dict:
     """
     Gợi ý playlist phù hợp với tâm trạng.
 
@@ -730,35 +741,44 @@ def get_playlists_for_mood(mood_type_id, user=None, limit: int = 10) -> dict:
 
     playlists = []
 
+    start = (page - 1) * limit
+    end = start + limit
+
     # ── Tín hiệu 1: Genre match ─────────────────────────────────────────────
     genre_ids = _match_genre_ids_for_mood(mood_type.name)
+    
+    # We query all matched playlists
+    all_matched = []
     if genre_ids:
         from django.db.models import Count as _Count
-        genre_matched = list(
+        all_matched = list(
             base_qs
             .filter(playlist_songs__song__genre_id__in=genre_ids)
             .annotate(match_count=_Count('playlist_songs', distinct=True))
             .order_by('-match_count', '-created_at')
-            .distinct()[:limit]
+            .distinct()
         )
-        playlists = genre_matched
+        
+    playlists = all_matched[start:end]
 
     # ── Lấp đầy bằng playlist mới nhất nếu chưa đủ ─────────────────────────
     if len(playlists) < limit:
-        seen_ids = [p.id for p in playlists]
+        # Calculate offsets for fallback
+        fallback_offset = max(0, start - len(all_matched))
+        fallback_limit = limit - len(playlists)
+        
+        seen_ids = [p.id for p in all_matched] # Exclude all matched, not just current page
         from django.db.models import Count as _Count2
         extras = list(
             base_qs.exclude(id__in=seen_ids)
-            .annotate(like_count_agg=_Count2('likes'))
-            .order_by('-like_count_agg', '-created_at')
-            [:limit - len(playlists)]
+            .order_by('-created_at')[fallback_offset : fallback_offset + fallback_limit]
         )
         playlists += extras
 
     items = [p.to_dict(viewer=viewer) for p in playlists]
     return {
         'items': items,
-        'total': len(items),
+        'total': len(items), # Simplified total
         'mood_name': mood_type.name,
         'mood_emoji': mood_type.emoji,
         'source': 'genre_match' if genre_ids else 'latest',

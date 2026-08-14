@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -11,7 +11,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=4" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <link href="{% static 'css/explore.css' %}" rel="stylesheet">
 </head>
@@ -174,10 +174,11 @@
                             <!-- Bài Hát Theo Tâm Trạng -->
                             <div class="mb-4">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div>
-                                        <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
-                                        <h5 class="fw-bold text-white mb-0 mt-1" id="songsSectionTitle">Dành Riêng Cho Bạn</h5>
-                                    </div>
+                                      <div>
+                                          <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
+                                          <h5 class="fw-bold text-white mb-0 mt-1" id="songsSectionTitle">Dành Riêng Cho Bạn</h5>
+                                      </div>
+                                      <a href="#" id="seeAllSongs" class="section-more-btn" style="text-decoration: none;">Xem tất cả</a>
                                 </div>
                                 <div id="moodSongsContainer" class="d-flex gap-3" style="overflow-x: auto; padding-bottom: 0.75rem; scrollbar-width: none;">
                                     <!-- Sẽ được JS điền vào -->
@@ -187,10 +188,11 @@
                             <!-- Playlist Theo Tâm Trạng -->
                             <div>
                                 <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <div>
-                                        <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
-                                        <h5 class="fw-bold text-white mb-0 mt-1" id="playlistSectionTitle">Tuyển Tập Playlist Đặc Biệt</h5>
-                                    </div>
+                                      <div>
+                                          <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
+                                          <h5 class="fw-bold text-white mb-0 mt-1" id="playlistSectionTitle">Tuyển Tập Playlist Đặc Biệt</h5>
+                                      </div>
+                                      <a href="#" id="seeAllPlaylists" class="section-more-btn" style="text-decoration: none;">Xem tất cả</a>
                                 </div>
                                 <div id="moodPlaylistsContainer" class="d-flex gap-3" style="overflow-x: auto; padding-bottom: 0.75rem; scrollbar-width: none;">
                                     <!-- Sẽ được JS điền vào -->
@@ -303,7 +305,7 @@
                     </style>
 
     <script src="{% static 'js/main.js' %}?v=2.2"></script>
-    <script src="{% static 'js/mood.js' %}?v=2.1"></script>
+    <script src="{% static 'js/mood.js' %}?v=2.7"></script>
 
                 </div>
             </main>
@@ -429,7 +431,7 @@
                     </div>
 
                     <!-- Search Results -->
-                    <div id="searchResults" class="d-flex flex-column gap-2">
+                    <div id="searchResults" class="d-flex flex-column gap-2" style="max-height: 280px; overflow-y: auto; padding-right: 5px;">
                         <div class="text-center text-secondary py-4" style="font-size: 0.9rem;">
                             Nhập từ khóa để tìm kiếm bản nhạc bạn muốn đính kèm.
                         </div>

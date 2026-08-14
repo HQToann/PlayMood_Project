@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
             <!-- RIGHT SIDEBAR (Friends Activity) -->
             <aside class="sidebar-right d-none d-xl-block">
                 <!-- Header Actions for Desktop Sidebar -->
@@ -125,7 +125,7 @@
         window.LOGIN_URL = "/auth/login/";
     </script>
     {% if request.user.is_authenticated %}
-    <script src="{% static 'js/friend_activity.js' %}?v=2.1"></script>
+    <script src="{% static 'js/friend_activity.js' %}?v=2.3"></script>
     {% endif %}
     <style>
         /* Custom marquee starting from left (seamless loop) */

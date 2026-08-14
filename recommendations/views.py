@@ -20,7 +20,7 @@ from accounts.decorators import require_auth
 from accounts.exceptions import ValidationError, PermissionDenied, NotFound
 from music.exceptions import SongNotFound
 
-from recommendations.validators import validate_recommend_params, validate_similar_params, validate_media_params
+from recommendations.validators import validate_recommend_params, validate_similar_params, validate_media_params, validate_mood_params
 from recommendations.selectors import (
     get_recommendations_for_user, get_similar_songs,
     get_recommended_artists, get_recommended_playlists,
@@ -131,10 +131,11 @@ class MoodBasedSongsView(View):
     @method_decorator(require_auth)
     def get(self, request, mood_type_id):
         try:
-            params = validate_media_params(request.GET)
+            params = validate_mood_params(request.GET)
             result = get_songs_for_mood(
                 mood_type_id=mood_type_id,
                 user=request.user,
+                page=params['page'],
                 limit=params['limit'],
             )
             return JsonResponse({'success': True, 'data': result})
@@ -149,10 +150,11 @@ class MoodBasedPlaylistsView(View):
     @method_decorator(require_auth)
     def get(self, request, mood_type_id):
         try:
-            params = validate_media_params(request.GET)
+            params = validate_mood_params(request.GET)
             result = get_playlists_for_mood(
                 mood_type_id=mood_type_id,
                 user=request.user,
+                page=params['page'],
                 limit=params['limit'],
             )
             return JsonResponse({'success': True, 'data': result})

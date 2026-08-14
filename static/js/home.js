@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
                         <div class="card-image-wrapper">
                             <img src="${coverImg}" alt="${song.title}">
-                            <div class="card-play-btn" onclick="playSong('${song.id}', event)" style="position: relative; z-index: 2;"><i class="bi bi-play-fill"></i></div>
+
                         </div>
                         <div class="card-title" title="${song.title}">${song.title}</div>
                         <div class="card-subtitle" title="${artistName}">${artistName}</div>
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
                             <div class="card-image-wrapper">
                                 <img src="${coverImg}" alt="${song.title}">
-                                <div class="card-play-btn" onclick="playSong('${song.id}', event)" style="position: relative; z-index: 2;"><i class="bi bi-play-fill"></i></div>
+
                             </div>
                             <div class="card-title" title="${song.title}">${song.title}</div>
                             <div class="card-subtitle" title="${artistName}">${artistName}</div>
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
                             <div class="card-image-wrapper">
                                 <img src="${coverImg}" alt="${playlist.title}">
-                                <div class="card-play-btn" onclick="playPlaylist('${playlist.id}', event)" style="position:relative;z-index:2;"><i class="bi bi-play-fill"></i></div>
+
                             </div>
                             <div class="card-title" title="${playlist.title}">${playlist.title}</div>
                             <div class="card-subtitle">${ownerName} ${songCount ? '&bull; ' + songCount : ''}</div>

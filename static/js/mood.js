@@ -107,8 +107,8 @@ function selectMood(mt, el) {
 
     // Update section titles
     const songsTitleEl = document.getElementById('songsSectionTitle');
-    if (songsTitleEl) songsTitleEl.textContent = `${mt.emoji} Nhạc Phù Hợp Với "${mt.name}"`;
-    document.getElementById('playlistSectionTitle').textContent = `${mt.emoji} Playlist Cho "${mt.name}"`;
+    if (songsTitleEl) songsTitleEl.textContent = `Nhạc Phù Hợp Với "${mt.name}"`;
+    document.getElementById('playlistSectionTitle').textContent = `Playlist Cho "${mt.name}"`;
 
     // Gọi API gợi ý theo tâm trạng
     loadMoodRecommendations(mt.id, mt.name, mt.emoji);
@@ -149,23 +149,21 @@ async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
     // Gọi 2 API song song
     try {
         const [songsRes, playlistsRes] = await Promise.all([
-            fetch(`/api/v1/recommendations/mood/${moodTypeId}/songs/?limit=10`).then(r => r.json()),
-            fetch(`/api/v1/recommendations/mood/${moodTypeId}/playlists/?limit=8`).then(r => r.json()),
+            fetch(`/api/v1/recommendations/mood/${moodTypeId}/songs/?limit=5`).then(r => r.json()),
+            fetch(`/api/v1/recommendations/mood/${moodTypeId}/playlists/?limit=5`).then(r => r.json()),
         ]);
 
         // Render bài hát
         if (songsContainer) {
             if (songsRes.success && songsRes.data && songsRes.data.items && songsRes.data.items.length > 0) {
                 songsContainer.innerHTML = songsRes.data.items.map(song => {
-                    const cover = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';
+                    const cover = song.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
                                                 <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer;min-width:160px;width:160px;">
                                                     <div class="music-card-img-wrap">
-                                                        <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';">
-                                                        <button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong('${song.id}',event)">
-                                                            <i class="bi bi-play-fill"></i>
-                                                        </button>
+                                                        <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';">
+
                                                     </div>
                                                     <div class="music-card-title">${song.title}</div>
                                                     <div class="music-card-artist">${artist}</div>
@@ -180,14 +178,14 @@ async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
         if (playlistContainer) {
             if (playlistsRes.success && playlistsRes.data && playlistsRes.data.items && playlistsRes.data.items.length > 0) {
                 playlistContainer.innerHTML = playlistsRes.data.items.map(pl => {
-                    const cover = pl.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';
+                    const cover = pl.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';
                     const owner = pl.owner ? pl.owner.display_name : '';
                     const songCount = pl.song_count ? ` • ${pl.song_count} bài` : '';
                     return `
                                                 <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
                                                     <div style="position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-                                                        <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';">
-                                                        <button onclick="event.preventDefault();event.stopPropagation();if(window.playPlaylist)window.playPlaylist('${pl.id}',event)" style="position:absolute;bottom:8px;right:8px;width:36px;height:36px;border-radius:50%;background:var(--accent-color,#2dd4bf);color:#000;border:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:1rem;" onmouseover="this.style.opacity='1'" class="pl-play-btn"><i class="bi bi-play-fill"></i></button>
+                                                        <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';">
+
                                                     </div>
                                                     <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${pl.title}</div>
                                                     <div style="color:rgba(255,255,255,0.5);font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bởi ${owner}${songCount}</div>
@@ -238,15 +236,13 @@ async function loadDefaultRecommendations() {
         if (songsContainer) {
             if (songsRes.success && songsRes.data && songsRes.data.items && songsRes.data.items.length > 0) {
                 songsContainer.innerHTML = songsRes.data.items.map(song => {
-                    const cover = song.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';
+                    const cover = song.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
                                                 <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer;min-width:160px;width:160px;">
                                                     <div class="music-card-img-wrap">
-                                                        <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?w=300&q=80';">
-                                                        <button class="btn-card-play" onclick="event.stopPropagation();if(window.playSong)window.playSong('${song.id}',event)">
-                                                            <i class="bi bi-play-fill"></i>
-                                                        </button>
+                                                        <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';">
+
                                                     </div>
                                                     <div class="music-card-title">${song.title}</div>
                                                     <div class="music-card-artist">${artist}</div>
@@ -261,14 +257,14 @@ async function loadDefaultRecommendations() {
         if (playlistContainer) {
             if (playlistsRes.success && playlistsRes.data && playlistsRes.data.items && playlistsRes.data.items.length > 0) {
                 playlistContainer.innerHTML = playlistsRes.data.items.map(pl => {
-                    const cover = pl.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';
+                    const cover = pl.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';
                     const owner = pl.owner ? pl.owner.display_name : '';
                     const songCount = pl.song_count ? ` • ${pl.song_count} bài` : '';
                     return `
                                                 <a href="/playlist/detail/?id=${pl.id}" class="playlist-mood-card" style="min-width:160px;width:160px;background:rgba(255,255,255,0.04);border-radius:12px;padding:1rem;display:block;text-decoration:none;color:#fff;transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(0)'">
                                                     <div style="position:relative;width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:0.75rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-                                                        <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80';">
-                                                        <button onclick="event.preventDefault();event.stopPropagation();if(window.playPlaylist)window.playPlaylist('${pl.id}',event)" style="position:absolute;bottom:8px;right:8px;width:36px;height:36px;border-radius:50%;background:var(--accent-color,#2dd4bf);color:#000;border:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;font-size:1rem;" onmouseover="this.style.opacity='1'" class="pl-play-btn"><i class="bi bi-play-fill"></i></button>
+                                                        <img src="${cover}" alt="${pl.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2780%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%96%B6%3C/text%3E%3C/svg%3E';">
+
                                                     </div>
                                                     <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${pl.title}</div>
                                                     <div style="color:rgba(255,255,255,0.5);font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bởi ${owner}${songCount}</div>
@@ -330,9 +326,9 @@ async function loadMoodData() {
             // Nếu user đang có mood, tự động hiện gợi ý luôn
             if (mood.mood_type) {
                 const songsTitleEl = document.getElementById('songsSectionTitle');
-                if (songsTitleEl) songsTitleEl.textContent = `${mood.mood_type.emoji} Nhạc Phù Hợp Với "${mood.mood_type.name}"`;
+                if (songsTitleEl) songsTitleEl.textContent = `Nhạc Phù Hợp Với "${mood.mood_type.name}"`;
                 const plTitleEl = document.getElementById('playlistSectionTitle');
-                if (plTitleEl) plTitleEl.textContent = `${mood.mood_type.emoji} Playlist Cho "${mood.mood_type.name}"`;
+                if (plTitleEl) plTitleEl.textContent = `Playlist Cho "${mood.mood_type.name}"`;
 
                 loadMoodRecommendations(mood.mood_type.id, mood.mood_type.name, mood.mood_type.emoji);
             } else {
@@ -440,6 +436,7 @@ var searchTimeout = null;
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('musicSearchInput');
     const searchResults = document.getElementById('searchResults');
+    const modalBody = searchInput ? searchInput.closest('.modal-body') : null;
 
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -451,35 +448,88 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             searchTimeout = setTimeout(() => {
-                fetchSongs(query);
+                currentSearchQuery = query;
+                currentSearchPage = 1;
+                hasMoreSearchResults = true;
+                fetchSongs(query, 1, false);
             }, 500);
+        });
+    }
+
+    if (searchResults) {
+        searchResults.addEventListener('scroll', () => {
+            // Kiểm tra xem đã cuộn đến cuối chưa (với sai số 20px)
+            if (searchResults.scrollTop + searchResults.clientHeight >= searchResults.scrollHeight - 20) {
+                if (hasMoreSearchResults && !isSearchLoading && currentSearchQuery) {
+                    fetchSongs(currentSearchQuery, currentSearchPage, true);
+                }
+            }
         });
     }
 });
 
-async function fetchSongs(query) {
+let currentSearchQuery = '';
+let currentSearchPage = 1;
+let isSearchLoading = false;
+let hasMoreSearchResults = true;
+
+async function fetchSongs(query, page = 1, append = false) {
+    if (isSearchLoading || (!hasMoreSearchResults && page > 1)) return;
+    
     const searchLoading = document.getElementById('searchLoading');
     const searchResults = document.getElementById('searchResults');
 
-    searchLoading.style.display = 'block';
-    searchResults.innerHTML = '';
+    isSearchLoading = true;
+    if (!append) {
+        searchLoading.style.display = 'block';
+        searchResults.innerHTML = '';
+    } else {
+        // Add a small loading indicator at the bottom when appending
+        const appendLoading = document.createElement('div');
+        appendLoading.id = 'appendSearchLoading';
+        appendLoading.className = 'text-center py-2';
+        appendLoading.innerHTML = '<div class="spinner-border text-light spinner-border-sm" role="status"></div>';
+        searchResults.appendChild(appendLoading);
+    }
+
     try {
-        const res = await fetch(`/api/v1/search/songs/?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/v1/search/songs/?q=${encodeURIComponent(query)}&page=${page}&page_size=5`);
         const data = await res.json();
+        
         searchLoading.style.display = 'none';
+        const appendLoader = document.getElementById('appendSearchLoading');
+        if (appendLoader) appendLoader.remove();
 
         if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-            renderSearchResults(data.data.items, searchResults);
+            renderSearchResults(data.data.items, searchResults, append);
+            
+            // Check if we reached the end
+            if (data.data.items.length < 5 || (data.data.total && data.data.items.length + (page - 1) * 5 >= data.data.total)) {
+                hasMoreSearchResults = false;
+            } else {
+                hasMoreSearchResults = true;
+                currentSearchPage = page + 1;
+            }
         } else {
-            searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Không tìm thấy kết quả nào.</div>';
+            hasMoreSearchResults = false;
+            if (!append) {
+                searchResults.innerHTML = '<div class="text-center text-secondary py-4" style="font-size: 0.9rem;">Không tìm thấy kết quả nào.</div>';
+            }
         }
     } catch (err) {
         searchLoading.style.display = 'none';
-        searchResults.innerHTML = '<div class="text-center text-danger py-4" style="font-size: 0.9rem;">Đã xảy ra lỗi, vui lòng thử lại sau.</div>';
+        const appendLoader = document.getElementById('appendSearchLoading');
+        if (appendLoader) appendLoader.remove();
+        
+        if (!append) {
+            searchResults.innerHTML = '<div class="text-center text-danger py-4" style="font-size: 0.9rem;">Đã xảy ra lỗi, vui lòng thử lại sau.</div>';
+        }
+    } finally {
+        isSearchLoading = false;
     }
 }
 
-function renderSearchResults(songs, searchResultsEl) {
+function renderSearchResults(songs, searchResultsEl, append = false) {
     let html = '';
     songs.forEach(song => {
         // Nếu cover_image null, dùng ảnh mặc định
@@ -503,7 +553,11 @@ function renderSearchResults(songs, searchResultsEl) {
 
     const target = searchResultsEl || document.getElementById('searchResults');
     if (target) {
-        target.innerHTML = html;
+        if (append) {
+            target.insertAdjacentHTML('beforeend', html);
+        } else {
+            target.innerHTML = html;
+        }
     }
 }
 
@@ -528,10 +582,12 @@ function selectSong(id, title, artist, cover) {
                                 </button>
                             `;
 
-    // Đóng modal
+    // Đóng modal an toàn
     const modalEl = document.getElementById('searchMusicModal');
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    if (modal) modal.hide();
+    if (modalEl) {
+        const closeBtn = modalEl.querySelector('.btn-close');
+        if (closeBtn) closeBtn.click();
+    }
 }
 
 function resetSongAttachmentUI() {

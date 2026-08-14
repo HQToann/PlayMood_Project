@@ -161,7 +161,7 @@ async function loadLikedSongs() {
                 <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
                     <div class="card-image-wrapper">
                         <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
-                        <div class="card-play-btn" onclick="playSong('${song.id}', event)" style="position:relative;z-index:2;"><i class="bi bi-play-fill"></i></div>
+
                     </div>
                     <div class="card-title">${song.title}</div>
                     <div class="card-subtitle">${song.artist?.display_name || ''}</div>
@@ -188,7 +188,7 @@ async function loadAlbums() {
                 <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px; cursor: pointer;" onclick="window.location.href='/album/detail/?id=${album.id}'">
                     <div class="card-image-wrapper">
                         <img src="${album.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${album.title}">
-                        <div class="card-play-btn" onclick="event.preventDefault(); event.stopPropagation(); if(window.playAlbum) window.playAlbum('${album.id}', '${album.title.replace(/'/g, "\\'")}')"><i class="bi bi-play-fill"></i></div>
+
                     </div>
                     <div class="card-title">${album.title}</div>
                     <div class="card-subtitle">${album.song_count} bài hát</div>
@@ -218,7 +218,7 @@ async function loadPlaylists() {
                 <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
                     <div class="card-image-wrapper">
                         <img src="${pl.cover_image || 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${pl.title}">
-                        <div class="card-play-btn" onclick="playPlaylist('${pl.id}', event)" style="position:relative;z-index:2;"><i class="bi bi-play-fill"></i></div>
+
                     </div>
                     <div class="card-title">${pl.title}</div>
                     <div class="card-subtitle">${pl.song_count !== undefined ? pl.song_count + ' bài' : ''}</div>
@@ -246,7 +246,7 @@ async function loadRecentSongs() {
                 <div class="playlist-card position-relative" style="min-width: 160px; max-width: 160px;">
                     <div class="card-image-wrapper">
                         <img src="${song.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${song.title}">
-                        <div class="card-play-btn" onclick="playSong('${song.id}', event)" style="position:relative;z-index:2;"><i class="bi bi-play-fill"></i></div>
+
                     </div>
                     <div class="card-title">${song.title}</div>
                     <div class="card-subtitle">${song.artist?.display_name || ''}</div>
