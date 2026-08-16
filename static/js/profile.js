@@ -15,7 +15,7 @@ async function loadStats() {
             if (followersEl) followersEl.innerText = formatNumber(data.data.followers_count || 0);
             if (followingEl) followingEl.innerText = formatNumber(data.data.following_count || 0);
         }
-        
+
         const likesEl = document.getElementById('totalLikesCount');
         if (likesEl) {
             const statsRes = await fetch('/api/v1/artists/me/stats/');
@@ -39,25 +39,25 @@ class ProfilePaginator {
         this.renderItem = config.renderItem;
         this.emptyMsg = config.emptyMsg;
         this.onItemsLoaded = config.onItemsLoaded;
-        
+
         this.page = 1;
         this.limit = 20;
         this.hasMore = true;
         this.isLoading = false;
         this.items = [];
-        
+
         this.init();
     }
-    
+
     async init() {
         await this.loadMore();
         this.setupObserver();
     }
-    
+
     async loadMore() {
         if (this.isLoading || !this.hasMore) return;
         this.isLoading = true;
-        
+
         try {
             const sep = this.url.includes('?') ? '&' : '?';
             const res = await fetch(`${this.url}${sep}limit=${this.limit}&page=${this.page}`);
@@ -66,11 +66,11 @@ class ProfilePaginator {
             if (json.success && json.data) {
                 newItems = Array.isArray(json.data) ? json.data : (json.data.items || []);
             }
-            
+
             if (newItems.length < this.limit) {
                 this.hasMore = false;
             }
-            
+
             this.items = [...this.items, ...newItems];
             if (this.onItemsLoaded) this.onItemsLoaded(this.items);
             this.render();
@@ -81,21 +81,21 @@ class ProfilePaginator {
             this.isLoading = false;
         }
     }
-    
+
     render() {
         const allContainer = document.getElementById(this.allContainerId);
         const overviewContainer = document.getElementById(this.overviewContainerId);
-        
+
         if (this.items.length === 0) {
             const emptyHtml = `<div class="text-secondary py-3 text-center small w-100" style="grid-column: 1/-1;">${this.emptyMsg}</div>`;
             if (allContainer) allContainer.innerHTML = emptyHtml;
             if (overviewContainer) overviewContainer.innerHTML = emptyHtml;
             return;
         }
-        
+
         const htmlAll = this.items.map(this.renderItem).join('');
         const htmlOverview = this.items.slice(0, 5).map(this.renderItem).join('');
-        
+
         if (allContainer) {
             allContainer.innerHTML = htmlAll;
             if (this.hasMore) {
@@ -104,17 +104,17 @@ class ProfilePaginator {
         }
         if (overviewContainer) overviewContainer.innerHTML = htmlOverview;
     }
-    
+
     setupObserver() {
         const allContainer = document.getElementById(this.allContainerId);
         if (!allContainer) return;
-        
+
         const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
                 this.loadMore();
             }
         }, { rootMargin: '100px' });
-        
+
         const mo = new MutationObserver(() => {
             const sentinel = document.getElementById(`sentinel-${this.allContainerId}`);
             if (sentinel) observer.observe(sentinel);
@@ -125,9 +125,9 @@ class ProfilePaginator {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadStats();
-    
+
     const targetUserId = window.TARGET_USER_ID;
-    
+
     new ProfilePaginator({
         url: `/api/v1/music/users/${targetUserId}/likes/`,
         allContainerId: 'allLikedSongsContainer',
@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <a href="/song/?id=${song.id}" class="stretched-link"></a>
             </div>`
     });
-    
+
     new ProfilePaginator({
         url: `/api/v1/music/users/${targetUserId}/albums/`,
         allContainerId: 'allAlbumsContainer',
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="card-subtitle">${album.song_count} bài hát</div>
             </div>`
     });
-    
+
     new ProfilePaginator({
         url: `/api/v1/playlists/?user_id=${targetUserId}`,
         allContainerId: 'allPlaylistContainer',
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <a href="/playlist/detail/?id=${pl.id}" class="stretched-link"></a>
             </div>`
     });
-    
+
     new ProfilePaginator({
         url: `/api/v1/music/me/history/`,
         allContainerId: 'allRecentContainer',
@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-window.switchToTab = function(tabName) {
+window.switchToTab = function (tabName) {
     const tab = document.querySelector(`.profile-tab[data-tab="${tabName}"]`);
     if (tab) {
         tab.click();
@@ -222,11 +222,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarInput = document.getElementById('avatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
     if (avatarInput && avatarPreview) {
-        avatarInput.addEventListener('change', function(e) {
+        avatarInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     avatarPreview.src = e.target.result;
                 }
                 reader.readAsDataURL(file);
@@ -237,11 +237,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const coverInput = document.getElementById('coverInput');
     const coverPreview = document.getElementById('coverPreview');
     if (coverInput && coverPreview) {
-        coverInput.addEventListener('change', function(e) {
+        coverInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     coverPreview.src = e.target.result;
                 }
                 reader.readAsDataURL(file);
@@ -253,24 +253,24 @@ document.addEventListener('DOMContentLoaded', () => {
 async function saveImages() {
     const avatarInput = document.getElementById('avatarInput');
     const coverInput = document.getElementById('coverInput');
-    
+
     const formData = new FormData();
     let hasFile = false;
-    
+
     if (avatarInput && avatarInput.files.length > 0) {
         formData.append('avatar', avatarInput.files[0]);
         hasFile = true;
     }
-    
+
     if (coverInput && coverInput.files.length > 0) {
         formData.append('cover', coverInput.files[0]);
         hasFile = true;
     }
-    
+
     if (!hasFile) {
         return;
     }
-    
+
     try {
         const csrfToken = getCookie('csrftoken');
         const response = await fetch('/api/v1/accounts/me/images/', {
@@ -280,7 +280,7 @@ async function saveImages() {
             },
             body: formData
         });
-        
+
         const result = await response.json();
         if (response.ok && result.success) {
             window.location.reload();
@@ -294,7 +294,7 @@ async function saveImages() {
     }
 }
 
-window.saveSocials = async function() {
+window.saveSocials = async function () {
     const websiteInput = document.getElementById('websiteInput');
     const facebookInput = document.getElementById('facebookInput');
     const youtubeInput = document.getElementById('youtubeInput');

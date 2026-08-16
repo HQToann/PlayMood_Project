@@ -1,34 +1,30 @@
 """
 music_platform/settings.py
-
 Cấu hình Django cho Hệ thống Âm nhạc.
 """
 
 import os
 from pathlib import Path
 from decouple import config, Csv
+import dj_database_url
 
-# Đường dẫn gốc prooject
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Bảo mật cốt lõi
+# --- BẢO MẬT ---
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
+
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS = list(ALLOWED_HOSTS) + [RENDER_EXTERNAL_HOSTNAME]
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 if 'testserver' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS = list(ALLOWED_HOSTS) + ['testserver']
-    
-AUTH_USER_MODEL = 'accounts.User'
+    ALLOWED_HOSTS.append('testserver')
 
-# BÁO CHO DJANGO BIẾT NÓ ĐANG CHẠY HTTPS QUA RENDER:
+AUTH_USER_MODEL = 'accounts.User'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-
-# Ứng dụng đã cài đặc
+# --- ỨNG DỤNG ---
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,7 +48,6 @@ INSTALLED_APPS = [
     'notifications',
     'search',
     'recommendations',
-
 ]
 
 MIDDLEWARE = [
@@ -84,10 +79,10 @@ TEMPLATES = [
         },
     },
 ]
+
 WSGI_APPLICATION = 'music_platform.wsgi.application'
 
-
-# Database
+# --- DATABASE ---
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -99,104 +94,87 @@ DATABASES = {
     }
 }
 
-import dj_database_url
 db_from_env = dj_database_url.config(conn_max_age=600)
 if db_from_env:
     DATABASES['default'].update(db_from_env)
 
+# Tự động lùi về SQLite nếu không cấu hình DB
+if not config('DATABASE_URL', default='') and not config('DB_NAME', default=''):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_test.sqlite3',
+    }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# Internationalization
 LANGUAGE_CODE = 'vi'
 TIME_ZONE = 'Asia/Ho_Chi_Minh'
 USE_I18N = True
 USE_TZ = True
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Static files (CSS, JavaScript, Images) + Media files
-
+# --- TỆP TĨNH & MULTIMEDIA (Cấu hình chuẩn Django 5.x) ---
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_DIR = BASE_DIR / 'static'
+if STATIC_DIR.exists():
+    STATICFILES_DIRS = [STATIC_DIR]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-# Cloudinary Storage
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
     'API_KEY': config('CLOUDINARY_API_KEY', default=''),
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
     'PREFIX': config('CLOUDINARY_PREFIX', default='music_platform'),
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Session
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" if not DEBUG else "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+# Fallback Media Storage cho Local SQLite
+if not config('DATABASE_URL', default='') and not config('DB_NAME', default=''):
+    STORAGES["default"]["BACKEND"] = "django.core.files.storage.FileSystemStorage"
+
+# --- BẢO MẬT & SESSION ---
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=1209600, cast=int) # 14 ngày
-SESSION_COOKIE_HTTPONLY = True # JS không được đọc sessionid
+SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=1209600, cast=int)
+SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_NAME = 'sessionid'
 
-# CSRF
-CSRF_COOKIE_HTTPONLY = False # JS CẦN đọc csrftoken để gửi trong header X-CSRFToken
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_NAME = 'csrftoken'
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost:3000,http://localhost:8080',
-    cast=Csv(),
-)
+
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:3000,http://localhost:8080', cast=Csv())
 if RENDER_EXTERNAL_HOSTNAME:
-    CSRF_TRUSTED_ORIGINS = list(CSRF_TRUSTED_ORIGINS) + [f'https://{RENDER_EXTERNAL_HOSTNAME}']
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 
-# CORS
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://localhost:8080',
-    cast=Csv(),
-)
-
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000,http://localhost:8080', cast=Csv())
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',    # Header CSRF Token
-    'x-requested-with',
+    'accept', 'accept-encoding', 'authorization', 'content-type',
+    'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with',
 ]
 
-# Email
+# --- DỊCH VỤ NGOÀI ---
 EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
 ANYMAIL = {
     "RESEND_API_KEY": config("RESEND_API_KEY", default=""),
@@ -204,12 +182,9 @@ ANYMAIL = {
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@trainghiemthuhtq.id.vn')
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
 
-
-# Rate Limiting (bật Tuần 8)
 RATELIMIT_ENABLE = config('RATELIMIT_ENABLE', default=False, cast=bool)
 
-
-# Logging
+# --- LOGGING ---
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -242,15 +217,3 @@ LOGGING = {
         },
     },
 }
-# Block này tự detect: nếu không có DB_NAME trong .env thì dùng SQLite
-import os as _os
-if not _os.environ.get('DATABASE_URL') and not _os.environ.get('DB_NAME'):
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db_test.sqlite3',
-        }
-    }
-    # Dùng filesystem storage khi Cloudinary chưa cấu hình
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
