@@ -94,9 +94,9 @@ DATABASES = {
     }
 }
 
-db_from_env = dj_database_url.config(conn_max_age=600)
-if db_from_env:
-    DATABASES['default'].update(db_from_env)
+database_url = config('DATABASE_URL', default='')
+if database_url:
+    DATABASES['default'] = dj_database_url.parse(database_url, conn_max_age=600)
 
 # Tự động lùi về SQLite nếu không cấu hình DB
 if not config('DATABASE_URL', default='') and not config('DB_NAME', default=''):
