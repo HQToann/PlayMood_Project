@@ -45,7 +45,7 @@
             }
         });
 
-        async function handleArtistRegistration() {
+        window.handleArtistRegistration = async function() {
             const form = document.getElementById('artistRegisterForm');
             if (!form.checkValidity()) {
                 form.reportValidity();
@@ -228,7 +228,7 @@
             });
         }
 
-        async function saveSocials() {
+        window.saveSocials = async function() {
             const website = document.getElementById('websiteInput').value.trim();
             const facebook = document.getElementById('facebookInput').value.trim();
             const youtube = document.getElementById('youtubeInput').value.trim();

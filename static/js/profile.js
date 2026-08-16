@@ -294,7 +294,7 @@ async function saveImages() {
     }
 }
 
-async function saveSocials() {
+window.saveSocials = async function() {
     const websiteInput = document.getElementById('websiteInput');
     const facebookInput = document.getElementById('facebookInput');
     const youtubeInput = document.getElementById('youtubeInput');
