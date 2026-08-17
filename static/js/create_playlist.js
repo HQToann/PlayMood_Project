@@ -230,11 +230,11 @@ document.addEventListener('click', async function(e) {
                 
                 // Đợi chút xíu cho toast hiện rồi tải lại trang
                 setTimeout(() => {
-                    window.location.reload();
+                    window.pmReload();
                 }, 1500);
             } else {
                 // Bình thường lưu xong thì load lại
-                window.location.reload(); 
+                window.pmReload(); 
             }
 
         } catch (error) {

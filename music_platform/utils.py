@@ -8,6 +8,9 @@ def optimize_cloudinary_url(url, resource_type='image'):
         return url
     
     if isinstance(url, str) and 'res.cloudinary.com' in url and '/upload/' in url:
+        # Bắt buộc chuyển HTTP sang HTTPS để tránh lỗi Mixed Content khi deploy
+        url = url.replace('http://', 'https://')
+        
         # Tránh thêm nhiều lần nếu đã có
         if '/upload/f_auto' not in url and '/upload/q_auto' not in url:
             if resource_type == 'image':

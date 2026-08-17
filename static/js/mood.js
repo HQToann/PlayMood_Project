@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Event delegation for select expires hours handled in DOMContentLoaded
 
 // Handle form submit
-async function handlePostMood(event) {
+window.handlePostMood = async function(event) {
     event.preventDefault();
 
     const btn = document.getElementById('submitBtn');
@@ -661,7 +661,7 @@ function selectSong(id, title, artist, cover) {
                                     style="color: rgba(255,255,255,0.4); text-decoration: none; font-size: 1.2rem; transition: color 0.2s;" 
                                     onmouseover="this.style.color='#fff'" 
                                     onmouseout="this.style.color='rgba(255,255,255,0.4)'"
-                                    onclick="resetSongAttachmentUI()" title="Xóa">
+                                    onclick="window.resetSongAttachmentUI()" title="Xóa">
                                     <i class="bi bi-x"></i>
                                 </button>
                             `;
@@ -688,7 +688,7 @@ function selectSong(id, title, artist, cover) {
     }, 300);
 }
 
-function resetSongAttachmentUI() {
+window.resetSongAttachmentUI = function() {
     document.getElementById('attached_song_id').value = '';
     const area = document.getElementById('songAttachmentArea');
     area.innerHTML = `

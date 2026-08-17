@@ -22,6 +22,15 @@ window.goToPage = function(url) {
         window.location.href = url;
     }
 };
+
+// Global reload wrapper to use AJAX router if available (prevents music stopping)
+window.pmReload = function() {
+    if (window.pmNavigate) {
+        window.pmNavigate(window.location.href, false);
+    } else {
+        window.location.reload();
+    }
+};
 // main.js
 // Common JS code for PlayMood
 

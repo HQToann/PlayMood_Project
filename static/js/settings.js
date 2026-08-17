@@ -236,7 +236,7 @@ function getCookie(name) {
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         modal.hide();
                         // Reload page to reflect changes in UI
-                        setTimeout(() => window.location.reload(), 1000);
+                        setTimeout(() => window.pmReload(), 1000);
                     } else {
                         let errorMsg = 'Không thể đổi tên người dùng.';
                         if (result.error && result.error.fields) {
@@ -292,7 +292,7 @@ function getCookie(name) {
                         const modalEl = document.getElementById('changeStageNameModal');
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         modal.hide();
-                        setTimeout(() => window.location.reload(), 1000);
+                        setTimeout(() => window.pmReload(), 1000);
                     } else {
                         let errorMsg = 'Không thể đổi nghệ danh.';
                         if (result.error && result.error.fields) {
@@ -336,7 +336,7 @@ function getCookie(name) {
                 const json = await res.json();
                 if (json.success || res.ok) {
                     if (window.showToast) showToast('Đã cập nhật liên kết thành công!', 'success');
-                    setTimeout(() => window.location.reload(), 1000);
+                    setTimeout(() => window.pmReload(), 1000);
                 } else {
                     if (window.showToast) showToast(json.error?.message || 'Lỗi cập nhật liên kết', 'error');
                 }

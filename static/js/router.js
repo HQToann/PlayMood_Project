@@ -20,6 +20,27 @@
     var _prefetchCache = {};
     var _navigating = false;
 
+    // ─── Global Event Cleanup (SPA Fix) ─────────────────────────────────────────
+    window.__pmPageListeners = [];
+    window.__pmExecutingPageScript = false;
+    var _originalAEL = document.addEventListener;
+    
+    document.addEventListener = function(type, listener, options) {
+        if (window.__pmExecutingPageScript && type !== 'DOMContentLoaded') {
+            window.__pmPageListeners.push({ type: type, listener: listener, options: options });
+        }
+        return _originalAEL.call(document, type, listener, options);
+    };
+
+    function cleanupPageListeners() {
+        if (window.__pmPageListeners) {
+            window.__pmPageListeners.forEach(function(l) {
+                document.removeEventListener(l.type, l.listener, l.options);
+            });
+            window.__pmPageListeners = [];
+        }
+    }
+
     // ─── Helpers ────────────────────────────────────────────────────────────────
     function shouldIntercept(url) {
         try {
@@ -55,28 +76,40 @@
      * Fetch a script's source, then execute it with a DOMContentLoaded shim
      * so that scripts using document.addEventListener('DOMContentLoaded', fn)
      * work correctly in AJAX navigation context.
+     * We cache the text code, but RE-EXECUTE it on every navigation so events re-bind.
      */
-    var _executedScripts = {};
+    var _scriptTextCache = {};
     function fetchAndRun(src) {
-        if (_executedScripts[src]) return Promise.resolve();
+        var fetchPromise;
+        if (_scriptTextCache[src]) {
+            fetchPromise = Promise.resolve(_scriptTextCache[src]);
+        } else {
+            fetchPromise = fetch(src, { credentials: "same-origin" , cache: 'no-store'})
+                .then(function (r) {
+                    if (!r.ok) throw new Error("Script fetch failed: " + r.status + " " + src);
+                    return r.text();
+                })
+                .then(function (code) {
+                    _scriptTextCache[src] = code;
+                    return code;
+                });
+        }
 
-        return fetch(src, { credentials: "same-origin" , cache: 'no-store'})
-            .then(function (r) {
-                if (!r.ok) throw new Error("Script fetch failed: " + r.status + " " + src);
-                return r.text();
-            })
+        return fetchPromise
             .then(function (code) {
-                _executedScripts[src] = true;
                 var s = document.createElement("script");
                 // Shim: intercept DOMContentLoaded → fire immediately via setTimeout
+                // Also track that we are executing a page script to collect global event listeners
                 s.textContent =
                     "(function(){\n" +
+                    "var _oldExec = window.__pmExecutingPageScript;\n" +
+                    "window.__pmExecutingPageScript = true;\n" +
                     "var _AEL=document.addEventListener;\n" +
                     "document.addEventListener=function(ev,fn,opts){\n" +
                     "  if(ev==='DOMContentLoaded'){setTimeout(fn,0);return;}\n" +
                     "  return _AEL.call(document,ev,fn,opts);\n" +
                     "};\n" +
-                    "try{" + code + "\n}finally{document.addEventListener=_AEL;}\n" +
+                    "try{" + code + "\n}finally{document.addEventListener=_AEL; window.__pmExecutingPageScript = _oldExec;}\n" +
                     "})();\n//# sourceURL=" + src + "\n";
                 document.body.appendChild(s);
             })
@@ -89,13 +122,14 @@
      * Execute external CDN script (not same-origin) — just append <script src>.
      * Cannot be shimmed for DOMContentLoaded, but CDN libs usually don't use it.
      */
+    var _executedExternalScripts = {};
     function loadExternalScript(src) {
         return new Promise(function(resolve) {
             // If already loaded, skip
-            if (document.querySelector('script[src="' + src + '"]') || _executedScripts[src]) {
+            if (document.querySelector('script[src="' + src + '"]') || _executedExternalScripts[src]) {
                 resolve(); return;
             }
-            _executedScripts[src] = true;
+            _executedExternalScripts[src] = true;
             var s = document.createElement("script");
             s.src = src;
             s.onload = resolve;
@@ -109,12 +143,14 @@
         var s = document.createElement("script");
         s.textContent =
             "(function(){\n" +
+            "var _oldExec = window.__pmExecutingPageScript;\n" +
+            "window.__pmExecutingPageScript = true;\n" +
             "var _AEL=document.addEventListener;\n" +
             "document.addEventListener=function(ev,fn,opts){\n" +
             "  if(ev==='DOMContentLoaded'){setTimeout(fn,0);return;}\n" +
             "  return _AEL.call(document,ev,fn,opts);\n" +
             "};\n" +
-            "try{" + code + "\n}finally{document.addEventListener=_AEL;}\n" +
+            "try{" + code + "\n}finally{document.addEventListener=_AEL; window.__pmExecutingPageScript = _oldExec;}\n" +
             "})();";
         document.body.appendChild(s);
     }
@@ -229,6 +265,7 @@
 
         showLoader();
         cleanupBootstrap();
+        cleanupPageListeners();
         
         // Đóng các panel của player (Queue, Devices, Lyrics) để tránh block màn hình
         if (typeof window.closeAllPlayerPanels === 'function') {
@@ -408,9 +445,14 @@
             href.indexOf("mailto:") === 0 || href.indexOf("tel:") === 0) return;
         var fullUrl;
         try { fullUrl = new URL(href, window.location.origin).href; } catch (e2) { return; }
-        if (!shouldIntercept(fullUrl) || fullUrl === window.location.href) return;
+        if (!shouldIntercept(fullUrl)) return;
         e.preventDefault();
-        navigate(fullUrl, true);
+        if (fullUrl === window.location.href) {
+            // Nếu bấm vào chính trang hiện tại, chỉ load lại nội dung qua SPA (không lưu lịch sử đúp)
+            navigate(fullUrl, false);
+        } else {
+            navigate(fullUrl, true);
+        }
     });
 
     // Hover: prefetch to reduce perceived latency
