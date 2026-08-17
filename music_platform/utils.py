@@ -15,4 +15,11 @@ def optimize_cloudinary_url(url, resource_type='image'):
         if resource_type == 'image' and '/upload/f_auto' not in url and '/upload/q_auto' not in url:
             return url.replace('/upload/', '/upload/f_auto,q_auto/', 1)
             
+        # Nếu là audio/video, chủ động xoá các tham số f_auto, q_auto nếu vô tình bị dính vào từ DB
+        if resource_type == 'audio' or resource_type == 'video':
+            url = url.replace('/f_auto,q_auto/', '/')
+            url = url.replace('/q_auto,f_auto/', '/')
+            url = url.replace('/f_auto/', '/')
+            url = url.replace('/q_auto/', '/')
+            
     return url
