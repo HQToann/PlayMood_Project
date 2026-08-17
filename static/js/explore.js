@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var res = await fetch('/api/v1/recommendations/for-you/?page_size=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.slice(0, 5).map(function(item) {
+                container.innerHTML = data.data.items.slice(0, 6).map(function(item) {
                     return renderSongCard(item.song || item);
                 }).join('');
                 if (data.data.source === 'trending') {
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var res = await fetch('/api/v1/music/songs/?ordering=-created_at&page_size=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.slice(0, 5).map(renderSongCard).join('');
+                container.innerHTML = data.data.items.slice(0, 6).map(renderSongCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co bai hat nao.');
             }
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var res = await fetch('/api/v1/playlists/?scope=public&limit=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.slice(0, 5).map(renderPlaylistCard).join('');
+                container.innerHTML = data.data.items.slice(0, 6).map(renderPlaylistCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co playlist noi bat nao.');
             }
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var res = await fetch('/api/v1/recommendations/playlists/?limit=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.slice(0, 5).map(renderPlaylistCard).join('');
+                container.innerHTML = data.data.items.slice(0, 6).map(renderPlaylistCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co playlist nao. Hay tao playlist cua ban!');
             }
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var res = await fetch('/api/v1/recommendations/artists/?limit=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.slice(0, 5).map(renderArtistCard).join('');
+                container.innerHTML = data.data.items.slice(0, 6).map(renderArtistCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co nghe si nao de goi y.');
             }
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var res = await fetch('/api/v1/music/songs/trending/?page_size=5');
             var data = await res.json();
             if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-                container.innerHTML = data.data.items.slice(0, 5).map(renderSongCard).join('');
+                container.innerHTML = data.data.items.slice(0, 6).map(renderSongCard).join('');
             } else {
                 container.innerHTML = renderError('Chua co bai hat thinh hanh nao.');
             }

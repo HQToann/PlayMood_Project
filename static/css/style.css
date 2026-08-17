@@ -186,6 +186,19 @@ body {
     color: var(--text-secondary);
 }
 
+/* =========================================
+   SEARCH RESULTS DROPDOWN RESPONSIVE
+========================================= */
+@media (max-width: 767px) {
+    #searchResultsDropdown {
+        position: fixed !important;
+        top: 65px !important;
+        left: 10px !important;
+        width: calc(100vw - 20px) !important;
+        max-height: 80vh !important;
+    }
+}
+
 .header-actions {
     display: flex;
     align-items: center;
@@ -323,7 +336,7 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    z-index: 1050;
+    z-index: 1030; /* Giảm z-index xuống thấp hơn Bootstrap offcanvas (1045) để không bị đè lên menu trên điện thoại */
 }
 
 .player-info {
@@ -546,7 +559,7 @@ body {
     }
 
     .content-scroll {
-        padding: 10px;
+        padding: 10px 10px 160px 10px; /* Tránh bị che bởi thẻ player ở dưới cùng (đặc biệt khi player mở rộng) */
     }
 
     .mood-hero-container {
@@ -577,7 +590,11 @@ body {
 
     .player-bar {
         padding: 0 12px;
-        margin: 10px 10px 15px 10px;
+        left: 10px;
+        right: 10px;
+        width: calc(100% - 20px) !important;
+        bottom: 15px;
+        margin: 0;
         border-radius: 12px;
         height: 60px;
         background-color: #202A45;
@@ -632,9 +649,14 @@ body {
     /* Màn hình điện thoại nhỏ (iPhone SE) - Hiển thị full Player */
     .player-bar {
         height: auto;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas: 
+            "info info"
+            "progress progress"
+            "controls actions";
         padding: 15px;
-        gap: 15px;
+        gap: 15px 0;
     }
 
     .player-bar::before,
@@ -644,6 +666,7 @@ body {
     }
 
     .player-info {
+        grid-area: info;
         width: 100%;
         margin-right: 0;
         gap: 12px;
@@ -664,18 +687,35 @@ body {
     }
 
     .player-controls-container {
-        width: 100%;
-        order: 2;
+        display: contents; /* Unbox for grid */
     }
 
     .player-controls {
-        width: 100%;
-        justify-content: space-between;
-        /* Rải đều 5 nút bấm */
-        margin-bottom: 15px;
+        grid-area: controls;
+        width: auto;
+        justify-content: flex-start; /* Dồn về bên trái */
+        gap: 6px; /* Khoảng cách vừa phải */
+        margin-bottom: 0;
+    }
+    
+    .player-controls .btn-icon {
+        padding: 0 4px; /* Giảm padding một chút để vừa vặn */
+    }
+
+    .player-actions {
+        display: flex !important; /* Show actions on mobile */
+        grid-area: actions;
+        width: auto;
+        justify-content: flex-end; /* Dồn về bên phải */
+        gap: 6px;
+    }
+
+    .player-actions .d-flex.align-items-center.gap-2 {
+        display: none !important; /* Ẩn volume bar trên mobile */
     }
 
     .progress-container {
+        grid-area: progress;
         display: flex !important;
         /* Hiện lại thanh progress đầy đủ */
         width: 100%;
@@ -762,11 +802,23 @@ body {
 
 @media (max-width: 767px) {
     .playlist-grid {
-        grid-template-columns: 30px minmax(150px, 1fr) 50px 30px 30px;
+        grid-template-columns: 25px minmax(120px, 1fr) 40px 30px 30px;
+        gap: 8px;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
     }
 
     .playlist-grid .hide-md {
         display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .playlist-grid {
+        grid-template-columns: 20px minmax(100px, 1fr) 35px 25px 25px;
+        gap: 6px;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
     }
 }
 
@@ -982,3 +1034,234 @@ body {
 /* Custom styles for Mood Search Modal */
 #musicSearchInput::placeholder { color: rgba(255, 255, 255, 0.6) !important; }
 #musicSearchInput:focus { border-color: rgba(255, 255, 255, 0.5) !important; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) !important; background: rgba(0, 0, 0, 0.4) !important; }
+
+/* =========================================
+   RESPONSIVE GRID CARDS UTILITY CLASSES
+========================================= */
+/* Grid 5 cols → responsive */
+.songs-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+@media (max-width: 1200px) {
+    .songs-grid-5 { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 992px) {
+    .songs-grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .songs-grid-5 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .songs-grid-5 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+
+/* Grid 6 cols → responsive */
+.songs-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+}
+@media (max-width: 1400px) {
+    .songs-grid-6 { grid-template-columns: repeat(5, 1fr); }
+}
+@media (max-width: 1200px) {
+    .songs-grid-6 { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 992px) {
+    .songs-grid-6 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .songs-grid-6 { grid-template-columns: repeat(2, 1fr); }
+    /* Giới hạn hiển thị tối đa 6 thẻ trên mobile nếu chưa nhấn Xem tất cả */
+    .songs-grid-6:not(.show-all-grid) > *:nth-child(n+7) {
+        display: none !important;
+    }
+}
+@media (max-width: 480px) {
+    .songs-grid-6 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+
+/* Grid artists 5 cols → responsive */
+.artists-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+@media (max-width: 1200px) {
+    .artists-grid-5 { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 992px) {
+    .artists-grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Hero banner responsive for library pages */
+@media (max-width: 768px) {
+    .hero-library {
+        margin: -10px -10px 0 -10px !important;
+        padding: 1rem 15px !important;
+        border-radius: 0 0 10px 10px !important;
+    }
+    .hero-info h1 {
+        font-size: 1.5rem !important;
+    }
+    .hero-meta {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Albums toolbar responsive */
+@media (max-width: 576px) {
+    .albums-toolbar {
+        padding: 0 1rem !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+}
+
+/* =========================================
+   PLAYLIST GRID HEADER RESPONSIVE  
+========================================= */
+@media (max-width: 767px) {
+    /* (Đã bỏ ẩn thanh tiêu đề grid theo yêu cầu) */
+}
+
+/* =========================================
+   NOTIFICATIONS PAGE RESPONSIVE
+========================================= */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+}
+.notification-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: inherit;
+    text-decoration: none;
+}
+.notification-item.unread {
+    background: rgba(140,225,178,0.06);
+    border-color: rgba(140,225,178,0.1);
+}
+.notification-item.unread::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+/* =========================================
+   SEARCH PAGE RESPONSIVE
+========================================= */
+@media (max-width: 768px) {
+    .content-scroll.px-4 {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    #searchResultsArea .row > div {
+        width: 100% !important;
+    }
+}
+
+/* =========================================
+   SECTION TITLE RESPONSIVE
+========================================= */
+@media (max-width: 576px) {
+    .section-title {
+        font-size: 1.1rem !important;
+    }
+    .section-more-btn {
+        font-size: 0.75rem !important;
+        padding: 4px 10px !important;
+    }
+    .section-header {
+        margin-bottom: 0.75rem !important;
+    }
+}
+
+/* =========================================
+   EXPLORE PAGE GRID RESPONSIVE
+========================================= */
+@media (max-width: 992px) {
+    .genre-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+@media (max-width: 576px) {
+    .genre-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+
+/* Mobile Player Panels Overlay */
+@media (max-width: 768px) {
+    #lyricsPanel,
+    #queuePanelWrapper,
+    #devicePanelWrapper {
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 90px !important;
+        width: 100% !important;
+        height: calc(100vh - 90px) !important;
+        z-index: 1020 !important; /* Thấp hơn player-bar (1030) để luồn xuống dưới */
+    }
+}
+@media (max-width: 576px) {
+    #lyricsPanel,
+    #queuePanelWrapper,
+    #devicePanelWrapper {
+        bottom: 130px !important; /* Đẩy sâu xuống dưới player-bar để tránh hở khe */
+        height: calc(100vh - 130px) !important;
+    }
+}
+
+
+/* =========================================
+   SMART ROW LIMITS FOR SONGS-GRID-5
+   (Ensures perfect rows when not in show-all-grid mode)
+========================================= */
+@media (min-width: 1201px) {
+    .songs-grid-5:not(.show-all-grid) > *:nth-child(n+6) { display: none !important; }
+}
+@media (max-width: 1200px) and (min-width: 993px) {
+    .songs-grid-5:not(.show-all-grid) > *:nth-child(n+5) { display: none !important; }
+}
+@media (max-width: 992px) and (min-width: 769px) {
+    .songs-grid-5:not(.show-all-grid) > *:nth-child(n+4) { display: none !important; }
+}
+@media (max-width: 768px) {
+    /* On mobile, it falls back to 2 columns, so we allow max 6 items (3 perfect rows) */
+    .songs-grid-5:not(.show-all-grid) > *:nth-child(n+7) { display: none !important; }
+}
+
+
+/* =========================================
+   SMART ROW LIMITS FOR ARTISTS-GRID-5
+========================================= */
+@media (min-width: 1201px) {
+    .artists-grid-5:not(.show-all-grid) > *:nth-child(n+6) { display: none !important; }
+}
+@media (max-width: 1200px) and (min-width: 993px) {
+    .artists-grid-5:not(.show-all-grid) > *:nth-child(n+5) { display: none !important; }
+}
+@media (max-width: 992px) and (min-width: 577px) {
+    .artists-grid-5:not(.show-all-grid) > *:nth-child(n+4) { display: none !important; }
+}
+@media (max-width: 576px) {
+    /* 2 columns, max 6 items (3 perfect rows) */
+    .artists-grid-5:not(.show-all-grid) > *:nth-child(n+7) { display: none !important; }
+}

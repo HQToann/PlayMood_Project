@@ -11,9 +11,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=7" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=24" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
-    <link href="{% static 'css/profile.css' %}?v=7" rel="stylesheet">
+    <link href="{% static 'css/profile.css' %}?v=24" rel="stylesheet">
 </head>
 
 <body>
@@ -134,7 +134,7 @@
 
                             </div>
                             <!-- Chi tiết -->
-                            <div class="profile-text flex-grow-1" style="margin-top: 32px;">
+                            <div class="profile-text artist-profile-text flex-grow-1" style="margin-top: 32px;">
 
                                 <!-- Nghệ danh -->
                                 <div class="d-flex align-items-center gap-2 mb-1"
@@ -259,7 +259,7 @@
                         {% if is_own_profile %}
                         <div class="home-section mb-5">
                             <div class="section-title-container"><h2 class="profile-section-title mb-0">Bài hát yêu thích gần đây</h2><a href="javascript:void(0)" onclick="switchToTab('liked')" class="section-more-btn" style="text-decoration:none;">Xem tất cả</a></div>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="likedSongsContainer">
+                            <div class="songs-grid-5 mb-5" id="likedSongsContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -269,7 +269,7 @@
 
                         <div class="home-section mb-5">
                             <div class="section-title-container"><h2 class="profile-section-title mb-0">Album nổi bật</h2><a href="javascript:void(0)" onclick="switchToTab('albums')" class="section-more-btn" style="text-decoration:none;">Xem tất cả</a></div>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="albumsContainer">
+                            <div class="songs-grid-5 mb-5" id="albumsContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -281,7 +281,7 @@
                                 <h2 class="profile-section-title mb-0">Playlist <span class="text-secondary fw-normal fs-6" style="margin-left:8px;" id="overviewPlaylistCount"></span></h2>
                                 <a href="javascript:void(0)" onclick="switchToTab('playlists')" class="section-more-btn" style="text-decoration:none;">Xem tất cả</a>
                             </div>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="overviewPlaylistContainer">
+                            <div class="songs-grid-5 mb-5" id="overviewPlaylistContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -291,7 +291,7 @@
                         {% if is_own_profile %}
                         <div class="home-section mb-5">
                             <div class="section-title-container"><h2 class="profile-section-title mb-0">Nghe gần đây</h2><a href="javascript:void(0)" onclick="switchToTab('recent')" class="section-more-btn" style="text-decoration:none;">Xem tất cả</a></div>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="recentSongsContainerOverview">
+                            <div class="songs-grid-5 mb-5" id="recentSongsContainerOverview">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -304,7 +304,7 @@
                     <div id="tab-albums" class="tab-section" style="display:none;">
                         <div class="home-section mb-5">
                             <h2 class="profile-section-title">Tất cả Album</h2>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="allAlbumsContainer">
+                            <div class="songs-grid-5 show-all-grid mb-5" id="allAlbumsContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -316,7 +316,7 @@
                     <div id="tab-playlists" class="tab-section" style="display:none;">
                         <div class="home-section mb-5">
                             <h2 class="profile-section-title">Tất cả Playlist</h2>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="allPlaylistContainer">
+                            <div class="songs-grid-5 show-all-grid mb-5" id="allPlaylistContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -329,7 +329,7 @@
                     <div id="tab-liked" class="tab-section" style="display:none;">
                         <div class="home-section mb-5">
                             <h2 class="profile-section-title">Bài hát yêu thích</h2>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="allLikedSongsContainer">
+                            <div class="songs-grid-5 show-all-grid mb-5" id="allLikedSongsContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -341,7 +341,7 @@
                     <div id="tab-recent" class="tab-section" style="display:none;">
                         <div class="home-section mb-5">
                             <h2 class="profile-section-title">Lịch sử nghe</h2>
-                            <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="allRecentContainer">
+                            <div class="songs-grid-5 show-all-grid mb-5" id="allRecentContainer">
                                 <div class="d-flex justify-content-center align-items-center w-100 py-4">
                                     <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                                 </div>
@@ -362,63 +362,7 @@
         {% include 'includes/player_bar.html' %}
     </div>
 
-    <!-- Mobile Offcanvas Menu -->
-    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
-        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
-        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
-            <a href="{% url 'home' %}" class="brand-logo">
-                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
-                PlayMood
-            </a>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body p-0 d-flex flex-column">
-            <!-- Navigation Links -->
-            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
-                <a href="{% url 'home' %}" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
-                <a href="{% url 'mood_page' %}" class="nav-link-custom">
-                    <i class="bi bi-emoji-smile"></i> Tâm trạng
-                </a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
-                <!-- Only show if user is Artist -->
-                <!-- <a href="#" class="nav-link-custom"><i class="bi bi-upload"></i> Upload nhạc</a> -->
-            </div>
-
-            <!-- Friends Activity (Mobile only) -->
-            <div class="px-3 py-3 flex-grow-1 overflow-auto">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-accent small" id="mobileOnlineFriendsCount">0 online <i
-                                class="bi bi-people"></i></span>
-                        <i class="bi bi-person-plus-fill text-muted-custom"
-                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
-                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
-                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè"
-                            data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
-                    </div>
-                </div>
-
-                <div class="search-bar mb-4 w-100"
-                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
-                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
-                    <input type="text" id="mobileFriendSearchInput" placeholder="Tìm kiếm bạn bè..."
-                        style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
-                </div>
-
-                <div id="mobileFriendsActivityContainer">
-                    <div class="text-center text-muted-custom py-4 spinner-border-container">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
-                        <span class="ms-2 small">Đang tải...</span>
-                    </div>
-                </div>
-
-
-            </div>
-        </div>
-    </div>
-
+    
     <!-- Followers Modal -->
     <div class="modal fade custom-modal" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel"
         aria-hidden="true">
@@ -431,42 +375,24 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- User Item -->
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">Minh Anh</h6>
-                                <small class="text-secondary">@minhanh_chill</small>
+                    {% if target_user.followers.exists %}
+                        {% for follow in target_user.followers.all %}
+                        {% with u=follow.follower %}
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-3" style="cursor: pointer;" data-url="{% url 'user_profile_page' u.id %}" onclick="window.location.href=this.dataset.url">
+                                <img src="{% if u.avatar %}{{ u.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ u.username|urlencode }}&background=random{% endif %}"
+                                    alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ u.get_display_name }}</h6>
+                                    <small class="text-secondary">@{{ u.username }}</small>
+                                </div>
                             </div>
                         </div>
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Theo dõi lại</button>
-                    </div>
-                    <!-- User Item -->
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">Hoàng Nam</h6>
-                                <small class="text-secondary">@nam_music</small>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Theo dõi lại</button>
-                    </div>
-                    <!-- User Item -->
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">Linh Chi</h6>
-                                <small class="text-secondary">@chi_linh99</small>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Theo dõi lại</button>
-                    </div>
+                        {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-secondary py-4">Chưa có người theo dõi nào.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -484,30 +410,24 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- User Item -->
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">Sơn Tùng M-TP</h6>
-                                <small class="text-secondary">@sontungmtp</small>
+                    {% if target_user.following.exists %}
+                        {% for follow in target_user.following.all %}
+                        {% with u=follow.following %}
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-3" style="cursor: pointer;" data-url="{% url 'user_profile_page' u.id %}" onclick="window.location.href=this.dataset.url">
+                                <img src="{% if u.avatar %}{{ u.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ u.username|urlencode }}&background=random{% endif %}"
+                                    alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ u.get_display_name }}</h6>
+                                    <small class="text-secondary">@{{ u.username }}</small>
+                                </div>
                             </div>
                         </div>
-                        <button class="btn btn-sm btn-light rounded-pill px-3 text-dark fw-bold">Đang theo dõi</button>
-                    </div>
-                    <!-- User Item -->
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">Đen Vâu</h6>
-                                <small class="text-secondary">@denvau</small>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-light rounded-pill px-3 text-dark fw-bold">Đang theo dõi</button>
-                    </div>
+                        {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-secondary py-4">Chưa theo dõi ai.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -746,13 +666,16 @@
     </div>
 
 
-    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script src="{% static 'js/main.js' %}?v=24.2"></script>
 
     <script>
         window.TARGET_USER_ID = "{{ target_user.id|default:request.user.id }}";
     </script>
-    <script src="{% static 'js/profile.js' %}?v=2.4"></script>
+    <script src="{% static 'js/profile.js' %}?v=24.4"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Mobile Offcanvas Menu -->
+    {% include 'includes/mobile_offcanvas.html' %}
 </body>
 </html>

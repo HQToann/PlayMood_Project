@@ -1,0 +1,108 @@
+{% load static %}
+<!-- MOBILE OFFCANVAS MENU - Dung chung cho tat ca trang -->
+<div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
+    style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+    <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+        <a href="/" class="brand-logo">
+            <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+            PlayMood
+        </a>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0 d-flex flex-column">
+        <!-- Navigation Links -->
+        <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+            <a href="/" class="nav-link-custom {% if active_page == 'home' %}active{% endif %}">
+                <i class="bi bi-house-door"></i> Trang chủ
+            </a>
+            <a href="{% url 'explore_page' %}" class="nav-link-custom {% if active_page == 'explore' %}active{% endif %}">
+                <i class="bi bi-search"></i> Khám phá
+            </a>
+            <a href="{% url 'mood_page' %}" class="nav-link-custom {% if active_page == 'mood' %}active{% endif %}">
+                <i class="bi bi-emoji-smile"></i> Tâm trạng
+            </a>
+            <a href="{% url 'playlist_page' %}" class="nav-link-custom {% if active_page == 'playlist' %}active{% endif %}">
+                <i class="bi bi-music-note-list"></i> Playlist
+            </a>
+            <a href="/library/favorites/" class="nav-link-custom {% if request.path == '/library/favorites/' %}active{% endif %}">
+                <i class="bi bi-heart"></i> Yêu thích
+            </a>
+            <a href="/library/recent/" class="nav-link-custom {% if request.path == '/library/recent/' %}active{% endif %}">
+                <i class="bi bi-clock-history"></i> Nghe gần đây
+            </a>
+            {% if request.user.role == 'artist' %}
+            <a href="/library/albums/" class="nav-link-custom {% if request.path == '/library/albums/' %}active{% endif %}">
+                <i class="bi bi-vinyl"></i> Album
+            </a>
+            {% endif %}
+            {% if request.user.role == 'artist' %}
+            <a href="{% url 'artist_manage_page' %}" class="nav-link-custom {% if active_page == 'artist_manage' %}active{% endif %}">
+                <i class="bi bi-kanban"></i> Quản lý bài hát
+            </a>
+            {% endif %}
+        </div>
+
+        {% if request.user.is_authenticated %}
+        <!-- Friends Activity (Mobile) -->
+        <div class="px-3 py-3 flex-grow-1 overflow-auto">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-accent small" id="mobileOnlineFriendsCount">0 online <i class="bi bi-people"></i></span>
+                    <i class="bi bi-person-plus-fill text-muted-custom" style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.classList.replace('text-muted-custom', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè" data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
+                </div>
+            </div>
+            <div class="search-bar mb-4 mt-1 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); transform: none !important;">
+                <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                <input type="text" id="mobileFriendSearchInput" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
+            </div>
+            <div id="mobileFriendsActivityContainer">
+                <div class="text-center text-muted-custom py-4">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span class="ms-2 small">Đang tải...</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="d-flex flex-column align-items-center justify-content-center text-center px-3 py-5 flex-grow-1">
+            <i class="bi bi-music-note-beamed text-secondary" style="font-size: 2.5rem;"></i>
+            <p class="text-secondary small mt-3">Đăng nhập để nghe nhạc và xem hoạt động bạn bè!</p>
+            <a href="/auth/login/" class="btn btn-sm rounded-pill fw-semibold px-4"
+                style="background-color: var(--accent-color); color: #121929; border: none;">Đăng nhập</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if request.user.is_authenticated %}
+<script>
+(function() {
+    function syncMobileFriendsActivity() {
+        var desktopContainer = document.getElementById('friendsActivityContainer');
+        var mobileContainer = document.getElementById('mobileFriendsActivityContainer');
+        var desktopCount = document.getElementById('onlineFriendsCount');
+        var mobileCount = document.getElementById('mobileOnlineFriendsCount');
+        if (!mobileContainer) return;
+        if (desktopCount && mobileCount) {
+            mobileCount.innerHTML = desktopCount.innerHTML;
+        }
+        if (desktopContainer && desktopContainer.innerHTML.trim() &&
+            !desktopContainer.querySelector('.spinner-border-container')) {
+            mobileContainer.innerHTML = desktopContainer.innerHTML;
+        }
+    }
+    var checkInterval = setInterval(function() {
+        var desktopContainer = document.getElementById('friendsActivityContainer');
+        if (desktopContainer && !desktopContainer.querySelector('.spinner-border-container')) {
+            syncMobileFriendsActivity();
+            clearInterval(checkInterval);
+        }
+    }, 500);
+    // Also sync after offcanvas opens
+    var offcanvasEl = document.getElementById('mobileMenuOffcanvas');
+    if (offcanvasEl) {
+        offcanvasEl.addEventListener('show.bs.offcanvas', syncMobileFriendsActivity);
+    }
+})();
+</script>
+{% endif %}

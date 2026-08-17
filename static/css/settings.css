@@ -6,7 +6,7 @@
 .settings-container {
     max-width: 800px;
     margin: 0 auto;
-    padding-bottom: 80px;
+    padding-bottom: 120px;
 }
 
 .settings-header {
@@ -128,10 +128,44 @@
     font-weight: 600;
 }
 
-.btn-outline-light:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.4);
-    color: #fff;
+/* ==========================================================================
+   SETTINGS PAGE STYLES (PREMIUM DARK MODE)
+   ========================================================================== */
+
+/* Main Container */
+.settings-container {
+    max-width: 800px;
 }
-
-
+/* ===== RESPONSIVE - Settings Page ===== */
+@media (max-width: 768px) {
+    .settings-container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-bottom: 180px; /* Tăng padding-bottom để chắc chắn không bị che bởi player bar */
+    }
+    .settings-header h1 {
+        font-size: 1.75rem;
+    }
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem 1rem;
+    }
+    .settings-item-action {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+    }
+    .settings-item-action button,
+    .settings-item-action select {
+        width: 100%;
+    }
+    .settings-item-info {
+        padding-right: 0;
+        width: 100%;
+    }
+    .settings-item-title {
+        font-size: 1.1rem;
+    }
+}

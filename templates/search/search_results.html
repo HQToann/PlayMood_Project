@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=4" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=24" rel="stylesheet">
     <style>
         .search-filters::-webkit-scrollbar { display: none; }
         .search-filters { scrollbar-width: none; overflow-x: auto; white-space: nowrap; }
@@ -158,7 +158,9 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script src="{% static 'js/search.js' %}?v=2.1"></script>
+    <script src="{% static 'js/main.js' %}?v=24.2"></script>
+    <script src="{% static 'js/search.js' %}?v=24.1"></script>
+    <!-- Mobile Offcanvas Menu -->
+    {% include 'includes/mobile_offcanvas.html' %}
 </body>
 </html>

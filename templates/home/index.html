@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlayMood - Dark Theme</title>
+    <title>PlayMood - Trang Chủ</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=5" rel="stylesheet">
-    <link href="{% static 'css/home.css' %}?v=1.2" rel="stylesheet">
-    <link href="{% static 'css/explore.css' %}?v=2" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=24" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}?v=24.2" rel="stylesheet">
+    <link href="{% static 'css/explore.css' %}?v=24" rel="stylesheet">
     <style>
         /* Skeleton */
         .skeleton {
@@ -58,8 +58,8 @@
                             <h2 class="section-title">Bài hát thịnh hành</h2>
                             <a href="{% url 'explore_list_page' %}?section=trending" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="trending-songs-container">
-                            {% for i in "12345" %}
+                        <div class="songs-grid-5 mb-5" id="trending-songs-container">
+                            {% for i in "123456" %}
                             <div class="skeleton-card">
                                 <div class="skeleton sk-img"></div>
                                 <div class="skeleton sk-title"></div>
@@ -76,8 +76,8 @@
                             <h2 class="section-title">Gợi ý cho bạn</h2>
                             <a href="{% url 'explore_list_page' %}?section=for_you" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="foryou-songs-container">
-                            {% for i in "12345" %}
+                        <div class="songs-grid-5 mb-5" id="foryou-songs-container">
+                            {% for i in "123456" %}
                             <div class="skeleton-card">
                                 <div class="skeleton sk-img"></div>
                                 <div class="skeleton sk-title"></div>
@@ -95,8 +95,8 @@
                             <h2 class="section-title">Nghệ sĩ đề xuất</h2>
                             <a href="{% url 'explore_list_page' %}?section=featured_artists" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="recommended-artists-container">
-                            {% for i in "12345" %}
+                        <div class="artists-grid-5 mb-5" id="recommended-artists-container">
+                            {% for i in "123456" %}
                             <div class="skeleton-artist">
                                 <div class="skeleton sk-avatar"></div>
                                 <div class="skeleton sk-name"></div>
@@ -112,8 +112,8 @@
                             <h2 class="section-title">Playlist gợi ý</h2>
                             <a href="{% url 'explore_list_page' %}?section=for_you_playlists" class="section-more-btn">Xem tất cả</a>
                         </div>
-                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="recommended-playlists-container">
-                            {% for i in "12345" %}
+                        <div class="songs-grid-5 mb-5" id="recommended-playlists-container">
+                            {% for i in "123456" %}
                             <div class="skeleton-card">
                                 <div class="skeleton sk-img"></div>
                                 <div class="skeleton sk-title"></div>
@@ -128,7 +128,7 @@
                         <div class="section-title-container">
                             <h2 class="section-title">Bảng xếp hạng</h2>
                         </div>
-                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;">
+                        <div class="songs-grid-5 mb-5">
                             <div class="text-secondary py-3 small w-100" style="grid-column: 1/-1;">Chưa có bảng xếp hạng nào.</div>
                         </div>
                     </div>
@@ -148,85 +148,15 @@
     </div>
     
     <!-- Mobile Offcanvas Menu -->
-    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas" style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
-        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
-            <a href="#" class="brand-logo">
-                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
-                PlayMood
-            </a>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body p-0 d-flex flex-column">
-            <!-- Navigation Links -->
-            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
-                <a href="#" class="nav-link-custom active"><i class="bi bi-house-door"></i> Trang chủ</a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
-                <a href="{% url 'mood_page' %}" class="nav-link-custom">
-                            <i class="bi bi-emoji-smile"></i> Tâm trạng
-                        </a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
-                {% if request.user.role == 'artist' %}
-                <a href="{% url 'artist_manage_page' %}" class="nav-link-custom"><i class="bi bi-kanban"></i> Quản lý bài hát</a>
-                {% endif %}
-            </div>
-            
-            <!-- Friends Activity (Mobile only) -->
-            <div class="px-3 py-3 flex-grow-1 overflow-auto">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
-                        <i class="bi bi-person-plus-fill text-muted-custom" style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.classList.replace('text-muted-custom', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè" data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
-                    </div>
-                </div>
-                
-                <div class="search-bar mb-4 mt-4 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
-                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
-                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
-                </div>
-                
-                <div class="friend-item">
-                    <div class="friend-avatar">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
-                        <div class="online-dot"></div>
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name">Linh Đan</div>
-                        <div class="friend-song">Đang nghe: Waiting For You</div>
-                    </div>
-                </div>
-                
-                <div class="friend-item">
-                    <div class="friend-avatar">
-                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
-                        <div class="online-dot"></div>
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name">Hải Nam</div>
-                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
-                    </div>
-                </div>
-                
-                <div class="friend-item">
-                    <div class="friend-avatar">
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
-                    </div>
-                    <div class="friend-info">
-                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
-                        <div class="friend-time">1 giờ trước</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include 'includes/mobile_offcanvas.html' with active_page='home' %}
     
     {% include 'includes/player_bar.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script src="{% static 'js/main.js' %}?v=24.2"></script>
     <script>
         window.USER_IS_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
     </script>
-    <script src="{% static 'js/home.js' %}?v=2.2"></script>
+    <script src="{% static 'js/home.js' %}?v=24.2"></script>
 </body>
 </html>

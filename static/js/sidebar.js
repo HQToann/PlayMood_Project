@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         playlists.sort((a, b) => (b.song_count || 0) - (a.song_count || 0));
         
         // Chỉ lấy tối đa 5 playlist
-        const topPlaylists = playlists.slice(0, 5);
+        const topPlaylists = playlists.slice(0, 6);
         
         topPlaylists.forEach((pl) => {
             const imgUrl = pl.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';

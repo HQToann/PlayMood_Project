@@ -691,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('similar-playlists-wrapper').style.display = 'none';
             return;
         }
-        const displayItems = items.slice(0, 5);
+        const displayItems = items.slice(0, 6);
         container.innerHTML = displayItems.map(pl => {
             const cover = pl.cover_image || DEFAULT_COVER_PL;
             const owner = pl.owner ? pl.owner.display_name : 'Hệ thống';
@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('recommended-songs-wrapper').style.display = 'none';
             return;
         }
-        const displayItems = items.slice(0, 5);
+        const displayItems = items.slice(0, 6);
         container.innerHTML = displayItems.map(songData => {
             const song   = songData.song || songData;
             const cover  = song.cover_image || DEFAULT_COVER_SONG;

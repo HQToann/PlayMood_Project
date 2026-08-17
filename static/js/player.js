@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = '';
             audioOutputs.forEach(device => {
                 // If it doesn't have a label, it usually means permissions were denied, but we tried.
-                const label = device.label || `Thiết bị đầu ra (id: ${device.deviceId.slice(0, 5)}...)`;
+                const label = device.label || `Thiết bị đầu ra (id: ${device.deviceId.slice(0, 6)}...)`;
                 // globalAudio.sinkId holds the current device ID (if supported)
                 const isActive = (globalAudio.sinkId === device.deviceId) || (!globalAudio.sinkId && device.deviceId === 'default');
 

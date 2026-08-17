@@ -11,10 +11,10 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=9" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=26" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <link href="{% static 'css/auth.css' %}" rel="stylesheet">
-    <link href="{% static 'css/settings.css' %}" rel="stylesheet">
+    <link href="{% static 'css/settings.css' %}?v=26" rel="stylesheet">
 </head>
 
 <body>
@@ -38,7 +38,7 @@
                         <p class="text-secondary">Quản lý tài khoản, giao diện và các tùy chọn khác.</p>
                     </div>
 
-                    <div class="settings-container px-4 mt-4 pb-5">
+                    <div class="settings-container px-4 mt-4">
 
                         <!-- Account Settings -->
                         <div class="settings-section mb-5">
@@ -262,260 +262,6 @@
         {% include 'includes/player_bar.html' %}
     </div>
 
-    <!-- Mobile Offcanvas Menu -->
-    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
-        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
-        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
-            <a href="#" class="brand-logo">
-                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
-                PlayMood
-            </a>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body p-0 d-flex flex-column">
-            <!-- Navigation Links -->
-            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
-                <a href="#" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
-                <a href="{% url 'mood_page' %}" class="nav-link-custom">
-                            <i class="bi bi-emoji-smile"></i> Tâm trạng
-                        </a>
-                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
-                {% if request.user.role == 'artist' %}
-                <a href="{% url 'artist_manage_page' %}" class="nav-link-custom"><i class="bi bi-kanban"></i> Quản lý
-                    bài hát</a>
-                {% endif %}
-            </div>
-
-            <!-- Friends Activity (Mobile only) -->
-            <div class="px-3 py-3 flex-grow-1 overflow-auto">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-accent small" id="mobileOnlineFriendsCount">0 online <i
-                                class="bi bi-people"></i></span>
-                        <i class="bi bi-person-plus-fill text-muted-custom"
-                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
-                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
-                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè"
-                            data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
-                    </div>
-                </div>
-
-                <div class="search-bar mb-4 w-100"
-                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
-                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
-                    <input type="text" id="mobileFriendSearchInput" placeholder="Tìm kiếm bạn bè..."
-                        style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
-                </div>
-
-                <div id="mobileFriendsActivityContainer">
-                    <div class="text-center text-muted-custom py-4 spinner-border-container">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
-                        <span class="ms-2 small">Đang tải...</span>
-                    </div>
-                </div>
-
-
-            </div>
-        </div>
-    </div>
-
-    <!-- CSRF token cho JS -->
-    <input type="hidden" id="settings-csrf-token" value="{{ csrf_token }}">
-
-    <!-- Blocked Users Modal -->
-    <div class="modal fade custom-modal" id="blockedUsersModal" tabindex="-1" aria-labelledby="blockedUsersModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content text-light"
-                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
-                <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold" id="blockedUsersModalLabel">Danh sách chặn</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="blockedUsersListContainer">
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-secondary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Inline Blocked Users Logic (tách riêng để tránh cache) -->
-    <script>
-    (function() {
-        function _getCSRF() {
-            // Từ input Django template
-            const inp = document.getElementById('settings-csrf-token');
-            if (inp && inp.value) return inp.value;
-            // Fallback từ cookie
-            const m = document.cookie.match(/csrftoken=([^;]+)/);
-            if (m) return decodeURIComponent(m[1]);
-            return '';
-        }
-
-        function _renderBlockedList(users) {
-            const container = document.getElementById('blockedUsersListContainer');
-            if (!container) return;
-            if (!users || users.length === 0) {
-                container.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
-                return;
-            }
-            container.innerHTML = users.map(function(user) {
-                const avatar = user.avatar || 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';
-                return `<div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25" id="blocked-user-${user.id}">
-                    <div class="d-flex align-items-center gap-3">
-                        <img src="${avatar}" alt="User" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;">
-                        <div>
-                            <h6 class="mb-0 fw-bold">${user.display_name || user.username}</h6>
-                            <small class="text-secondary">@${user.username}</small>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm btn-outline-white rounded-pill px-3"
-                        style="border-color:#fff;color:#fff;"
-                        onclick="window._doUnblock(event,'${user.id}')">Bỏ chặn</button>
-                </div>`;
-            }).join('');
-        }
-
-        // Load blocked list khi modal mở
-        document.addEventListener('show.bs.modal', function(e) {
-            if (e.target.id !== 'blockedUsersModal') return;
-            const container = document.getElementById('blockedUsersListContainer');
-            container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"></div></div>';
-            fetch('/api/v1/accounts/me/blocks/')
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (data.success) {
-                        _renderBlockedList(data.data);
-                    } else {
-                        container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi khi tải danh sách.</div>';
-                    }
-                })
-                .catch(function(err) {
-                    console.error(err);
-                    container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi kết nối.</div>';
-                });
-        });
-
-        // Hàm bỏ chặn - không dùng confirm() nữa, dùng inline confirm
-        window._doUnblock = async function(event, userId) {
-            event.preventDefault();
-            const btn = event.currentTarget;
-            const row = document.getElementById('blocked-user-' + userId);
-            if (!row) return;
-
-            // Thay nút thành thanh xác nhận inline
-            btn.outerHTML = `
-                <div class="d-flex gap-2 align-items-center" id="confirm-unblock-${userId}">
-                    <small class="text-white">Bỏ chặn?</small>
-                    <button class="btn btn-sm fw-bold rounded-pill px-3 py-0"
-                        style="background-color:#8CE1B2;color:#1a1a1a;border:none;"
-                        onclick="window._confirmUnblock(event,'${userId}')">Có</button>
-                    <button class="btn btn-sm rounded-pill px-3 py-0"
-                        style="border:1px solid rgba(255,255,255,0.4);color:#fff;background:transparent;"
-                        onclick="window._cancelUnblock(event,'${userId}')">Không</button>
-                </div>`;
-        };
-
-        window._confirmUnblock = async function(event, userId) {
-            event.preventDefault();
-            const confirmDiv = document.getElementById('confirm-unblock-' + userId);
-            if (confirmDiv) {
-                confirmDiv.innerHTML = '<span class="spinner-border spinner-border-sm text-light"></span>';
-            }
-            try {
-                const csrf = _getCSRF();
-                const res = await fetch('/api/v1/accounts/users/' + userId + '/block/', {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' }
-                });
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    const row = document.getElementById('blocked-user-' + userId);
-                    if (row) row.remove();
-                    const c = document.getElementById('blockedUsersListContainer');
-                    if (c && c.children.length === 0) {
-                        c.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
-                    }
-                    if (window.showToast) window.showToast('Đã bỏ chặn người dùng.', true);
-                } else {
-                    const msg = (data.error && data.error.message) || 'Lỗi khi bỏ chặn.';
-                    if (window.showToast) window.showToast(msg, false);
-                    else alert(msg);
-                    // Khôi phục nút
-                    if (confirmDiv) confirmDiv.outerHTML = `<button class="btn btn-sm rounded-pill px-3" style="border:1px solid #fff;color:#fff;" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
-                }
-            } catch(e) {
-                console.error('[_confirmUnblock] Exception:', e);
-                alert('Lỗi kết nối: ' + e.message);
-                if (confirmDiv) confirmDiv.outerHTML = `<button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
-            }
-        };
-
-        window._cancelUnblock = function(event, userId) {
-            event.preventDefault();
-            const confirmDiv = document.getElementById('confirm-unblock-' + userId);
-            if (confirmDiv) {
-                confirmDiv.outerHTML = `<button class="btn btn-sm rounded-pill px-3" style="border:1px solid #fff;color:#fff;" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
-            }
-        };
-    })();
-    </script>
-
-    <!-- Artist Registration Modal -->
-    <div class="modal fade" id="artistRegisterModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-white"
-                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
-                <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold">Đăng ký trở thành Nghệ sĩ</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-secondary text-start">
-                    <form id="artistRegisterForm">
-                        <div class="mb-3">
-                            <label for="real_name" class="form-label text-white mb-1">Tên thật <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control bg-dark border-secondary text-white" id="real_name"
-                                required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_card_image" class="form-label text-white mb-1">Ảnh chụp giấy tờ tùy thân (JPG/PNG) <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <label class="input-group-text bg-secondary text-white border-secondary" for="id_card_image" style="cursor: pointer;">Chọn tệp</label>
-                                <input type="file" class="d-none" id="id_card_image" accept=".jpg, .jpeg, .png" required onchange="document.getElementById('id_card_filename').value = this.files[0] ? this.files[0].name : ''">
-                                <input type="text" class="form-control bg-dark border-secondary text-white" id="id_card_filename" placeholder="Không có tệp nào được chọn" readonly style="cursor: pointer;" onclick="document.getElementById('id_card_image').click()">
-                            </div>
-                            <div class="mt-2 text-center d-none" id="id_card_preview_container">
-                                <img id="id_card_preview" src="" alt="Image preview"
-                                    class="img-fluid rounded border border-secondary"
-                                    style="max-height: 200px; object-fit: contain;">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="note" class="form-label text-white mb-1">Ghi chú thêm</label>
-                            <textarea class="form-control bg-dark border-secondary text-white" id="note" rows="3"
-                                placeholder="Điền thêm thông tin giải thích nếu cần..."></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;" onclick="handleArtistRegistration()">Gửi đăng ký</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    
-
     <!-- Add Friend Modal -->
     <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel"
         aria-hidden="true">
@@ -613,7 +359,7 @@
     </div>
 
     
-    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script src="{% static 'js/main.js' %}?v=24.2"></script>
     
     <!-- Change Password Modal -->
     <div class="modal fade custom-modal" id="changePasswordModal" tabindex="-1" aria-hidden="true">
@@ -754,7 +500,11 @@
     </div>
 
 
-    <script src="{% static 'js/settings.js' %}?v=2.7"></script>
+    <script src="{% static 'js/main.js' %}?v=24.2"></script>
+    <script src="{% static 'js/settings.js' %}?v=24.7"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Mobile Offcanvas Menu -->
+    {% include 'includes/mobile_offcanvas.html' %}
 </body>
 </html>

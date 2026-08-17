@@ -94,7 +94,9 @@ class ProfilePaginator {
         }
 
         const htmlAll = this.items.map(this.renderItem).join('');
-        const htmlOverview = this.items.slice(0, 5).map(this.renderItem).join('');
+        // Hiển thị 6 thẻ trên mobile (vừa đủ 3 hàng x 2 cột), 5 thẻ trên máy tính (1 hàng x 5 cột)
+        const maxOverview = window.innerWidth <= 768 ? 6 : 5;
+        const htmlOverview = this.items.slice(0, maxOverview).map(this.renderItem).join('');
 
         if (allContainer) {
             allContainer.innerHTML = htmlAll;

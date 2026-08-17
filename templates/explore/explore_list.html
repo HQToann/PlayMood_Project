@@ -11,7 +11,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=5" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=24" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <link href="{% static 'css/explore.css' %}" rel="stylesheet">
 </head>
@@ -44,7 +44,7 @@
                         </div>
 
                         <!-- Grid Container -->
-                        <div id="exploreGrid" class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;">
+                        <div id="exploreGrid" class="songs-grid-5 show-all-grid mb-5">
                             <!-- Rendered by JS -->
                         </div>
 
@@ -70,8 +70,10 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}?v=2.2"></script>
-    <script src="{% static 'js/explore_list.js' %}?v=1.1"></script>
+    <script src="{% static 'js/main.js' %}?v=24.2"></script>
+    <script src="{% static 'js/explore_list.js' %}?v=24.1"></script>
+    <!-- Mobile Offcanvas Menu -->
+    {% include 'includes/mobile_offcanvas.html' with active_page='explore' %}
 </body>
 
 </html>

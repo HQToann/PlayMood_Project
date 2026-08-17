@@ -116,24 +116,24 @@
 
                             const html = `
                                 <div class="song-manage-item row align-items-center py-3 px-3 rounded-3 mb-2" style="background-color: rgba(255,255,255,0.02); transition: background-color 0.2s; ${hiddenByAdmin ? 'border: 1px solid rgba(220, 53, 69, 0.4);' : 'border: 1px solid transparent;'}">
-                                    <div class="col-12 col-md-5 d-flex align-items-center gap-3 mb-3 mb-md-0">
+                                    <div class="col-10 col-md-5 d-flex align-items-center gap-3 mb-3 mb-md-0 order-1">
                                         ${coverUrl 
                                             ? `<img src="${coverUrl}" alt="cover" class="rounded play-trigger" style="width: 50px; height: 50px; object-fit: cover; cursor:pointer;" data-audio-url="${song.audio_file}">`
                                             : `<div class="d-flex align-items-center justify-content-center rounded bg-secondary bg-opacity-25 play-trigger" style="width: 50px; height: 50px; cursor:pointer;" data-audio-url="${song.audio_file}"><i class="bi bi-music-note text-secondary fs-4"></i></div>`
                                         }
-                                        <div>
-                                            <div class="text-white fw-semibold play-trigger" style="cursor:pointer;" data-audio-url="${song.audio_file}">${song.title}</div>
-                                            <div class="text-secondary small">${song.genre ? song.genre.name : 'Chưa phân loại'} • ${dateStr}</div>
+                                        <div class="text-truncate">
+                                            <div class="text-white fw-semibold play-trigger text-truncate" style="cursor:pointer;" data-audio-url="${song.audio_file}">${song.title}</div>
+                                            <div class="text-secondary small text-truncate">${song.genre ? song.genre.name : 'Chưa phân loại'} • ${dateStr}</div>
                                         </div>
                                     </div>
-                                    <div class="col-6 col-md-2 text-md-center">
+                                    <div class="col-6 col-md-2 text-md-center order-3 order-md-2">
                                         ${statusHtml}
                                     </div>
-                                    <div class="col-6 col-md-3 text-md-center d-flex justify-content-end justify-content-md-center gap-4">
+                                    <div class="col-6 col-md-3 text-md-center d-flex justify-content-end justify-content-md-center gap-4 order-4 order-md-3">
                                         <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt nghe"><i class="bi bi-headphones me-1"></i> ${song.play_count || 0}</div>
                                         <div class="text-secondary ${isDraft ? 'opacity-50' : ''}" title="Lượt thích"><i class="bi bi-heart me-1"></i> ${song.like_count || 0}</div>
                                     </div>
-                                    <div class="col-12 col-md-2 text-end mt-3 mt-md-0">
+                                    <div class="col-2 col-md-2 text-end mb-3 mb-md-0 order-2 order-md-4">
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-link text-light p-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="bi bi-three-dots-vertical fs-5"></i>
