@@ -212,7 +212,7 @@ function buildAlbumCard(album, index) {
     };
 
     /* Click vào card → đi tới trang chi tiết album */
-    card.onclick = () => window.location.href = `/album/detail/?id=${albumId}`;
+    card.onclick = () => window.goToPage(`/album/detail/?id=${albumId}`);
     return card;
 }
 

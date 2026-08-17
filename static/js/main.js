@@ -242,16 +242,23 @@ window.toggleFollowUser = async function(userId, btnElement) {
         if (data.success) {
             if (data.data.status === 'following') {
                 btnElement.innerText = 'Đang theo dõi';
-                btnElement.classList.remove('btn-outline-light', 'text-white');
-                btnElement.classList.add('btn-light', 'text-dark');
+                btnElement.classList.remove('btn-outline-light', 'text-white', 'btn-light', 'text-dark');
+                btnElement.style.background = '#8CE1B2';
+                btnElement.style.color = '#121929';
+                btnElement.style.border = 'none';
             } else if (data.data.status === 'requested') {
                 btnElement.innerText = 'Đã yêu cầu';
-                btnElement.classList.remove('btn-outline-light', 'text-white');
-                btnElement.classList.add('btn-light', 'text-dark');
+                btnElement.classList.remove('btn-outline-light', 'text-white', 'btn-light', 'text-dark');
+                btnElement.style.background = '#8CE1B2';
+                btnElement.style.color = '#121929';
+                btnElement.style.border = 'none';
             } else {
                 btnElement.innerText = 'Theo dõi';
                 btnElement.classList.remove('btn-light', 'text-dark');
                 btnElement.classList.add('btn-outline-light', 'text-white');
+                btnElement.style.background = '';
+                btnElement.style.color = '';
+                btnElement.style.border = '';
             }
         } else {
             if (window.showToast) {
@@ -276,11 +283,7 @@ window.toggleFollowUser = async function(userId, btnElement) {
 
 // Global open add to playlist (fallback to redirecting to song details since there's no global modal)
 window.openAddToPlaylistModal = function(songId) {
-    if (window.goToPage) {
-        window.goToPage(`/song/?id=${songId}`);
-    } else {
-        window.location.href = `/song/?id=${songId}`;
-    }
+    window.goToPage(`/song/?id=${songId}`);
 };
 
 // Global play album logic

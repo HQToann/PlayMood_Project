@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (window.showToast) window.showToast(isBlocked ? 'Đã chặn người dùng thành công' : 'Đã bỏ chặn người dùng', 'success');
                         
                         blockModal.hide();
-                        setTimeout(() => window.location.reload(), 1500);
+                        setTimeout(() => window.goToPage(window.location.pathname + window.location.search), 1500);
                     } else {
                         throw new Error(data.error?.message || 'Lỗi khi thực hiện thao tác');
                     }
@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
         overviewContainerId: 'albumsContainer',
         emptyMsg: 'Chưa có album nào',
         renderItem: album => `
-            <div class="playlist-card position-relative" style="width: 100%; min-width: 0; cursor: pointer;" onclick="window.location.href='/album/detail/?id=${album.id}'">
+            <div class="playlist-card position-relative" style="width: 100%; min-width: 0; cursor: pointer;" onclick="window.goToPage('/album/detail/?id=${album.id}')">
                 <div class="card-image-wrapper">
                     <img src="${album.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${album.title}">
                 </div>
@@ -359,10 +359,10 @@ async function saveImages() {
             if (window.showToast) {
                 window.showToast('Cập nhật ảnh thành công!', 'success');
                 setTimeout(() => {
-                    window.location.reload();
+                    window.goToPage(window.location.pathname + window.location.search);
                 }, 1500);
             } else {
-                window.location.reload();
+                window.goToPage(window.location.pathname + window.location.search);
             }
         } else {
             console.error('Lỗi khi lưu hình ảnh:', result);
@@ -409,7 +409,7 @@ window.saveSocials = async function () {
         const json = await res.json();
         if (json.success || res.ok) {
             if (window.showToast) window.showToast('Đã cập nhật liên kết thành công!', true);
-            setTimeout(() => window.location.reload(), 1000);
+            setTimeout(() => window.goToPage(window.location.pathname + window.location.search), 1000);
         } else {
             if (window.showToast) window.showToast(json.error?.message || 'Lỗi cập nhật liên kết', false);
             else alert(json.error?.message || 'Lỗi cập nhật liên kết');
@@ -440,7 +440,7 @@ window.saveBio = async function() {
         
         if (res.ok && json.success) {
             if (window.showToast) window.showToast('Đã cập nhật tiểu sử thành công!', 'success');
-            setTimeout(() => window.location.reload(), 1000);
+            setTimeout(() => window.goToPage(window.location.pathname + window.location.search), 1000);
         } else {
             const errorMsg = json.error?.message || 'Lỗi khi cập nhật tiểu sử';
             if (window.showToast) window.showToast(errorMsg, 'error');

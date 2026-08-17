@@ -140,23 +140,26 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             
             let followBtnClass = "btn-outline-light text-white";
             let followBtnText = "Theo dõi";
+            let followBtnStyle = "";
             if (topItem.follow_status === 'following') {
-                followBtnClass = "btn-light text-dark";
+                followBtnClass = "";
+                followBtnStyle = "background:#8CE1B2; color:#121929; border:none;";
                 followBtnText = "Đang theo dõi";
             } else if (topItem.follow_status === 'requested') {
-                followBtnClass = "btn-light text-dark";
+                followBtnClass = "";
+                followBtnStyle = "background:#8CE1B2; color:#121929; border:none;";
                 followBtnText = "Đã yêu cầu";
             }
             
             topHtml = `
-                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='${profileLink}'">
+                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('${profileLink}')">
                     <img src="${avatar}" alt="Avatar" class="rounded-circle mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
                     <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${name}</h2>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">${subtitle}</span>
                     </div>
                     
-                    <button class="btn ${followBtnClass} rounded-pill fw-bold position-absolute px-4 py-2" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);">
+                    <button class="btn ${followBtnClass} rounded-pill fw-bold position-absolute px-4 py-2" style="bottom: 24px; right: 24px; ${followBtnStyle}" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);">
                         ${followBtnText}
                     </button>
                 </div>
@@ -165,14 +168,14 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             const img = topItem.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&q=80';
             const artistName = topItem.artist ? topItem.artist.display_name : 'Nghệ sĩ';
             topHtml = `
-                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='/song/?id=${topItem.id}'">
+                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('/song/?id=${topItem.id}')">
                     <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
                     <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
                     <div class="d-flex align-items-center gap-2">
                         <span class="text-muted-custom fw-semibold">${artistName}</span>
                     </div>
                     
-                    <button class="btn-play-circle position-absolute" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); window.location.href='/song/?id=${topItem.id}'">
+                    <button class="btn-play-circle position-absolute" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); window.goToPage('/song/?id=${topItem.id}')">
                         <i class="bi bi-play-fill fs-3" style="margin-left: 3px;"></i>
                     </button>
                 </div>
@@ -181,7 +184,7 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             const img = topItem.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&q=80';
             const artistName = topItem.artist ? (topItem.artist.display_name || topItem.artist.username) : 'Nghệ sĩ';
             topHtml = `
-                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='/album/detail/?id=${topItem.id}'">
+                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('/album/detail/?id=${topItem.id}')">
                     <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
                     <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
                     <div class="d-flex align-items-center gap-2">
@@ -198,7 +201,7 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             const img = topItem.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&q=80';
             const ownerName = topItem.owner ? (topItem.owner.display_name || topItem.owner.username) : 'Người dùng';
             topHtml = `
-                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.location.href='/playlist/detail/?id=${topItem.id}'">
+                <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('/playlist/detail/?id=${topItem.id}')">
                     <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
                     <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
                     <div class="d-flex align-items-center gap-2">
@@ -229,7 +232,7 @@ function renderList(items, type) {
                 const artist = item.artist ? item.artist.display_name : 'Nghệ sĩ';
                 
                 html += `
-                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.location.href='/song/?id=${item.id}'">
+                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('/song/?id=${item.id}')">
                         <div class="d-flex align-items-center gap-3 w-100">
                             <div class="song-cover-container">
                                 <img src="${img}" alt="cover" class="w-100 h-100 rounded" style="object-fit: cover;">
@@ -258,16 +261,19 @@ function renderList(items, type) {
                 const userId = item.user ? item.user.id : item.id;
                 let followBtnClass = "btn-outline-light";
                 let followBtnText = "Theo dõi";
+                let followBtnStyle = "";
                 if (item.follow_status === 'following') {
-                    followBtnClass = "btn-light text-dark";
+                    followBtnClass = "";
+                    followBtnStyle = "background:#8CE1B2; color:#121929; border:none;";
                     followBtnText = "Đang theo dõi";
                 } else if (item.follow_status === 'requested') {
-                    followBtnClass = "btn-light text-dark";
+                    followBtnClass = "";
+                    followBtnStyle = "background:#8CE1B2; color:#121929; border:none;";
                     followBtnText = "Đã yêu cầu";
                 }
                 
                 html += `
-                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.location.href='${profileLink}'">
+                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('${profileLink}')">
                         <div class="d-flex align-items-center gap-3 w-100">
                             <div style="width: 48px; height: 48px; flex-shrink: 0;">
                                 <img src="${avatar}" alt="Avatar" class="w-100 h-100 rounded-circle" style="object-fit: cover;">
@@ -277,7 +283,7 @@ function renderList(items, type) {
                                 <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">${subtitle}</div>
                             </div>
                         </div>
-                        <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3);">
+                        <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3); ${followBtnStyle}">
                             ${followBtnText}
                         </button>
                     </div>
@@ -286,7 +292,7 @@ function renderList(items, type) {
                 const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                 const ownerName = item.owner ? (item.owner.display_name || item.owner.username) : 'Người dùng';
                 html += `
-                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.location.href='/playlist/detail/?id=${item.id}'">
+                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('/playlist/detail/?id=${item.id}')">
                         <div class="d-flex align-items-center gap-3" style="width: 45%;">
                             <div class="song-cover-container">
                                 <img src="${img}" alt="Cover" class="rounded-2" style="width: 100%; height: 100%; object-fit: cover;">
@@ -308,7 +314,7 @@ function renderList(items, type) {
                 const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                 const artistName = item.artist ? (item.artist.display_name || item.artist.username) : 'Nghệ sĩ';
                 html += `
-                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.location.href='/album/detail/?id=${item.id}'">
+                    <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('/album/detail/?id=${item.id}')">
                         <div class="d-flex align-items-center gap-3 w-100">
                             <div style="width: 48px; height: 48px; flex-shrink: 0;">
                                 <img src="${img}" alt="cover" class="w-100 h-100 rounded" style="object-fit: cover;">

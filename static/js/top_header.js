@@ -128,11 +128,14 @@
                                     
                                     let followBtnClass = "btn-outline-light";
                                     let followBtnText = "Theo dõi";
+                                    let followBtnStyle = "";
                                     if (item.follow_status === 'following') {
-                                        followBtnClass = "btn-light text-dark";
+                                        followBtnClass = "";
+                                        followBtnStyle = "background:#8CE1B2; color:#121929; border:none;";
                                         followBtnText = "Đang theo dõi";
                                     } else if (item.follow_status === 'requested') {
-                                        followBtnClass = "btn-light text-dark";
+                                        followBtnClass = "";
+                                        followBtnStyle = "background:#8CE1B2; color:#121929; border:none;";
                                         followBtnText = "Đã yêu cầu";
                                     }
                                     
@@ -147,7 +150,7 @@
                                                     <div style="font-size: 0.85rem; color: var(--text-secondary);">${subtitle}</div>
                                                 </div>
                                             </div>
-                                            <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3);">
+                                            <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3); ${followBtnStyle}">
                                                 ${followBtnText}
                                             </button>
                                         </div>

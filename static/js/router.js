@@ -5,8 +5,8 @@
 
     // ─── Config ─────────────────────────────────────────────────────────────────
     var EXCLUDED = ["/auth/", "/admin/", "/api/"];
-    var INCLUDED = ["/", "/library/", "/playlist/", "/explore/", "/mood/",
-                    "/profile/", "/settings/", "/notifications/", "/social/",
+    var INCLUDED = ["/", "/library/", "/playlist/", "/album/", "/explore/", "/mood/",
+                    "/profile/", "/settings/", "/notifications/",
                     "/search/", "/song/"];
 
     // Shell scripts – loaded once, never re-run via AJAX

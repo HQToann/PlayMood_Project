@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (user.follow_status === 'following') {
                 btnClass = 'btn-following';
                 btnText = 'Đang theo dõi';
-                inlineStyle += 'background-color: rgb(140, 225, 178) !important; color: #121929 !important; border: none !important;';
+                inlineStyle += 'background-color: #8CE1B2 !important; color: #121929 !important; border: none !important;';
             }
             else if (user.follow_status === 'requested') {
                 btnClass = 'btn-requested';
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         let newStatus = 'none', newClass = 'btn-outline-light', newText = 'Kết bạn';
                         if (action === 'followed') {
                             newStatus = 'following'; newClass = 'btn-following'; newText = 'Đang theo dõi';
-                            this.style.cssText = 'flex-shrink:0;min-width:120px; background-color: rgb(140, 225, 178) !important; color: #121929 !important; border: none !important;';
+                            this.style.cssText = 'flex-shrink:0;min-width:120px; background-color: #8CE1B2 !important; color: #121929 !important; border: none !important;';
                         }
                         else if (action === 'request_sent') {
                             newStatus = 'requested'; newClass = 'btn-requested'; newText = 'Đã gửi yêu cầu';
