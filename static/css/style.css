@@ -172,7 +172,6 @@ body {
     align-items: center;
     width: 400px;
     gap: 10px;
-    transform: translateY(-20px);
 }
 
 .search-bar input {

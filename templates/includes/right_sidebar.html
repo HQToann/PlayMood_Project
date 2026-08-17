@@ -213,8 +213,7 @@
                 if (mood.song) {
                     html += `<div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1" style="width:100px;">
                         <div style="overflow:hidden;white-space:nowrap;height:16px;display:flex;align-items:center;width:100%;">
-                            <div style="display:flex;animation:marquee-left-anim 6s linear infinite;">
-                                <span class="text-white" style="font-size:0.8rem;padding-right:20px;">${mood.song.title}</span>
+                            <div style="display:flex;animation:marquee-left-anim 12s linear infinite;">
                                 <span class="text-white" style="font-size:0.8rem;padding-right:20px;">${mood.song.title}</span>
                             </div>
                         </div>
@@ -246,7 +245,7 @@
         }
         .marquee-left {
             display: flex;
-            animation: marquee-left-anim 6s linear infinite;
+            animation: marquee-left-anim 12s linear infinite;
         }
         @keyframes marquee-left-anim {
             0% { transform: translateX(0); }

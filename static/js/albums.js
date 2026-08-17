@@ -292,6 +292,18 @@ function openCreateAlbumModal() {
     document.getElementById('albumTitleInput').value      = '';
     document.getElementById('albumDescInput').value       = '';
     document.getElementById('albumCoverInput').value      = '';
+    
+    // Reset file name display if it exists
+    const fileNameDisplay = document.getElementById('albumCoverFileName');
+    if (fileNameDisplay) fileNameDisplay.textContent = 'Chưa chọn tệp nào';
+
+    // Reset save button state
+    const btn = document.getElementById('saveAlbumBtn');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Lưu';
+    }
+
     const statusDiv = document.getElementById('editAlbumStatusActions');
     if (statusDiv) statusDiv.innerHTML = '';
     resetCover();
@@ -306,6 +318,18 @@ function openEditAlbum(albumId) {
     document.getElementById('albumTitleInput').value      = album.title || '';
     document.getElementById('albumDescInput').value       = album.description || '';
     document.getElementById('albumCoverInput').value      = '';
+
+    // Reset file name display if it exists
+    const fileNameDisplay = document.getElementById('albumCoverFileName');
+    if (fileNameDisplay) fileNameDisplay.textContent = 'Chưa chọn tệp nào';
+
+    // Reset save button state
+    const btn = document.getElementById('saveAlbumBtn');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Lưu';
+    }
+
     album.cover_image ? setCover(album.cover_image) : resetCover();
     
     const statusDiv = document.getElementById('editAlbumStatusActions');
