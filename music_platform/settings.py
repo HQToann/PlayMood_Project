@@ -26,7 +26,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # --- ỨNG DỤNG ---
 INSTALLED_APPS = [
-    'jazzmin',
+    "unfold",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -218,42 +218,21 @@ LOGGING = {
         },
     },
 }
-
-JAZZMIN_SETTINGS = {
-    "site_title": "PlayMood Admin",
-    "site_header": "PlayMood",
-    "site_brand": "PlayMood",
-    "welcome_sign": "Chào mừng đến với trang quản trị hệ thống PlayMood",
-    "copyright": "PlayMood Music",
-    "search_model": "auth.User",
-    "user_avatar": "avatar",
-    "topmenu_links": [
-        {"name": "Trang chủ",  "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "Xem Website", "url": "/", "new_window": True},
-    ],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "hide_apps": [],
-    "hide_models": [],
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "auth.Group": "fas fa-users",
-        "accounts.user": "fas fa-user-circle",
-        "music.song": "fas fa-music",
-        "music.playlist": "fas fa-list",
+UNFOLD = {
+    "SITE_HEADER": "PlayMood Admin",
+    "SITE_TITLE": "PlayMood Dashboard",
+    "COLORS": {
+        "primary": {
+            "50": "#f0fdf4",
+            "100": "#dcfce7",
+            "200": "#bbf7d0",
+            "300": "#86efac",
+            "400": "#4ade80",
+            "500": "#22c55e",
+            "600": "#16a34a",
+            "700": "#15803d",
+            "800": "#166534",
+            "900": "#14532d",
+        },
     },
-    "default_icon_parents": "fas fa-chevron-circle-right",
-    "default_icon_children": "fas fa-circle",
-    "related_modal_active": False,
-    "custom_css": None,
-    "custom_js": None,
-    "show_ui_builder": False,
-    "changeform_format": "horizontal_tabs",
-    "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
-}
-
-JAZZMIN_UI_TWEAKS = {
-    "theme": "darkly",
-    "dark_mode_theme": "darkly",
 }

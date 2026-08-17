@@ -1,3 +1,4 @@
+from unfold.admin import ModelAdmin
 """playlists/admin.py"""
 
 from django.contrib import admin
@@ -10,7 +11,7 @@ class PlaylistSongInline(admin.TabularInline):
     readonly_fields = ('added_at',)
 
 @admin.register(Playlist)
-class PlaylistAdmin(admin.ModelAdmin):
+class PlaylistAdmin(ModelAdmin):
     list_display = ('title', 'owner', 'is_public', 'created_at')
     list_filter = ('is_public',)
     search_fields = ('title', 'owner__username')
@@ -18,6 +19,6 @@ class PlaylistAdmin(admin.ModelAdmin):
     inlines = [PlaylistSongInline]
 
 @admin.register(PlaylistSong)
-class PlaylistSongAdmin(admin.ModelAdmin):
+class PlaylistSongAdmin(ModelAdmin):
     list_display = ('playlist', 'song', 'order', 'added_at')
     search_fields = ('playlist__title', 'song__title')
