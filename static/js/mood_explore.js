@@ -31,16 +31,45 @@ document.addEventListener('DOMContentLoaded', () => {
     let isFetching = false;
     let hasMore = true;
 
+    function showSkeletons(count) {
+        let html = '';
+        for (let i = 0; i < count; i++) {
+            if (type === 'artists') {
+                html += `
+                <div class="skeleton-artist temp-skeleton">
+                    <div class="skeleton sk-avatar"></div>
+                    <div class="skeleton sk-name"></div>
+                    <div class="skeleton sk-role"></div>
+                </div>`;
+            } else {
+                html += `
+                <div class="skeleton-card temp-skeleton">
+                    <div class="skeleton sk-img"></div>
+                    <div class="skeleton sk-title"></div>
+                    <div class="skeleton sk-sub"></div>
+                </div>`;
+            }
+        }
+        exploreGrid.insertAdjacentHTML('beforeend', html);
+    }
+
+    function removeSkeletons() {
+        const skeletons = exploreGrid.querySelectorAll('.temp-skeleton');
+        skeletons.forEach(el => el.remove());
+    }
+
     // 3. Fetch data function
     async function fetchItems() {
         if (isFetching || !hasMore) return;
         
         isFetching = true;
-        loadingSpinner.style.display = 'block';
+        showSkeletons(currentPage === 1 ? limit : 5);
 
         try {
             const response = await fetch(`/api/v1/recommendations/mood/${moodTypeId}/${type}/?page=${currentPage}&limit=${limit}`);
             const data = await response.json();
+            
+            removeSkeletons();
 
             if (data.success && data.data && data.data.items) {
                 const items = data.data.items;
@@ -49,15 +78,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderItems(items, type);
                     currentPage++;
                     
-                    // If the number of items fetched is less than limit, it means we reached the end
                     if (items.length < limit) {
                         hasMore = false;
-                        loadingSpinner.style.display = 'none';
                         endMessage.classList.remove('d-none');
                     }
                 } else {
                     hasMore = false;
-                    loadingSpinner.style.display = 'none';
                     if (currentPage === 1) {
                         exploreGrid.innerHTML = '<div class="text-secondary w-100 text-center py-5">Không có gợi ý nào.</div>';
                     } else {
@@ -68,17 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("Invalid data format");
             }
         } catch (error) {
-            console.error("Lỗi khi tải dữ liệu:", error);
+            removeSkeletons();
+            console.error("Error fetching data:", error);
             if (currentPage === 1) {
                 exploreGrid.innerHTML = '<div class="text-danger w-100 text-center py-5">Đã xảy ra lỗi khi tải dữ liệu.</div>';
             }
             hasMore = false;
-            loadingSpinner.style.display = 'none';
         } finally {
             isFetching = false;
-            if (hasMore) {
-                loadingSpinner.style.display = 'block'; // Keep it visible for intersection observer
-            }
         }
     }
 
