@@ -86,10 +86,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Hiển thị tính năng chỉnh sửa nếu là owner
                     const liEdit = document.getElementById('li-edit-album');
                     const liDelete = document.getElementById('li-delete-album');
+                    const liReport = document.getElementById('li-report-album');
                     const addSongsSection = document.querySelector('.album-add-songs-section');
                     if (album.is_owner) {
                         if (liEdit) liEdit.style.display = 'block';
                         if (liDelete) liDelete.style.display = 'block';
+                        if (liReport) liReport.style.display = 'none';
                         if (addSongsSection) addSongsSection.style.display = 'block';
                             
                             // Populate Edit Modal
@@ -202,7 +204,75 @@ document.addEventListener('DOMContentLoaded', function() {
                                 });
                             }
                         } else {
+                            if (liEdit) liEdit.style.display = 'none';
+                            if (liDelete) liDelete.style.display = 'none';
+                            if (liReport) liReport.style.display = 'block';
                             if (addSongsSection) addSongsSection.style.display = 'none';
+
+                            // Handle Album Report
+                            const reportBtn = document.getElementById('btn-report-album');
+                            if (reportBtn) {
+                                reportBtn.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    const menu = reportBtn.closest('.custom-dropdown-menu');
+                                    if (menu) menu.style.display = 'none';
+                                    
+                                    const reportModal = new bootstrap.Modal(document.getElementById('reportAlbumModal'));
+                                    reportModal.show();
+                                    
+                                    // Setup submit
+                                    const submitReportBtn = document.getElementById('btn-submit-report-album');
+                                    const newSubmitReportBtn = submitReportBtn.cloneNode(true);
+                                    submitReportBtn.parentNode.replaceChild(newSubmitReportBtn, submitReportBtn);
+                                    
+                                    newSubmitReportBtn.addEventListener('click', async () => {
+                                        const reasonEl = document.getElementById('reportAlbumReason');
+                                        const descriptionEl = document.getElementById('reportAlbumDescription');
+                                        
+                                        if (!reasonEl.value) {
+                                            if (window.showToast) window.showToast('Vui lòng chọn lý do báo cáo.', 'warning');
+                                            return;
+                                        }
+                                        
+                                        const originalText = newSubmitReportBtn.innerHTML;
+                                        newSubmitReportBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang gửi...';
+                                        newSubmitReportBtn.disabled = true;
+
+                                        try {
+                                            const res = await fetch('/api/v1/music/reports/', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRFToken': getCookie('csrftoken')
+                                                },
+                                                body: JSON.stringify({
+                                                    target_type: 'album',
+                                                    target_id: albumId,
+                                                    reason: reasonEl.value,
+                                                    description: descriptionEl ? descriptionEl.value : ''
+                                                })
+                                            });
+                                            const data = await res.json();
+                                            
+                                            if (res.ok && data.success) {
+                                                if (window.showToast) window.showToast("Cảm ơn bạn. Báo cáo của bạn đã được ghi nhận.", 'success');
+                                                reportModal.hide();
+                                                reasonEl.value = '';
+                                                document.getElementById('reportAlbumReasonText').innerText = 'Chọn lý do...';
+                                                if (descriptionEl) descriptionEl.value = '';
+                                            } else {
+                                                throw new Error(data.error?.message || 'Lỗi khi gửi báo cáo');
+                                            }
+                                        } catch (err) {
+                                            console.error(err);
+                                            if (window.showToast) window.showToast(err.message, 'error');
+                                        } finally {
+                                            newSubmitReportBtn.innerHTML = originalText;
+                                            newSubmitReportBtn.disabled = false;
+                                        }
+                                    });
+                                });
+                            }
                         }
                     
                     // Render right away using album.songs

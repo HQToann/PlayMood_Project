@@ -128,6 +128,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const targetUserId = window.TARGET_USER_ID;
 
+    // Block User Logic
+    const blockUserBtn = document.getElementById('btn-block-user');
+    if (blockUserBtn) {
+        blockUserBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Close dropdown if open
+            const menu = blockUserBtn.closest('.custom-dropdown-menu');
+            if (menu) menu.style.display = 'none';
+
+            const textSpan = document.getElementById('block-user-text');
+            const isUnblocking = textSpan.innerText.includes('Bỏ chặn');
+            
+            const modalTitle = document.getElementById('blockConfirmModalTitle');
+            const modalBody = document.getElementById('blockConfirmModalBody');
+            const confirmBtn = document.getElementById('btn-confirm-block-action');
+            
+            if (isUnblocking) {
+                modalTitle.innerText = 'Xác nhận bỏ chặn';
+                modalBody.innerText = 'Bạn có chắc chắn muốn bỏ chặn người dùng này? Họ sẽ có thể tương tác lại với bạn.';
+                confirmBtn.innerText = 'Bỏ chặn';
+            } else {
+                modalTitle.innerText = 'Xác nhận chặn';
+                modalBody.innerText = 'Bạn có chắc chắn muốn chặn người dùng này không? Họ sẽ không thể tương tác với bạn nữa.';
+                confirmBtn.innerText = 'Chặn';
+            }
+            
+            const blockModalEl = document.getElementById('blockConfirmModal');
+            let blockModal = bootstrap.Modal.getInstance(blockModalEl);
+            if (!blockModal) blockModal = new bootstrap.Modal(blockModalEl);
+            blockModal.show();
+            
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            
+            newConfirmBtn.addEventListener('click', async () => {
+                const originalText = newConfirmBtn.innerText;
+                newConfirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+                newConfirmBtn.disabled = true;
+
+                try {
+                    const res = await fetch(`/api/v1/accounts/users/${targetUserId}/block/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const isBlocked = data.data.action === 'blocked';
+                        textSpan.innerText = isBlocked ? 'Bỏ chặn người dùng' : 'Chặn người dùng';
+                        if (window.showToast) window.showToast(isBlocked ? 'Đã chặn người dùng thành công' : 'Đã bỏ chặn người dùng', 'success');
+                        
+                        blockModal.hide();
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        throw new Error(data.error?.message || 'Lỗi khi thực hiện thao tác');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    if (window.showToast) window.showToast(err.message, 'error');
+                    newConfirmBtn.innerText = originalText;
+                    newConfirmBtn.disabled = false;
+                }
+            });
+        });
+    }
+
     new ProfilePaginator({
         url: `/api/v1/music/users/${targetUserId}/likes/`,
         allContainerId: 'allLikedSongsContainer',
@@ -396,3 +465,66 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCount(); // Initial count
     }
 });
+
+// Xử lý báo cáo người dùng
+async function submitUserReport(event) {
+    event.preventDefault();
+    const btn = event.target;
+    const reasonEl = document.getElementById('reportUserReason');
+    const descriptionEl = document.getElementById('reportUserDescription');
+    
+    if (!reasonEl.value) {
+        if (window.showToast) window.showToast('Vui lòng chọn lý do báo cáo.', 'warning');
+        return;
+    }
+
+    if (!window.TARGET_USER_ID) {
+        if (window.showToast) window.showToast('Không tìm thấy thông tin người dùng.', 'error');
+        return;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang gửi...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/v1/music/reports/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                target_type: 'user',
+                target_id: window.TARGET_USER_ID,
+                reason: reasonEl.value,
+                description: descriptionEl ? descriptionEl.value : ''
+            })
+        });
+        const data = await res.json();
+        
+        if (res.ok && data.success) {
+            if (window.showToast) window.showToast("Cảm ơn bạn. Báo cáo của bạn đã được ghi nhận.", 'success');
+            const modalEl = document.getElementById('reportUserModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+                modalInstance.hide();
+            } else {
+                const closeBtn = modalEl.querySelector('.btn-close');
+                if (closeBtn) closeBtn.click();
+            }
+            reasonEl.value = ''; // Reset form
+            const reasonTextEl = document.getElementById('reportUserReasonText');
+            if (reasonTextEl) reasonTextEl.innerText = 'Chọn lý do...';
+            if (descriptionEl) descriptionEl.value = '';
+        } else {
+            if (window.showToast) window.showToast("Lỗi khi gửi báo cáo: " + (data.error?.message || "Vui lòng thử lại sau."), 'error');
+        }
+    } catch (err) {
+        console.error('Lỗi báo cáo người dùng:', err);
+        if (window.showToast) window.showToast("Đã xảy ra lỗi khi gửi báo cáo.", 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}

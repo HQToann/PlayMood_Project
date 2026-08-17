@@ -100,11 +100,14 @@ function deselectMood() {
 function selectMood(mt, el) {
     deselectMood(); // Bỏ chọn các tag khác và phục hồi màu chữ
 
-    // Chọn ngẫu nhiên một theme từ danh sách tất cả themes
-    const randomTheme = getRandomTheme();
+    // Sử dụng theme đã cấu hình sẵn của cảm xúc, nếu không có thì lấy random
+    let selectedTheme = mt.theme;
+    if (!selectedTheme) {
+        selectedTheme = getRandomTheme();
+    }
 
     el.classList.add('selected');
-    el.style.background = `linear-gradient(135deg, ${randomTheme.gradient_from}, ${randomTheme.gradient_to})`;
+    el.style.background = `linear-gradient(135deg, ${selectedTheme.gradient_from}, ${selectedTheme.gradient_to})`;
     el.style.border = 'none';
     const nameDiv = el.querySelector('.mood-name');
     if (nameDiv) {
@@ -116,12 +119,9 @@ function selectMood(mt, el) {
     const label = document.getElementById('selectedMoodLabel');
     if (label) label.textContent = `${mt.name}`;
 
-    // Auto select random theme
-    if (randomTheme.id) {
-        selectTheme(randomTheme.id);
-    } else {
-        // Fallback về theme gốc của mood type
-        selectTheme(mt.theme ? mt.theme.id : null);
+    // Auto select theme tương ứng trên color picker
+    if (selectedTheme && selectedTheme.id) {
+        selectTheme(selectedTheme.id);
     }
 
     // Update section titles

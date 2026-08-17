@@ -8,10 +8,12 @@ from accounts.views import (
     PrivacyView,
     PublicProfileView,
     BlockView,
+    BlockListView,
     ArtistVerificationView,
     AdminVerificationListView,
     AdminVerificationApproveView,
     AdminVerificationRejectView,
+    NotificationSettingsView,
 )
 
 urlpatterns = [
@@ -19,6 +21,8 @@ urlpatterns = [
     path('me/', MyProfileView.as_view(), name='account-me'),
     path('me/images/', ImageUploadView.as_view(), name='account-images'),
     path('me/privacy/', PrivacyView.as_view(), name='account-privacy'),
+    path('me/notifications/', NotificationSettingsView.as_view(), name='account-notifications'),
+    path('me/blocks/', BlockListView.as_view(), name='account-block-list'),
 
     #hồ sơ công khai
     path('users/<uuid:user_id>/', PublicProfileView.as_view(), name='account-public-profile'),

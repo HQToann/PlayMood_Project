@@ -57,10 +57,16 @@ def user_profile_routing_view(request, user_id):
         from django.http import Http404
         raise Http404
     
+    is_blocked_by_me = False
+    if request.user.is_authenticated:
+        from accounts.models import BlockList
+        is_blocked_by_me = BlockList.objects.filter(blocker=request.user, blocked=target_user).exists()
+        
     context = {
         'target_user': target_user,
         'target_user_id': str(user_id),
-        'is_own_profile': request.user.is_authenticated and str(request.user.id) == str(user_id)
+        'is_own_profile': request.user.is_authenticated and str(request.user.id) == str(user_id),
+        'is_blocked_by_me': is_blocked_by_me
     }
         
     if getattr(target_user, 'role', '') == 'artist':

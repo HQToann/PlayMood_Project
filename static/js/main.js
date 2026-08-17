@@ -1,4 +1,19 @@
 
+// ═══════════════════════════════════════════════════════
+// GLOBAL ERROR GUARD - Ngăn lỗi JS lan rộng trên toàn site
+// ═══════════════════════════════════════════════════════
+window.addEventListener('error', function(e) {
+    if (e.message && (
+        e.message.includes('null') ||
+        e.message.includes('Cannot read') ||
+        e.message.includes('is not defined')
+    )) {
+        console.warn('[PlayMood Guard] JS error caught (không crash):', e.message, '@', e.filename + ':' + e.lineno);
+        e.preventDefault();
+        return true;
+    }
+});
+
 // Global navigation wrapper to use AJAX router if available
 window.goToPage = function(url) {
     if (window.pmNavigate) {

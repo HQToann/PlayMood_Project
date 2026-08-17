@@ -22,22 +22,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         let html = '';
-        playlists.forEach((pl, index) => {
+        
+        // Sắp xếp playlist theo số lượng bài hát giảm dần (suggested by user)
+        playlists.sort((a, b) => (b.song_count || 0) - (a.song_count || 0));
+        
+        // Chỉ lấy tối đa 5 playlist
+        const topPlaylists = playlists.slice(0, 5);
+        
+        topPlaylists.forEach((pl) => {
             const imgUrl = pl.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';
-            // Only show a limited number of playlists on sidebar (e.g. 5)
-            if (index < 5) {
-                html += `
-                    <a href="/playlist/detail/?id=${pl.id}" class="text-decoration-none text-white d-block">
-                        <div class="playlist-item mt-2 hover-bg-light p-1 rounded" style="transition: background-color 0.2s;">
-                            <img src="${imgUrl}" alt="cover" class="playlist-img">
-                            <div>
-                                <div style="font-size: 0.85rem; font-weight: 600;" class="text-truncate">${pl.title}</div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);" class="text-truncate">${pl.is_public ? 'Công khai' : 'Riêng tư'}</div>
-                            </div>
+            html += `
+                <a href="/playlist/detail/?id=${pl.id}" class="text-decoration-none text-white d-block">
+                    <div class="playlist-item mt-2 hover-bg-light p-1 rounded" style="transition: background-color 0.2s;">
+                        <img src="${imgUrl}" alt="cover" class="playlist-img">
+                        <div>
+                            <div style="font-size: 0.85rem; font-weight: 600;" class="text-truncate">${pl.title}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);" class="text-truncate">${pl.is_public ? 'Công khai' : 'Riêng tư'} • ${pl.song_count || 0} bài hát</div>
                         </div>
-                    </a>
-                `;
-            }
+                    </div>
+                </a>
+            `;
         });
         
         sidebarContainer.innerHTML = html;

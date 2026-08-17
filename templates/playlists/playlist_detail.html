@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -11,7 +11,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}?v=4" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}?v=8" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <style>
         /* Playlist specific styles */
@@ -76,6 +76,8 @@
             align-items: center;
             gap: 2rem;
             margin-bottom: 2rem;
+            position: relative;
+            z-index: 20;
         }
 
         .btn-play-large {
@@ -191,8 +193,8 @@
                                 <i class="bi bi-three-dots action-icon" title="Tùy chọn khác"></i>
                             </div>
                             <ul class="custom-dropdown-menu dropdown-menu-dark shadow" style="display: none; position: absolute; left: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 160px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050;">
-
                                 <li id="li-report-playlist"><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white" href="#" id="btn-report-playlist"><i class="bi bi-flag"></i> Báo cáo</a></li>
+                                <li id="li-delete-playlist"><a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-decoration-none text-white custom-hover-danger" href="#" id="btn-delete-playlist"><i class="bi bi-trash"></i> Xóa playlist</a></li>
                             </ul>
                         </div>
                     </div>
@@ -500,7 +502,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script src="{% static 'js/main.js' %}?v=2.2"></script>
-    <script src="{% static 'js/playlist_detail.js' %}?v=2.1"></script>
+    <script src="{% static 'js/playlist_detail.js' %}?v=3.2"></script>
 
     <!-- Delete Confirm Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
@@ -516,6 +518,64 @@
                 <div class="modal-footer border-top border-secondary border-opacity-25">
                     <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" class="btn btn-danger rounded-pill px-4" id="btn-confirm-delete">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Playlist Confirm Modal -->
+    <div class="modal fade" id="deletePlaylistConfirmModal" tabindex="-1" aria-labelledby="deletePlaylistConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title fw-bold text-white" id="deletePlaylistConfirmModalLabel">Xóa toàn bộ playlist</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    Bạn có chắc chắn muốn xóa toàn bộ playlist này? Hành động này không thể hoàn tác!
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="btn-confirm-delete-playlist-modal">Xóa playlist</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Playlist Modal -->
+    <div class="modal fade" id="reportPlaylistModal" tabindex="-1" aria-labelledby="reportPlaylistModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="reportPlaylistModalLabel">Báo cáo Playlist</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    <form id="reportPlaylistForm">
+                        <div class="mb-3">
+                            <label class="form-label text-white">Lý do báo cáo</label>
+                            <div class="dropdown w-100">
+                                <button class="form-select text-white text-start d-flex justify-content-between align-items-center w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                                    <span id="reportPlaylistReasonText">Chọn lý do...</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark w-100 custom-report-dropdown shadow" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1);">
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportPlaylistReason').value='copyright'; document.getElementById('reportPlaylistReasonText').innerText='Vi phạm bản quyền'; return false;">Vi phạm bản quyền</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportPlaylistReason').value='spam'; document.getElementById('reportPlaylistReasonText').innerText='Spam / Rác'; return false;">Spam / Rác</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportPlaylistReason').value='offensive'; document.getElementById('reportPlaylistReasonText').innerText='Nội dung phản cảm'; return false;">Nội dung phản cảm</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportPlaylistReason').value='other'; document.getElementById('reportPlaylistReasonText').innerText='Khác'; return false;">Khác</a></li>
+                                </ul>
+                            </div>
+                            <input type="hidden" id="reportPlaylistReason" name="reason" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reportPlaylistDescription" class="form-label text-white">Mô tả chi tiết (Tùy chọn)</label>
+                            <textarea class="form-control text-white border-secondary border-opacity-25 custom-placeholder" id="reportPlaylistDescription" rows="3" placeholder="Nhập thêm thông tin chi tiết..." style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="btn-submit-report-playlist">Gửi báo cáo</button>
                 </div>
             </div>
         </div>

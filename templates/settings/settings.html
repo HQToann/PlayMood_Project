@@ -137,7 +137,7 @@
                                     </div>
                                     <div class="settings-item-action">
                                         <div class="form-check form-switch custom-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch" checked>
+                                            <input class="form-check-input" type="checkbox" role="switch" id="newSongNotifToggle" {% if request.user.new_song_notification %}checked{% endif %}>
                                         </div>
                                     </div>
                                 </div>
@@ -149,7 +149,7 @@
                                     </div>
                                     <div class="settings-item-action">
                                         <div class="form-check form-switch custom-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="moodEmailNotifToggle" {% if request.user.mood_email_notification %}checked{% endif %}>
                                         </div>
                                     </div>
                                 </div>
@@ -168,7 +168,7 @@
                                     </div>
                                     <div class="settings-item-action">
                                         <div class="form-check form-switch custom-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch" checked>
+                                            <input class="form-check-input" type="checkbox" role="switch" id="showPlaylistsToggle" {% if request.user.show_playlists %}checked{% endif %}>
                                         </div>
                                     </div>
                                 </div>
@@ -180,7 +180,7 @@
                                     </div>
                                     <div class="settings-item-action">
                                         <div class="form-check form-switch custom-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch" checked>
+                                            <input class="form-check-input" type="checkbox" role="switch" id="showMoodToggle" {% if request.user.show_mood %}checked{% endif %}>
                                         </div>
                                     </div>
                                 </div>
@@ -321,6 +321,9 @@
         </div>
     </div>
 
+    <!-- CSRF token cho JS -->
+    <input type="hidden" id="settings-csrf-token" value="{{ csrf_token }}">
+
     <!-- Blocked Users Modal -->
     <div class="modal fade custom-modal" id="blockedUsersModal" tabindex="-1" aria-labelledby="blockedUsersModalLabel"
         aria-hidden="true">
@@ -332,36 +335,138 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <!-- Blocked User Item -->
-                    <div
-                        class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">Người dùng ảo</h6>
-                                <small class="text-secondary">@spam_user</small>
-                            </div>
+                <div class="modal-body" id="blockedUsersListContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Bỏ chặn</button>
-                    </div>
-                    <!-- Blocked User Item -->
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
-                                alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold">Kẻ phá đám</h6>
-                                <small class="text-secondary">@toxic_guy123</small>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-outline-light rounded-pill px-3">Bỏ chặn</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Inline Blocked Users Logic (tách riêng để tránh cache) -->
+    <script>
+    (function() {
+        function _getCSRF() {
+            // Từ input Django template
+            const inp = document.getElementById('settings-csrf-token');
+            if (inp && inp.value) return inp.value;
+            // Fallback từ cookie
+            const m = document.cookie.match(/csrftoken=([^;]+)/);
+            if (m) return decodeURIComponent(m[1]);
+            return '';
+        }
+
+        function _renderBlockedList(users) {
+            const container = document.getElementById('blockedUsersListContainer');
+            if (!container) return;
+            if (!users || users.length === 0) {
+                container.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
+                return;
+            }
+            container.innerHTML = users.map(function(user) {
+                const avatar = user.avatar || 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';
+                return `<div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25" id="blocked-user-${user.id}">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="${avatar}" alt="User" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;">
+                        <div>
+                            <h6 class="mb-0 fw-bold">${user.display_name || user.username}</h6>
+                            <small class="text-secondary">@${user.username}</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-white rounded-pill px-3"
+                        style="border-color:#fff;color:#fff;"
+                        onclick="window._doUnblock(event,'${user.id}')">Bỏ chặn</button>
+                </div>`;
+            }).join('');
+        }
+
+        // Load blocked list khi modal mở
+        document.addEventListener('show.bs.modal', function(e) {
+            if (e.target.id !== 'blockedUsersModal') return;
+            const container = document.getElementById('blockedUsersListContainer');
+            container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"></div></div>';
+            fetch('/api/v1/accounts/me/blocks/')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        _renderBlockedList(data.data);
+                    } else {
+                        container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi khi tải danh sách.</div>';
+                    }
+                })
+                .catch(function(err) {
+                    console.error(err);
+                    container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi kết nối.</div>';
+                });
+        });
+
+        // Hàm bỏ chặn - không dùng confirm() nữa, dùng inline confirm
+        window._doUnblock = async function(event, userId) {
+            event.preventDefault();
+            const btn = event.currentTarget;
+            const row = document.getElementById('blocked-user-' + userId);
+            if (!row) return;
+
+            // Thay nút thành thanh xác nhận inline
+            btn.outerHTML = `
+                <div class="d-flex gap-2 align-items-center" id="confirm-unblock-${userId}">
+                    <small class="text-white">Bỏ chặn?</small>
+                    <button class="btn btn-sm fw-bold rounded-pill px-3 py-0"
+                        style="background-color:#8CE1B2;color:#1a1a1a;border:none;"
+                        onclick="window._confirmUnblock(event,'${userId}')">Có</button>
+                    <button class="btn btn-sm rounded-pill px-3 py-0"
+                        style="border:1px solid rgba(255,255,255,0.4);color:#fff;background:transparent;"
+                        onclick="window._cancelUnblock(event,'${userId}')">Không</button>
+                </div>`;
+        };
+
+        window._confirmUnblock = async function(event, userId) {
+            event.preventDefault();
+            const confirmDiv = document.getElementById('confirm-unblock-' + userId);
+            if (confirmDiv) {
+                confirmDiv.innerHTML = '<span class="spinner-border spinner-border-sm text-light"></span>';
+            }
+            try {
+                const csrf = _getCSRF();
+                const res = await fetch('/api/v1/accounts/users/' + userId + '/block/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    const row = document.getElementById('blocked-user-' + userId);
+                    if (row) row.remove();
+                    const c = document.getElementById('blockedUsersListContainer');
+                    if (c && c.children.length === 0) {
+                        c.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
+                    }
+                    if (window.showToast) window.showToast('Đã bỏ chặn người dùng.', true);
+                } else {
+                    const msg = (data.error && data.error.message) || 'Lỗi khi bỏ chặn.';
+                    if (window.showToast) window.showToast(msg, false);
+                    else alert(msg);
+                    // Khôi phục nút
+                    if (confirmDiv) confirmDiv.outerHTML = `<button class="btn btn-sm rounded-pill px-3" style="border:1px solid #fff;color:#fff;" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
+                }
+            } catch(e) {
+                console.error('[_confirmUnblock] Exception:', e);
+                alert('Lỗi kết nối: ' + e.message);
+                if (confirmDiv) confirmDiv.outerHTML = `<button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
+            }
+        };
+
+        window._cancelUnblock = function(event, userId) {
+            event.preventDefault();
+            const confirmDiv = document.getElementById('confirm-unblock-' + userId);
+            if (confirmDiv) {
+                confirmDiv.outerHTML = `<button class="btn btn-sm rounded-pill px-3" style="border:1px solid #fff;color:#fff;" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
+            }
+        };
+    })();
+    </script>
 
     <!-- Artist Registration Modal -->
     <div class="modal fade" id="artistRegisterModal" tabindex="-1" aria-hidden="true">
@@ -617,21 +722,21 @@
                     <form id="editSocialsForm">
                         <div class="mb-3">
                             <label for="websiteInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-globe2"></i> Website</label>
-                            <input type="url" class="form-control text-light shadow-none" id="websiteInput"
+                            <input type="url" class="form-control custom-placeholder text-light shadow-none" id="websiteInput"
                                 value="{{ request.user.artist_profile.website_url|default:'' }}"
                                 placeholder="https://..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
                         <div class="mb-3">
                             <label for="facebookInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-facebook"></i> Facebook</label>
-                            <input type="url" class="form-control text-light shadow-none" id="facebookInput"
+                            <input type="url" class="form-control custom-placeholder text-light shadow-none" id="facebookInput"
                                 value="{{ request.user.artist_profile.facebook_url|default:'' }}"
                                 placeholder="https://facebook.com/..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
                         </div>
                         <div class="mb-3">
                             <label for="youtubeInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-youtube"></i> YouTube</label>
-                            <input type="url" class="form-control text-light shadow-none" id="youtubeInput"
+                            <input type="url" class="form-control custom-placeholder text-light shadow-none" id="youtubeInput"
                                 value="{{ request.user.artist_profile.youtube_url|default:'' }}"
                                 placeholder="https://youtube.com/..."
                                 style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
@@ -641,7 +746,7 @@
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4"
                         data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4"
+                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;"
                         onclick="saveSocials()" data-bs-dismiss="modal">Lưu thay đổi</button>
                 </div>
             </div>
@@ -649,7 +754,7 @@
     </div>
 
 
-    <script src="{% static 'js/settings.js' %}?v=2.2"></script>
+    <script src="{% static 'js/settings.js' %}?v=2.7"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

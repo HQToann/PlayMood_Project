@@ -102,6 +102,24 @@ class User(AbstractUser):
         default=False,
         verbose_name='Chế độ riêng tư',
     )
+    show_playlists = models.BooleanField(
+        default=True,
+        verbose_name='Hiển thị Playlist cá nhân',
+    )
+    show_mood = models.BooleanField(
+        default=True,
+        verbose_name='Hiển thị cảm xúc',
+    )
+
+    # Cài đặt thông báo
+    new_song_notification = models.BooleanField(
+        default=True,
+        verbose_name='Thông báo bài hát mới',
+    )
+    mood_email_notification = models.BooleanField(
+        default=False,
+        verbose_name='Email gợi ý nhạc',
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
@@ -168,6 +186,10 @@ class User(AbstractUser):
             'bio': self.bio,
             'role': self.role,
             'is_private': self.is_private,
+            'show_playlists': self.show_playlists,
+            'show_mood': self.show_mood,
+            'new_song_notification': self.new_song_notification,
+            'mood_email_notification': self.mood_email_notification,
             'created_at': self.created_at.isoformat(),
         }
         if include_private:

@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -501,7 +501,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script src="{% static 'js/main.js' %}?v=2.2"></script>
-    <script src="{% static 'js/album_detail.js' %}?v=2.1"></script>
+    <script src="{% static 'js/album_detail.js' %}?v=2.2"></script>
 
     <!-- Delete Confirm Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
@@ -551,6 +551,45 @@
                 <div class="modal-footer border-top-0 pt-2 pb-4">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" id="btn-save-edit-album" class="btn rounded-pill px-4 m-0 text-dark fw-bold" style="background-color: var(--accent-color); border: none;">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Album Modal -->
+    <div class="modal fade" id="reportAlbumModal" tabindex="-1" aria-labelledby="reportAlbumModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="reportAlbumModalLabel">Báo cáo Album</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    <form id="reportAlbumForm">
+                        <div class="mb-3">
+                            <label class="form-label text-white">Lý do báo cáo</label>
+                            <div class="dropdown w-100">
+                                <button class="form-select text-white text-start d-flex justify-content-between align-items-center w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                                    <span id="reportAlbumReasonText">Chọn lý do...</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark w-100 custom-report-dropdown shadow" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1);">
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="document.getElementById('reportAlbumReason').value='copyright'; document.getElementById('reportAlbumReasonText').innerText='Vi phạm bản quyền';">Vi phạm bản quyền</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="document.getElementById('reportAlbumReason').value='spam'; document.getElementById('reportAlbumReasonText').innerText='Spam / Rác';">Spam / Rác</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="document.getElementById('reportAlbumReason').value='offensive'; document.getElementById('reportAlbumReasonText').innerText='Nội dung phản cảm';">Nội dung phản cảm</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="document.getElementById('reportAlbumReason').value='other'; document.getElementById('reportAlbumReasonText').innerText='Khác';">Khác</a></li>
+                                </ul>
+                            </div>
+                            <input type="hidden" id="reportAlbumReason" name="reason" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reportAlbumDescription" class="form-label text-white">Mô tả chi tiết (Tùy chọn)</label>
+                            <textarea class="form-control text-white border-secondary border-opacity-25 custom-placeholder" id="reportAlbumDescription" rows="3" placeholder="Nhập thêm thông tin chi tiết..." style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="btn-submit-report-album">Gửi báo cáo</button>
                 </div>
             </div>
         </div>

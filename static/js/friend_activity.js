@@ -56,8 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (friend.mood) {
                         const moodEmoji = friend.mood.mood_type?.emoji ? `<span style="font-size: 1.1rem; margin-bottom: 2px; display: inline-block;">${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
-                        const statusText = friend.mood.status_text ? ` <span style="color: rgba(255,255,255,0.85);">${friend.mood.status_text}</span>` : '';
-                        activityText = `${moodEmoji}${statusText}`;
+                        const defaultText = friend.mood.mood_type ? friend.mood.mood_type.name : '';
+                        const textToShow = friend.mood.status_text || defaultText;
+                        const statusTextHTML = textToShow ? ` <span style="color: rgba(255,255,255,0.85);">${textToShow}</span>` : '';
+                        activityText = `${moodEmoji}${statusTextHTML}`;
                         if (activity && activity.activity_type === 'playing' && activity.song) {
                             activityText += `<br><div style="margin-top: 2px; display: flex; align-items: center;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> <div class="marquee-wrapper" style="flex-grow: 1; min-width: 0; max-width: 120px; height: 16px;"><div class="marquee-left"><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${activity.song.title}</span><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${activity.song.title}</span></div></div></div>`;
                         } else if (friend.mood.song) {
@@ -71,8 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else if (friend.mood) {
                     const moodEmoji = friend.mood.mood_type?.emoji ? `<span style="font-size: 1.1rem; margin-bottom: 2px; display: inline-block;">${friend.mood.mood_type.emoji}</span>` : `<i class="bi bi-emoji-smile text-warning"></i>`;
-                    const statusText = friend.mood.status_text ? ` <span style="color: rgba(255,255,255,0.85);">${friend.mood.status_text}</span>` : '';
-                    activityText = `${moodEmoji}${statusText}`;
+                    const defaultText = friend.mood.mood_type ? friend.mood.mood_type.name : '';
+                    const textToShow = friend.mood.status_text || defaultText;
+                    const statusTextHTML = textToShow ? ` <span style="color: rgba(255,255,255,0.85);">${textToShow}</span>` : '';
+                    activityText = `${moodEmoji}${statusTextHTML}`;
                     if (friend.mood.song) {
                         activityText += `<br><div style="margin-top: 2px; display: flex; align-items: center;"><i class="bi bi-music-note-beamed text-info" style="font-size: 0.85rem; margin-right: 2px;"></i> <div class="marquee-wrapper" style="flex-grow: 1; min-width: 0; max-width: 120px; height: 16px;"><div class="marquee-left"><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${friend.mood.song.title}</span><span class="marquee-text text-white" style="font-size: 0.75rem; padding-right: 20px;">${friend.mood.song.title}</span></div></div></div>`;
                     }
@@ -312,13 +316,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             html += `
             <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom border-secondary border-opacity-25">
-                <div class="d-flex align-items-center gap-3" style="overflow:hidden;">
+                <a href="/profile/${user.id}/" class="d-flex align-items-center gap-3 text-decoration-none text-light profile-link-hover" style="overflow:hidden;" onclick="const modalEl = document.getElementById('addFriendModal'); if(modalEl){const m = bootstrap.Modal.getInstance(modalEl); if(m)m.hide();}">
                     <img src="${avatar}" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;flex-shrink:0;">
                     <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                         <h6 class="mb-0 fw-bold">${user.display_name || user.username}${artistBadge}</h6>
                         <small class="text-secondary">@${user.username}</small>
                     </div>
-                </div>
+                </a>
                 <button class="btn btn-sm ${btnClass} rounded-pill px-3 fw-semibold search-follow-btn"
                     style="${inlineStyle}"
                     data-user-id="${user.id}"

@@ -874,10 +874,10 @@ body {
         }
         .pm-input {
             width: 100%;
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.1);
+            background-color: rgba(255,255,255,.05) !important;
+            border: 1px solid rgba(255,255,255,.1) !important;
             border-radius: 10px;
-            color: #fff; font-size: .9rem;
+            color: #fff !important; font-size: .9rem;
             padding: .6rem .9rem;
             transition: border-color var(--transition);
             outline: none;
@@ -888,6 +888,12 @@ body {
         }
         .pm-input::placeholder { color: rgba(255,255,255,.25); }
         textarea.pm-input { resize: none; }
+        
+        select.pm-input option {
+            background-color: #1c2331 !important; /* Force dark background */
+            color: #fff !important;
+        }
+
 
         .cover-preview-box {
             width: 84px; height: 84px; flex-shrink: 0;

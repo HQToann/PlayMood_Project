@@ -14,6 +14,7 @@ from django.db.models import Q
 
 from playlists.models import Playlist, PlaylistSong
 from playlists.exceptions import PlaylistNotFound, SongNotInPlaylist
+from accounts.models import User
 
 def get_playlist_by_id(playlist_id) -> Playlist:
     """
@@ -122,6 +123,15 @@ def list_user_public_playlists(user_id, filters: dict, viewer=None) -> dict:
     """
     Danh sách playlist công khai của một user cụ thể, có phân trang.
     """
+    try:
+        owner = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return {'items': [], 'pagination': {'page': 1, 'page_size': filters.get('page_size', 20), 'total': 0, 'total_page': 1}}
+
+    viewer_id = getattr(viewer, 'id', None)
+    if not owner.show_playlists and str(owner.id) != str(viewer_id):
+        return {'items': [], 'pagination': {'page': 1, 'page_size': filters.get('page_size', 20), 'total': 0, 'total_page': 1}}
+
     qs = Playlist.objects.filter(owner_id=user_id, is_public=True).select_related('owner')
 
     if filters.get('q'):

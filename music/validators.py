@@ -45,8 +45,9 @@ REPORT_REASONS = {
 #target report
 REPORT_TARGETS = {
     'song',
-    'commet',
+    'comment',
     'user',
+    'playlist',
 }
 
 #validate create/update genre

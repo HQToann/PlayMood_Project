@@ -142,6 +142,60 @@ def validate_update_profile(data: dict) -> dict:
 
     return result
 
+def validate_update_privacy(data: dict) -> dict:
+    """
+    Validate dữ liệu cập nhật quyền riêng tư (PATCH /api/v1/accounts/me/privacy/).
+    """
+    errors = {}
+    result = {}
+
+    if 'is_private' in data:
+        if not isinstance(data['is_private'], bool):
+            errors['is_private'] = ['Giá trị phải là boolean (true/false)']
+        else:
+            result['is_private'] = data['is_private']
+
+    if 'show_playlists' in data:
+        if not isinstance(data['show_playlists'], bool):
+            errors['show_playlists'] = ['Giá trị phải là boolean (true/false)']
+        else:
+            result['show_playlists'] = data['show_playlists']
+
+    if 'show_mood' in data:
+        if not isinstance(data['show_mood'], bool):
+            errors['show_mood'] = ['Giá trị phải là boolean (true/false)']
+        else:
+            result['show_mood'] = data['show_mood']
+
+    if errors:
+        raise ValidationError('Dữ liệu cài đặt quyền riêng tư không hợp lệ', fields=errors)
+        
+    return result
+
+def validate_update_notifications(data: dict) -> dict:
+    """
+    Validate dữ liệu cập nhật cài đặt thông báo (PATCH /api/v1/accounts/me/notifications/).
+    """
+    errors = {}
+    result = {}
+
+    if 'new_song_notification' in data:
+        if not isinstance(data['new_song_notification'], bool):
+            errors['new_song_notification'] = ['Giá trị phải là boolean (true/false)']
+        else:
+            result['new_song_notification'] = data['new_song_notification']
+
+    if 'mood_email_notification' in data:
+        if not isinstance(data['mood_email_notification'], bool):
+            errors['mood_email_notification'] = ['Giá trị phải là boolean (true/false)']
+        else:
+            result['mood_email_notification'] = data['mood_email_notification']
+
+    if errors:
+        raise ValidationError('Dữ liệu cài đặt thông báo không hợp lệ', fields=errors)
+        
+    return result
+
 def validate_change_password(data: dict) -> dict:
     """
     Validate dữ liệu đổi mật khẩu.

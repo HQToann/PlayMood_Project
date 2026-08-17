@@ -12,7 +12,8 @@
     // Shell scripts – loaded once, never re-run via AJAX
     var SHELL = [
         "bootstrap.bundle.min.js", "main.js", "player.js",
-        "router.js", "sidebar.js", "create_playlist.js"
+        "router.js", "sidebar.js", "create_playlist.js",
+        "top_header.js"
     ];
 
     // Prefetch cache: url → Promise<html string>
@@ -57,7 +58,7 @@
      */
     var _executedScripts = {};
     function fetchAndRun(src) {
-        
+        if (_executedScripts[src]) return Promise.resolve();
 
         return fetch(src, { credentials: "same-origin" , cache: 'no-store'})
             .then(function (r) {
@@ -269,7 +270,7 @@
                 if (!newMain || !currMain) { window.location.href = url; return Promise.reject("bad-structure"); }
 
                 // Swap content
-                currMain.innerHTML = newMain.innerHTML;
+                // currMain.innerHTML = newMain.innerHTML;
                 
                 // Swap Modals and Offcanvas (excluding global ones)
                 var globalIds = ["createPlaylistModal", "leftSidebar"];
@@ -358,7 +359,22 @@
                     }
                 });
 
-                return chain;
+                return chain.then(function() {
+                    // Re-init Bootstrap Dropdown
+                    if (typeof window.bootstrap !== 'undefined') {
+                        document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(el) {
+                            try {
+                                var existing = bootstrap.Dropdown.getInstance(el);
+                                if (existing) existing.dispose();
+                                new bootstrap.Dropdown(el);
+                            } catch(e) {}
+                        });
+                        // Re-init Offcanvas
+                        document.querySelectorAll('[data-bs-toggle="offcanvas"]').forEach(function(el) {
+                            try { new bootstrap.Offcanvas(document.querySelector(el.dataset.bsTarget)); } catch(e) {}
+                        });
+                    }
+                });
             })
             .then(function () {
                 // Scroll to top

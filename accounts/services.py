@@ -183,10 +183,35 @@ def update_images(user: User, avatar_file=None, cover_file=None) -> User:
     user.save(update_fields=updated_fields)
     return user
 
-def update_privacy(user: User, is_private: bool) -> User:
-    """Cập nhật chế độ riêng tư."""
-    user.is_private = is_private
-    user.save(update_fields=['is_private', 'updated_at'])
+def update_privacy(user: User, data: dict) -> User:
+    """Cập nhật các cài đặt quyền riêng tư."""
+    updated_fields = ['updated_at']
+    if 'is_private' in data:
+        user.is_private = data['is_private']
+        updated_fields.append('is_private')
+    if 'show_playlists' in data:
+        user.show_playlists = data['show_playlists']
+        updated_fields.append('show_playlists')
+    if 'show_mood' in data:
+        user.show_mood = data['show_mood']
+        updated_fields.append('show_mood')
+
+    if len(updated_fields) > 1:
+        user.save(update_fields=updated_fields)
+    return user
+
+def update_notifications(user: User, data: dict) -> User:
+    """Cập nhật cài đặt thông báo."""
+    updated_fields = ['updated_at']
+    if 'new_song_notification' in data:
+        user.new_song_notification = data['new_song_notification']
+        updated_fields.append('new_song_notification')
+    if 'mood_email_notification' in data:
+        user.mood_email_notification = data['mood_email_notification']
+        updated_fields.append('mood_email_notification')
+
+    if len(updated_fields) > 1:
+        user.save(update_fields=updated_fields)
     return user
 
 def change_password(request, user: User, data: dict) -> None:
@@ -234,23 +259,31 @@ def toggle_block(blocker: User, blocked_id) -> dict:
         ValidationError: nếu tự block bản thân
     """
 
-    if str(blocker.id) == str(blocked_id):
-        raise ValidationError('Bạn không thể tự chặn bản thân')
-    
     try:
         blocked = User.objects.get(id=blocked_id, is_active=True)
     except User.DoesNotExist:
         raise NotFound('Người dùng không tồn tại')
+        
+    # Cho phép huỷ chặn nếu đã lỡ tự chặn bản thân trước đây
+    existing_block = BlockList.objects.filter(blocker=blocker, blocked=blocked).first()
     
-    block_record, created = BlockList.objects.get_or_create(
+    if existing_block:
+        # Đã block -> unblock
+        existing_block.delete()
+        return {'action': 'unblocked', 'blocked_user_id': str(blocked_id)}
+        
+    if str(blocker.id) == str(blocked_id):
+        raise ValidationError('Bạn không thể tự chặn bản thân')
+    
+    # Nếu chưa block thì tạo mới
+    block_record = BlockList.objects.create(
         blocker=blocker,
         blocked=blocked,
     )
-
-    if not created:
-        # Đã block -> unblock
-        block_record.delete()
-        return {'action': 'unblocked', 'blocked_user_id': str(blocked_id)}
+    # Xoá follow 2 chiều nếu vừa tạo block
+    from social.models import Follow
+    Follow.objects.filter(follower=blocker, following=blocked).delete()
+    Follow.objects.filter(follower=blocked, following=blocker).delete()
     
     return {'action': 'blocked', 'blocked_user_id': str(blocked_id)}
 

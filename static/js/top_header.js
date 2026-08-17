@@ -1,10 +1,34 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('topSearchInput');
-    const searchResults = document.getElementById('searchResultsDropdown');
-    const clearBtn = document.getElementById('clearSearchBtn');
-    let searchTimeout;
+(function() {
+    // Hàm xử lý click document (đặt ngoài để remove dễ dàng)
+    function handleDocumentClick(e) {
+        const searchInput = document.getElementById('topSearchInput');
+        const searchResults = document.getElementById('searchResultsDropdown');
+        if (searchInput && searchResults) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        }
+    }
 
-    if (searchInput && searchResults) {
+    function initTopHeader() {
+        let searchInput = document.getElementById('topSearchInput');
+        const searchResults = document.getElementById('searchResultsDropdown');
+        let clearBtn = document.getElementById('clearSearchBtn');
+        let searchTimeout;
+
+        if (!searchInput || !searchResults) return;
+
+        // Clone element để xoá bỏ toàn bộ event listener rác (nếu có)
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        searchInput = document.getElementById('topSearchInput');
+
+        if (clearBtn) {
+            const newClearBtn = clearBtn.cloneNode(true);
+            clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
+            clearBtn = document.getElementById('clearSearchBtn');
+        }
+
         // Hiển thị nút X nếu input đã có giá trị từ trước
         if (searchInput.value.trim().length > 0 && clearBtn) {
             clearBtn.style.display = 'block';
@@ -227,11 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Ẩn khi click ra ngoài
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.style.display = 'none';
-            }
-        });
+        // Xóa listener cũ trước khi add lại để tránh event chồng lấp
+        document.removeEventListener('click', handleDocumentClick);
+        document.addEventListener('click', handleDocumentClick);
         
         // Hiện lại khi click vào ô search có nội dung
         searchInput.addEventListener('focus', () => {
@@ -240,4 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+
+    // Chạy khi DOM ready hoặc ngay lập tức nếu do router trigger
+    document.addEventListener('DOMContentLoaded', initTopHeader);
+})();

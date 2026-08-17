@@ -115,6 +115,70 @@ document.addEventListener('DOMContentLoaded', function () {
                         downloadBtn.style.display = 'none'; // Ẩn nếu không có file
                     }
 
+                    // Xử lý Báo cáo
+                    const submitReportBtn = document.getElementById('submitReportBtn');
+                    if (submitReportBtn) {
+                        submitReportBtn.onclick = async function(e) {
+                            e.preventDefault();
+                            if (!window.CURRENT_USER_ID) {
+                                if (window.showToast) window.showToast("Bạn cần đăng nhập để báo cáo bài hát.", 'warning');
+                                return;
+                            }
+                            
+                            const reasonEl = document.getElementById('reportReason');
+                            const descriptionEl = document.getElementById('reportDescription');
+                            if (!reasonEl.value) {
+                                if (window.showToast) window.showToast("Vui lòng chọn lý do báo cáo.", 'warning');
+                                return;
+                            }
+
+                            const originalText = submitReportBtn.innerHTML;
+                            submitReportBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang gửi...';
+                            submitReportBtn.disabled = true;
+
+                            try {
+                                const res = await fetch('/api/v1/music/reports/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': getCookie('csrftoken')
+                                    },
+                                    body: JSON.stringify({
+                                        target_type: 'song',
+                                        target_id: song.id,
+                                        reason: reasonEl.value,
+                                        description: descriptionEl ? descriptionEl.value : ''
+                                    })
+                                });
+                                const data = await res.json();
+                                if (res.ok && data.success) {
+                                    if (window.showToast) window.showToast("Cảm ơn bạn. Báo cáo của bạn đã được ghi nhận.", 'success');
+                                    const modalEl = document.getElementById('reportSongModal');
+                                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                                    if (modalInstance) {
+                                        modalInstance.hide();
+                                    } else {
+                                        // Fallback
+                                        const closeBtn = modalEl.querySelector('.btn-close');
+                                        if (closeBtn) closeBtn.click();
+                                    }
+                                    reasonEl.value = ''; // Reset form
+                                    const reasonTextEl = document.getElementById('reportReasonText');
+                                    if (reasonTextEl) reasonTextEl.innerText = 'Chọn lý do...';
+                                    if (descriptionEl) descriptionEl.value = '';
+                                } else {
+                                    if (window.showToast) window.showToast("Lỗi khi gửi báo cáo: " + (data.error?.message || "Vui lòng thử lại sau."), 'error');
+                                }
+                            } catch (err) {
+                                console.error('Lỗi báo cáo:', err);
+                                if (window.showToast) window.showToast("Đã xảy ra lỗi khi gửi báo cáo.", 'error');
+                            } finally {
+                                submitReportBtn.innerHTML = originalText;
+                                submitReportBtn.disabled = false;
+                            }
+                        };
+                    }
+
                     // Cập nhật nút Like
                     const likeBtn = document.getElementById('detail-like-btn');
                     if (likeBtn) {

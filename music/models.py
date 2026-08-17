@@ -503,10 +503,12 @@ class Report(models.Model):
     TARGET_SONG = 'song'
     TARGET_COMMENT = 'comment'
     TARGET_USER = 'user'
+    TARGET_PLAYLIST = 'playlist'
     TARGET_CHOICES = [
         (TARGET_SONG, 'Bài hát'),
         (TARGET_COMMENT, 'Bình luận'),
         (TARGET_USER, 'Người dùng'),
+        (TARGET_PLAYLIST, 'Playlist'),
     ]
 
     REASON_COPYRIGHT = 'copyright'

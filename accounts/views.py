@@ -30,6 +30,8 @@ from accounts.validators import (
     validate_password_reset_request,
     validate_password_reset_confirm,
     validate_id_card_upload,
+    validate_update_notifications,
+    validate_update_privacy,
 )
 from accounts.services import (
     register_user,
@@ -45,6 +47,7 @@ from accounts.services import (
     reject_verification,
     request_password_reset,
     confirm_password_reset,
+    update_notifications,
 )
 from accounts.selectors import (
     get_public_profile,
@@ -386,23 +389,55 @@ class PrivacyView(View):
     def patch(self, request):
         try:
             data = _json_body(request)
-            is_private = data.get('is_private')
-            if is_private is None or not isinstance(is_private, bool):
+            validated = validate_update_privacy(data)
+            if not validated:
                 return JsonResponse(
                     {
                         'success': False,
                         'error': {
                             'code': 'VALIDATION_ERROR',
-                            'fields' : {'is_private': ['Giá trị phải là true hoặc false']}
+                            'message': 'Không có dữ liệu để cập nhật'
                         }
                     },
                     status=400,
                 )
-            user = update_privacy(request.user, is_private)
+            user = update_privacy(request.user, validated)
             return JsonResponse({
                 'success': True,
                 'data': {
-                    'is_private': user.is_private
+                    'is_private': user.is_private,
+                    'show_playlists': user.show_playlists,
+                    'show_mood': user.show_mood,
+                }
+            })
+        except Exception as e:
+            return _handle_exception(e)
+
+@method_decorator([csrf_protect, require_auth], name='dispatch')
+class NotificationSettingsView(View):
+    """PATCH /api/v1/accounts/me/notifications/ - Cập nhật cài đặt thông báo."""
+    
+    def patch(self, request):
+        try:
+            data = _json_body(request)
+            validated = validate_update_notifications(data)
+            if not validated:
+                return JsonResponse(
+                    {
+                        'success': False,
+                        'error': {
+                            'code': 'VALIDATION_ERROR',
+                            'message': 'Không có dữ liệu để cập nhật',
+                        }
+                    },
+                    status=400,
+                )
+            user = update_notifications(request.user, validated)
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'new_song_notification': user.new_song_notification,
+                    'mood_email_notification': user.mood_email_notification,
                 }
             })
         except Exception as e:
@@ -434,6 +469,28 @@ class BlockView(View):
                 'success': True,
                 'data': result
             })
+        except Exception as e:
+            return _handle_exception(e)
+            
+@method_decorator([require_auth], name='dispatch')
+class BlockListView(View):
+    """GET /api/v1/accounts/me/blocks/ - Lấy danh sách những người mình đã chặn."""
+    def get(self, request):
+        try:
+            from accounts.models import BlockList
+            from music_platform.utils import optimize_cloudinary_url
+            
+            blocks = BlockList.objects.filter(blocker=request.user).select_related('blocked')
+            data = []
+            for b in blocks:
+                blocked_user = b.blocked
+                data.append({
+                    'id': str(blocked_user.id),
+                    'username': blocked_user.username,
+                    'display_name': blocked_user.get_display_name(),
+                    'avatar': optimize_cloudinary_url(blocked_user.avatar.url, 'image') if blocked_user.avatar else None,
+                })
+            return JsonResponse({'success': True, 'data': data})
         except Exception as e:
             return _handle_exception(e)
     

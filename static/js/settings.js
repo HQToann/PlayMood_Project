@@ -1,21 +1,45 @@
-// Image preview logic
-        document.getElementById('id_card_image').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            const previewContainer = document.getElementById('id_card_preview_container');
-            const previewImage = document.getElementById('id_card_preview');
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewImage.src = e.target.result;
-                    previewContainer.classList.remove('d-none');
-                }
-                reader.readAsDataURL(file);
-            } else {
-                previewImage.src = "";
-                previewContainer.classList.add('d-none');
+// Helper: get CSRF cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
-        });
+        }
+    }
+    // Fallback: try hidden CSRF input in the page
+    if (!cookieValue) {
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) cookieValue = csrfInput.value;
+    }
+    return cookieValue;
+}
+
+// Image preview logic
+        const _idCardImage = document.getElementById('id_card_image');
+        if (_idCardImage) {
+            _idCardImage.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                const previewContainer = document.getElementById('id_card_preview_container');
+                const previewImage = document.getElementById('id_card_preview');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                        previewContainer.classList.remove('d-none');
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImage.src = "";
+                    previewContainer.classList.add('d-none');
+                }
+            });
+        }
 
         
 
@@ -319,4 +343,208 @@
             } catch (e) {
                 if (window.showToast) showToast('Lỗi kết nối', 'error');
             }
+        }
+
+        // Blocked Users Modal Logic
+        const blockedUsersModal = document.getElementById('blockedUsersModal');
+        if (blockedUsersModal) {
+            blockedUsersModal.addEventListener('show.bs.modal', async () => {
+                const container = document.getElementById('blockedUsersListContainer');
+                container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+                try {
+                    const res = await fetch('/api/v1/accounts/me/blocks/');
+                    const data = await res.json();
+                    
+                    if (res.ok && data.success) {
+                        const users = data.data;
+                        if (users.length === 0) {
+                            container.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
+                            return;
+                        }
+                        
+                        container.innerHTML = users.map(user => `
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25" id="blocked-user-${user.id}">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="${user.avatar || 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'}"
+                                        alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">${user.display_name}</h6>
+                                        <small class="text-secondary">@${user.username}</small>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="unblockUserFromSettings(event, '${user.id}')">Bỏ chặn</button>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi khi tải danh sách.</div>';
+                    }
+                } catch (e) {
+                    console.error(e);
+                    container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi kết nối.</div>';
+                }
+            });
+        }
+        
+        window.unblockUserFromSettings = async function(event, userId) {
+            if (event) event.preventDefault();
+            if (!confirm('Bạn có chắc chắn muốn bỏ chặn người dùng này?')) return;
+            
+            const btn = event ? event.currentTarget : null;
+            const originalText = btn ? btn.innerHTML : 'Bỏ chặn';
+            if (btn) {
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                btn.disabled = true;
+            }
+
+            try {
+                const csrf = getCookie('csrftoken');
+                const res = await fetch(`/api/v1/accounts/users/${userId}/block/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrf,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!res.ok) {
+                    throw new Error('Lỗi từ máy chủ: ' + res.status);
+                }
+                
+                const data = await res.json();
+                if (data.success) {
+                    if (window.showToast) window.showToast('Đã bỏ chặn người dùng.', 'success');
+                    else alert('Đã bỏ chặn người dùng.');
+                    
+                    const item = document.getElementById(`blocked-user-${userId}`);
+                    if (item) item.remove();
+                    
+                    const container = document.getElementById('blockedUsersListContainer');
+                    if (container && container.children.length === 0) {
+                        container.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
+                    }
+                } else {
+                    if (window.showToast) window.showToast('Lỗi khi bỏ chặn.', 'error');
+                    else alert('Lỗi khi bỏ chặn.');
+                }
+            } catch (e) {
+                console.error(e);
+                if (window.showToast) window.showToast('Lỗi kết nối: ' + e.message, 'error');
+                else alert('Lỗi kết nối: ' + e.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        };
+
+        // Notification Settings Handlers
+        async function handleNotificationToggle(field, value, toggleElement) {
+            // Hiển thị trạng thái disable tạm thời để tránh spam click
+            toggleElement.disabled = true;
+            try {
+                const payload = {};
+                payload[field] = value;
+
+                const response = await fetch('/api/v1/accounts/me/notifications/', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    if (window.showToast) {
+                        window.showToast('Đã lưu cài đặt thông báo!', 'success');
+                    }
+                } else {
+                    let errorMsg = 'Không thể lưu cài đặt.';
+                    if (result.error && result.error.message) {
+                        errorMsg = result.error.message;
+                    }
+                    if (window.showToast) window.showToast('Lỗi: ' + errorMsg, 'error');
+                    else alert('Lỗi: ' + errorMsg);
+                    // Revert UI if failed
+                    toggleElement.checked = !value;
+                }
+            } catch (e) {
+                console.error(e);
+                if (window.showToast) window.showToast('Lỗi kết nối máy chủ.', 'error');
+                else alert('Lỗi kết nối máy chủ.');
+                toggleElement.checked = !value;
+            } finally {
+                toggleElement.disabled = false;
+            }
+        }
+
+        const newSongNotifToggle = document.getElementById('newSongNotifToggle');
+        if (newSongNotifToggle) {
+            newSongNotifToggle.addEventListener('change', (e) => {
+                handleNotificationToggle('new_song_notification', e.target.checked, e.target);
+            });
+        }
+
+        const moodEmailNotifToggle = document.getElementById('moodEmailNotifToggle');
+        if (moodEmailNotifToggle) {
+            moodEmailNotifToggle.addEventListener('change', (e) => {
+                handleNotificationToggle('mood_email_notification', e.target.checked, e.target);
+            });
+        }
+
+        // Privacy Settings Handlers
+        async function handlePrivacyToggle(field, value, toggleElement) {
+            toggleElement.disabled = true;
+            try {
+                const payload = {};
+                payload[field] = value;
+
+                const response = await fetch('/api/v1/accounts/me/privacy/', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    if (window.showToast) {
+                        window.showToast('Đã lưu cài đặt quyền riêng tư!', 'success');
+                    }
+                } else {
+                    let errorMsg = 'Không thể lưu cài đặt.';
+                    if (result.error && result.error.message) {
+                        errorMsg = result.error.message;
+                    }
+                    if (window.showToast) window.showToast('Lỗi: ' + errorMsg, 'error');
+                    else alert('Lỗi: ' + errorMsg);
+                    toggleElement.checked = !value;
+                }
+            } catch (e) {
+                console.error(e);
+                if (window.showToast) window.showToast('Lỗi kết nối máy chủ.', 'error');
+                else alert('Lỗi kết nối máy chủ.');
+                toggleElement.checked = !value;
+            } finally {
+                toggleElement.disabled = false;
+            }
+        }
+
+        const showPlaylistsToggle = document.getElementById('showPlaylistsToggle');
+        if (showPlaylistsToggle) {
+            showPlaylistsToggle.addEventListener('change', (e) => {
+                handlePrivacyToggle('show_playlists', e.target.checked, e.target);
+            });
+        }
+
+        const showMoodToggle = document.getElementById('showMoodToggle');
+        if (showMoodToggle) {
+            showMoodToggle.addEventListener('change', (e) => {
+                handlePrivacyToggle('show_mood', e.target.checked, e.target);
+            });
         }

@@ -139,6 +139,10 @@ def get_user_mood(user_id, viewer=None) -> Mood | None:
     ).filter(user_id=user_id).first()
     if mood is None or mood.is_expired():
         return None
+        
+    if not mood.user.show_mood and str(mood.user_id) != str(viewer_id):
+        return None
+        
     return mood
 
 # FriendActivity / Feed
@@ -157,6 +161,7 @@ def list_feed(user, page=1, page_size=20) -> dict:
         FriendActivity.objects
         .filter(user_id__in=following_ids)
         .exclude(user_id__in=blocked_ids)
+        .exclude(activity_type='mood', user__show_mood=False)
         .select_related('user', 'song', 'song__artist') # tối ưu N+1, JOIN 1 lần
         .order_by('-created_at')
     )
@@ -214,6 +219,13 @@ def list_friends(user, page=1, page_size=50, search_query="") -> dict:
     # Giao nhau = bạn bè 2 chiều
     friend_ids = following_ids & follower_ids
 
+    # Lọc ra những người bị chặn hoặc đã chặn user
+    from accounts.models import BlockList
+    blocked_by_me = set(BlockList.objects.filter(blocker=user).values_list('blocked_id', flat=True))
+    blocked_me = set(BlockList.objects.filter(blocked=user).values_list('blocker_id', flat=True))
+    
+    friend_ids = friend_ids - blocked_by_me - blocked_me
+
     from accounts.models import User as UserModel
     qs = UserModel.objects.filter(id__in=friend_ids, is_active=True)
     
@@ -230,7 +242,7 @@ def list_friends(user, page=1, page_size=50, search_query="") -> dict:
     items = []
     for u in qs[start:start + page_size]:
         mood_data = None
-        if hasattr(u, 'mood') and u.mood and not u.mood.is_expired():
+        if hasattr(u, 'mood') and u.mood and not u.mood.is_expired() and (u.show_mood or u.id == user.id):
             mood_data = u.mood.to_dict()
 
         items.append({
