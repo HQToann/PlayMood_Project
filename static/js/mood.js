@@ -74,7 +74,7 @@ function renderMoodTypes(moodTypes) {
         div.className = 'mood-card-item';
         div.dataset.id = mt.id;
         // Chưa chọn: chữ trắng mờ, nền trong suốt
-        div.innerHTML = `<div class="mood-name">${mt.emoji ? mt.emoji + ' ' : ''}${mt.name}</div>`;
+        div.innerHTML = `<div class="mood-name">${mt.name}</div>`;
         div.addEventListener('click', () => selectMood(mt, div));
         grid.appendChild(div);
     });
@@ -114,7 +114,7 @@ function selectMood(mt, el) {
     selectedMoodId = mt.id;
     document.getElementById('mood_type_id').value = mt.id;
     const label = document.getElementById('selectedMoodLabel');
-    if (label) label.textContent = `${mt.emoji ? mt.emoji + ' ' : ''}${mt.name}`;
+    if (label) label.textContent = `${mt.name}`;
 
     // Auto select random theme
     if (randomTheme.id) {
