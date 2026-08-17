@@ -56,6 +56,15 @@ function selectTheme(themeId) {
     });
 }
 
+// Lấy random theme từ MOOD_THEMES, dùng fallback nếu chưa load
+function getRandomTheme() {
+    if (MOOD_THEMES && MOOD_THEMES.length > 0) {
+        return MOOD_THEMES[Math.floor(Math.random() * MOOD_THEMES.length)];
+    }
+    // Fallback nếu chưa load themes
+    return { id: null, gradient_from: '#667eea', gradient_to: '#764ba2', color_hex: '#a5b4fc' };
+}
+
 function renderMoodTypes(moodTypes) {
     const grid = document.getElementById('moodTypeGrid');
     if (!grid) return;
@@ -64,8 +73,8 @@ function renderMoodTypes(moodTypes) {
         const div = document.createElement('div');
         div.className = 'mood-card-item';
         div.dataset.id = mt.id;
-        div.innerHTML = `
-                                <div class="mood-name" style="color: ${mt.theme.color_hex}; transition: color 0.2s;">${mt.name}</div>`;
+        // Chưa chọn: chữ trắng mờ, nền trong suốt
+        div.innerHTML = `<div class="mood-name">${mt.emoji ? mt.emoji + ' ' : ''}${mt.name}</div>`;
         div.addEventListener('click', () => selectMood(mt, div));
         grid.appendChild(div);
     });
@@ -76,14 +85,13 @@ function deselectMood() {
     document.getElementById('mood_type_id').value = '';
     document.querySelectorAll('.mood-card-item').forEach(c => {
         c.classList.remove('selected');
-        c.style.background = 'rgba(255, 255, 255, 0.08)';
+        c.style.background = '';
+        c.style.border = '';
+        c.style.transform = '';
+        c.style.boxShadow = '';
         const nameDiv = c.querySelector('.mood-name');
-        if (nameDiv) {
-            // Phục hồi lại màu chữ ban đầu từ data
-            const mtId = c.dataset.id;
-            const mt = MOOD_TYPES.find(m => m.id === mtId);
-            if (mt) nameDiv.style.color = mt.theme.color_hex;
-        }
+        // Phục hồi màu chữ trắng mặc định
+        if (nameDiv) nameDiv.style.color = '';
     });
     const label = document.getElementById('selectedMoodLabel');
     if (label) label.textContent = 'Chưa chọn cảm xúc';
@@ -92,25 +100,35 @@ function deselectMood() {
 function selectMood(mt, el) {
     deselectMood(); // Bỏ chọn các tag khác và phục hồi màu chữ
 
+    // Chọn ngẫu nhiên một theme từ danh sách tất cả themes
+    const randomTheme = getRandomTheme();
+
     el.classList.add('selected');
-    el.style.background = `linear-gradient(135deg, ${mt.theme.gradient_from}, ${mt.theme.gradient_to})`;
+    el.style.background = `linear-gradient(135deg, ${randomTheme.gradient_from}, ${randomTheme.gradient_to})`;
+    el.style.border = 'none';
     const nameDiv = el.querySelector('.mood-name');
     if (nameDiv) {
-        nameDiv.style.color = '#ffffff'; // Đổi màu chữ thành trắng khi được chọn để nổi bật trên nền gradient
+        nameDiv.style.color = '#ffffff';
     }
 
     selectedMoodId = mt.id;
     document.getElementById('mood_type_id').value = mt.id;
     const label = document.getElementById('selectedMoodLabel');
-    if (label) label.textContent = mt.name;
+    if (label) label.textContent = `${mt.emoji ? mt.emoji + ' ' : ''}${mt.name}`;
 
-    // Auto select the theme for this mood
-    selectTheme(mt.theme.id);
+    // Auto select random theme
+    if (randomTheme.id) {
+        selectTheme(randomTheme.id);
+    } else {
+        // Fallback về theme gốc của mood type
+        selectTheme(mt.theme ? mt.theme.id : null);
+    }
 
     // Update section titles
     const songsTitleEl = document.getElementById('songsSectionTitle');
     if (songsTitleEl) songsTitleEl.textContent = `Nhạc Phù Hợp Với "${mt.name}"`;
-    document.getElementById('playlistSectionTitle').textContent = `Playlist Cho "${mt.name}"`;
+    const playlistTitleEl = document.getElementById('playlistSectionTitle');
+    if (playlistTitleEl) playlistTitleEl.textContent = `Playlist Cho "${mt.name}"`;
 
     // Gọi API gợi ý theo tâm trạng
     loadMoodRecommendations(mt.id, mt.name, mt.emoji);
@@ -315,15 +333,7 @@ async function loadMoodData() {
             MOOD_TYPES = typesRes.data;
             // Bản mood types API trả về cần có object theme lồng nhau để render
             renderMoodTypes(MOOD_TYPES);
-            
-            // Auto select first mood type to prevent "default tag" (empty tag) issue
-            const moodTypeInput = document.getElementById('mood_type_id');
-            if (MOOD_TYPES.length > 0 && moodTypeInput && !moodTypeInput.value) {
-                setTimeout(() => {
-                    const firstEl = document.querySelector('.mood-card-item');
-                    if (firstEl) selectMood(MOOD_TYPES[0], firstEl);
-                }, 100);
-            }
+            // Không auto-select: user tự chọn tag cảm xúc
         }
 
         // Hiển thị Tâm trạng hiện tại

@@ -44,12 +44,7 @@
                         <div class="settings-section mb-5">
                             <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Tài khoản</h4>
                             <div class="settings-card">
-                                <div class="settings-item px-4 opacity-50 user-select-none">
-                                    <div class="settings-item-info">
-                                        <div class="settings-item-title">Tên đăng nhập (Username)</div>
-                                    </div>
-                                    <div class="settings-item-action"></div>
-                                </div>
+
                                 <div class="settings-item px-4 opacity-50 user-select-none">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Email</div>
@@ -68,18 +63,24 @@
                                 </div>
                                 <div class="settings-item px-4">
                                     <div class="settings-item-info">
-                                        {% if request.user.role == 'artist' %}
-                                        <div class="settings-item-title">Nghệ danh</div>
-                                        <div class="settings-item-desc" id="display_name_text">{{ request.user.artist_profile.stage_name|default:request.user.username }}</div>
-                                        {% else %}
-                                        <div class="settings-item-title">Tên hiển thị</div>
+                                        <div class="settings-item-title">Tên người dùng</div>
                                         <div class="settings-item-desc" id="display_name_text">{{ request.user.username }}</div>
-                                        {% endif %}
                                     </div>
                                     <div class="settings-item-action">
                                         <button class="btn btn-outline-light rounded-pill btn-sm px-3" data-bs-toggle="modal" data-bs-target="#changeDisplayNameModal">Chỉnh sửa</button>
                                     </div>
                                 </div>
+                                {% if request.user.role == 'artist' %}
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Nghệ danh</div>
+                                        <div class="settings-item-desc" id="stage_name_text">{{ request.user.artist_profile.stage_name|default:request.user.username }}</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <button class="btn btn-outline-light rounded-pill btn-sm px-3" data-bs-toggle="modal" data-bs-target="#changeStageNameModal">Chỉnh sửa</button>
+                                    </div>
+                                </div>
+                                {% endif %}
                                 {% if request.user.role == 'artist' %}
                                 <div class="settings-item px-4">
                                     <div class="settings-item-info">
@@ -551,30 +552,20 @@
         </div>
     </div>
 
-    <!-- Change Display Name Modal -->
+    <!-- Change Username Modal -->
     <div class="modal fade custom-modal" id="changeDisplayNameModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
             <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
                 <div class="modal-header border-bottom-0">
-                    {% if request.user.role == 'artist' %}
-                    <h5 class="modal-title fw-bold">Đổi nghệ danh</h5>
-                    {% else %}
-                    <h5 class="modal-title fw-bold">Đổi tên hiển thị</h5>
-                    {% endif %}
+                    <h5 class="modal-title fw-bold">Đổi tên người dùng</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body px-4 pb-4 pt-2">
                     <form id="changeDisplayNameForm">
                         <div class="mb-4">
-                            {% if request.user.role == 'artist' %}
-                            <label class="form-label text-secondary small mb-1">Nghệ danh mới</label>
-                            <div class="auth-form-group mb-0">
-                                <input type="text" class="auth-input" id="new_username" value="{{ request.user.artist_profile.stage_name|default:request.user.username }}" required maxlength="20" placeholder="Tối đa 20 ký tự">
-                            {% else %}
-                            <label class="form-label text-secondary small mb-1">Tên hiển thị mới</label>
+                            <label class="form-label text-secondary small mb-1">Tên người dùng mới</label>
                             <div class="auth-form-group mb-0">
                                 <input type="text" class="auth-input" id="new_username" value="{{ request.user.username }}" required maxlength="20" placeholder="Tối đa 20 ký tự">
-                            {% endif %}
                                 <i class="bi bi-person"></i>
                             </div>
                         </div>
@@ -584,6 +575,32 @@
             </div>
         </div>
     </div>
+
+    {% if request.user.role == 'artist' %}
+    <!-- Change Stage Name Modal -->
+    <div class="modal fade custom-modal" id="changeStageNameModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Đổi nghệ danh</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-2">
+                    <form id="changeStageNameForm">
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small mb-1">Nghệ danh mới</label>
+                            <div class="auth-form-group mb-0">
+                                <input type="text" class="auth-input" id="new_stage_name" value="{{ request.user.artist_profile.stage_name|default:request.user.username }}" required maxlength="20" placeholder="Tối đa 20 ký tự">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" id="btnChangeStageName" style="background: var(--accent-color); color: #121929; border: none; font-weight: 600;">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Edit Socials Modal -->
     <div class="modal fade custom-modal" id="editSocialsModal" tabindex="-1" aria-labelledby="editSocialsModalLabel"

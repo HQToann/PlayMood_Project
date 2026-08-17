@@ -85,7 +85,7 @@
                             <form id="postMoodForm" onsubmit="handlePostMood(event)">
                                 <input type="hidden" name="mood_type_id" id="mood_type_id" value="">
 
-                                <textarea id="status_text" name="status_text" rows="2" maxlength="15"
+                                <textarea id="status_text" name="status_text" rows="2" maxlength="200"
                                     placeholder="Viết gì đó về cảm xúc của bạn... (tuỳ chọn)"
                                     style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; padding: 12px 14px; font-size: 0.92rem; resize: none; outline: none; transition: border-color 0.2s, background 0.2s; font-family: inherit; line-height: 1.5;"
                                     onfocus="this.style.borderColor='#667eea'; this.style.background='rgba(0,0,0,0.4)';"
@@ -93,7 +93,7 @@
                                     oninput="document.getElementById('charCount').textContent=this.value.length;"></textarea>
                                 <div
                                     style="text-align:right; color: rgba(255,255,255,0.3); font-size: 0.78rem; margin-top: 6px;">
-                                    <span id="charCount">0</span>/15
+                                    <span id="charCount">0</span>/200
                                 </div>
 
                                 <!-- Divider -->
@@ -209,39 +209,47 @@
                         }
 
                         .mood-card-item {
-                            border-radius: 8px;
-                            padding: 8px 16px;
+                            border-radius: 20px;
+                            padding: 7px 16px;
                             text-align: center;
                             cursor: pointer;
                             position: relative;
                             overflow: hidden;
-                            transition: all 0.2s ease;
+                            transition: all 0.25s ease;
                             user-select: none;
-                            background: rgba(255, 255, 255, 0.08);
+                            background: rgba(255, 255, 255, 0.07);
+                            border: 1px solid rgba(255, 255, 255, 0.1);
                             color: #fff;
                         }
 
                         .mood-card-item:hover {
-                            background: rgba(255, 255, 255, 0.15);
+                            background: rgba(255, 255, 255, 0.13);
+                            border-color: rgba(255, 255, 255, 0.2);
+                            transform: translateY(-1px);
                         }
 
                         .mood-card-item:active {
-                            transform: scale(0.97);
+                            transform: scale(0.95);
                         }
 
                         .mood-card-item.selected {
-                            background: rgba(255, 255, 255, 0.2);
-                            outline: 1px solid rgba(255, 255, 255, 0.4);
+                            border: none !important;
                             font-weight: 600;
+                            transform: translateY(-2px);
+                            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
                         }
 
                         .mood-card-item .mood-name {
                             font-size: 0.85rem;
                             font-weight: 500;
+                            color: rgba(255, 255, 255, 0.8);
+                            transition: color 0.2s;
                         }
 
                         .mood-card-item.selected .mood-name {
-                            font-weight: 600;
+                            font-weight: 700;
+                            color: #ffffff;
+                            text-shadow: 0 1px 4px rgba(0,0,0,0.25);
                         }
 
                         .color-swatch {
@@ -297,7 +305,7 @@
                     </style>
 
     <script src="{% static 'js/main.js' %}?v=2.2"></script>
-    <script src="{% static 'js/mood.js' %}?v=2.14"></script>
+    <script src="{% static 'js/mood.js' %}?v=2.17"></script>
 
                 </div>
             </main>

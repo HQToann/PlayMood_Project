@@ -117,9 +117,16 @@ def validate_update_profile(data: dict) -> dict:
     if 'username' in data:
         username = sanitize_text(data['username'])
         if len(username) > DISPLAY_NAME_MAX:
-            errors['username'] = [f'Tên hiển thị tối đa {DISPLAY_NAME_MAX} ký tự']
+            errors['username'] = [f'Tên người dùng tối đa {DISPLAY_NAME_MAX} ký tự']
         else:
             result['username'] = username
+
+    if 'stage_name' in data:
+        stage_name = sanitize_text(data['stage_name'])
+        if len(stage_name) > DISPLAY_NAME_MAX:
+            errors['stage_name'] = [f'Nghệ danh tối đa {DISPLAY_NAME_MAX} ký tự']
+        else:
+            result['stage_name'] = stage_name
     
     if 'bio' in data:
         bio = sanitize_text(data['bio'])

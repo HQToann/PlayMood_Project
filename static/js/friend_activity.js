@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Load My Mood Badge ─────────────────────────────────────────────────
     async function loadMyMoodBadge() {
+        window._moodBadgeLoaded = true; // Đánh dấu đã xử lý để tránh duplicate
         const myMoodTag = document.getElementById('myMoodBadge');
         const myMoodWrapper = document.getElementById('myMoodBadgeWrapper');
         if (!myMoodTag) return;

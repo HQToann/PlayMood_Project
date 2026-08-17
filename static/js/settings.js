@@ -188,7 +188,7 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
                 btn.disabled = true;
 
-                const usernameInput = document.getElementById('new_username') || document.getElementById('new_display_name');
+                const usernameInput = document.getElementById('new_username');
                 const payload = {
                     username: usernameInput ? usernameInput.value : ''
                 };
@@ -205,8 +205,8 @@
                     const result = await response.json();
                     
                     if (response.ok && result.success) {
-                        if(window.showToast) window.showToast('Đã cập nhật tên hiển thị thành công!', true);
-                        else alert('Đã cập nhật tên hiển thị thành công!');
+                        if(window.showToast) window.showToast('Đã cập nhật tên người dùng thành công!', true);
+                        else alert('Đã cập nhật tên người dùng thành công!');
                         
                         const modalEl = document.getElementById('changeDisplayNameModal');
                         const modal = bootstrap.Modal.getInstance(modalEl);
@@ -214,7 +214,63 @@
                         // Reload page to reflect changes in UI
                         setTimeout(() => window.location.reload(), 1000);
                     } else {
-                        let errorMsg = 'Không thể đổi tên hiển thị.';
+                        let errorMsg = 'Không thể đổi tên người dùng.';
+                        if (result.error && result.error.fields) {
+                            const firstField = Object.keys(result.error.fields)[0];
+                            errorMsg = result.error.fields[firstField][0];
+                        } else if (result.error && result.error.message) {
+                            errorMsg = result.error.message;
+                        }
+                        if(window.showToast) window.showToast('Lỗi: ' + errorMsg, false);
+                        else alert('Lỗi: ' + errorMsg);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    if(window.showToast) window.showToast('Lỗi kết nối máy chủ.', false);
+                    else alert('Lỗi kết nối máy chủ.');
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        // Change Stage Name Form Handler
+        const changeStageNameForm = document.getElementById('changeStageNameForm');
+        if (changeStageNameForm) {
+            changeStageNameForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btnChangeStageName');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
+                btn.disabled = true;
+
+                const stageNameInput = document.getElementById('new_stage_name');
+                const payload = {
+                    stage_name: stageNameInput ? stageNameInput.value : ''
+                };
+
+                try {
+                    const response = await fetch('/api/v1/accounts/me/', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken') || ''
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        if(window.showToast) window.showToast('Đã cập nhật nghệ danh thành công!', true);
+                        else alert('Đã cập nhật nghệ danh thành công!');
+                        
+                        const modalEl = document.getElementById('changeStageNameModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        modal.hide();
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        let errorMsg = 'Không thể đổi nghệ danh.';
                         if (result.error && result.error.fields) {
                             const firstField = Object.keys(result.error.fields)[0];
                             errorMsg = result.error.fields[firstField][0];

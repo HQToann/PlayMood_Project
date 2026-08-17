@@ -184,6 +184,57 @@
     </script>
     {% if request.user.is_authenticated %}
     <script src="{% static 'js/friend_activity.js' %}?v=2.4"></script>
+    <script>
+    // Fallback: tải mood badge nếu friend_activity.js chưa gọi (ví dụ: CURRENT_USER_ID falsy)
+    window._moodBadgeLoaded = false;
+    async function loadSidebarMoodBadge() {
+        if (window._moodBadgeLoaded) return;
+        window._moodBadgeLoaded = true;
+        const myMoodTag = document.getElementById('myMoodBadge');
+        const myMoodWrapper = document.getElementById('myMoodBadgeWrapper');
+        if (!myMoodTag || !myMoodWrapper) return;
+        try {
+            const res = await fetch('/api/v1/social/me/mood/');
+            const result = await res.json();
+            if (result.success && result.data && !result.data.is_expired) {
+                const mood = result.data;
+                const gradientFrom = (mood.theme && mood.theme.gradient_from) || (mood.mood_type && mood.mood_type.theme && mood.mood_type.theme.gradient_from) || '#ff758c';
+                const gradientTo = (mood.theme && mood.theme.gradient_to) || (mood.mood_type && mood.mood_type.theme && mood.mood_type.theme.gradient_to) || '#ff7eb3';
+                myMoodTag.style.background = `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`;
+                myMoodTag.style.setProperty('--mood-from', gradientFrom);
+                myMoodWrapper.style.setProperty('--mood-from', gradientFrom);
+                let html = `<div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">`;
+                if (mood.mood_type) {
+                    html += `<span>${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
+                } else {
+                    html += `<i class="bi bi-chat-fill"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
+                }
+                html += `</div>`;
+                if (mood.song) {
+                    html += `<div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1" style="width:100px;">
+                        <div style="overflow:hidden;white-space:nowrap;height:16px;display:flex;align-items:center;width:100%;">
+                            <div style="display:flex;animation:marquee-left-anim 6s linear infinite;">
+                                <span class="text-white" style="font-size:0.8rem;padding-right:20px;">${mood.song.title}</span>
+                                <span class="text-white" style="font-size:0.8rem;padding-right:20px;">${mood.song.title}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                myMoodTag.innerHTML = html;
+                myMoodTag.title = mood.status_text || 'Tâm trạng hiện tại';
+                myMoodWrapper.style.display = 'block';
+                myMoodTag.style.display = 'inline-flex';
+            } else {
+                myMoodWrapper.style.display = 'none';
+                myMoodTag.style.display = 'none';
+            }
+        } catch(e) { /* bỏ qua */ }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        // Chạy sau 200ms để friend_activity.js (nếu có) được ưu tiên trước
+        setTimeout(() => { if (!window._moodBadgeLoaded) loadSidebarMoodBadge(); }, 200);
+    });
+    </script>
     {% endif %}
     <style>
         /* Custom marquee starting from left (seamless loop) */

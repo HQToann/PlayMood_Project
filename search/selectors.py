@@ -24,7 +24,7 @@ def search_songs(q='', genre='', artist_id='', ordering='-play_count',
         qs = qs.filter(
             Q(title__icontains=q)
             | Q(artist__username__icontains=q)
-            | Q(artist__display_name__icontains=q)
+            | Q(artist__artist_profile__stage_name__icontains=q)
         )
 
     if genre:
@@ -56,7 +56,7 @@ def search_artists(q='', viewer=None, page=1, page_size=20) -> dict:
     qs = ArtistProfile.objects.select_related('user').filter(user__is_active=True)
 
     if q:
-        qs = qs.filter(Q(stage_name__icontains=q) | Q(user__username__icontains=q) | Q(user__display_name__icontains=q))
+        qs = qs.filter(Q(stage_name__icontains=q) | Q(user__username__icontains=q))
 
     viewer_id = getattr(viewer, 'id', None)
     if viewer_id and getattr(viewer, 'is_authenticated', False):
@@ -125,7 +125,7 @@ def search_users(q='', requester=None, page=1, page_size=20) -> dict:
     qs = User.objects.filter(is_active=True)
 
     if q:
-        qs = qs.filter(Q(username__icontains=q) | Q(display_name__icontains=q))
+        qs = qs.filter(Q(username__icontains=q))
 
     requester_id = getattr(requester, 'id', None)
     requester_is_auth = bool(requester_id and getattr(requester, 'is_authenticated', False))

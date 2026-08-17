@@ -133,14 +133,14 @@ def update_profile(user: User, data: dict) -> User:
     Returns:
         User sau khi cập nhật
     """
+    stage_name = data.pop('stage_name', None)
+    if stage_name is not None and user.role == user.ROLE_ARTIST:
+        if hasattr(user, 'artist_profile'):
+            user.artist_profile.stage_name = stage_name
+            user.artist_profile.save(update_fields=['stage_name'])
+
     for field, value in data.items():
         setattr(user, field, value)
-        
-        # Đồng bộ stage_name cho nghệ sĩ nếu họ đổi tên hiển thị (username)
-        if field == 'username' and user.role == user.ROLE_ARTIST:
-            if hasattr(user, 'artist_profile'):
-                user.artist_profile.stage_name = value
-                user.artist_profile.save(update_fields=['stage_name'])
 
     user.save(update_fields=list(data.keys()) + ['updated_at'])
     logger.info('Profile updated: %s', user.username)

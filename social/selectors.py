@@ -119,7 +119,9 @@ def get_my_mood(user) -> Mood:
         MoodNotFound: nếu user chưa từng thiết lập Mood
     """
     try:
-        return Mood.objects.select_related('user', 'song', 'song__artist').get(user=user)
+        return Mood.objects.select_related(
+            'user', 'song', 'song__artist', 'mood_type', 'mood_type__theme', 'theme'
+        ).get(user=user)
     except Mood.DoesNotExist:
         raise MoodNotFound()
     
@@ -132,7 +134,9 @@ def get_user_mood(user_id, viewer=None) -> Mood | None:
     if viewer_is_auth and is_blocked(viewer_id, user_id):
         return None
     
-    mood = Mood.objects.select_related('user', 'song', 'song__artist').filter(user_id=user_id).first()
+    mood = Mood.objects.select_related(
+        'user', 'song', 'song__artist', 'mood_type', 'mood_type__theme', 'theme'
+    ).filter(user_id=user_id).first()
     if mood is None or mood.is_expired():
         return None
     return mood
@@ -217,7 +221,6 @@ def list_friends(user, page=1, page_size=50, search_query="") -> dict:
         from django.db.models import Q
         qs = qs.filter(
             Q(username__icontains=search_query) |
-            Q(display_name__icontains=search_query) |
             Q(email__icontains=search_query)
         )
         
