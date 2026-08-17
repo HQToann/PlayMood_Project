@@ -12,8 +12,7 @@
     // Shell scripts – loaded once, never re-run via AJAX
     var SHELL = [
         "bootstrap.bundle.min.js", "main.js", "player.js",
-        "router.js", "sidebar.js", "create_playlist.js",
-        "top_header.js"
+        "router.js", "sidebar.js", "create_playlist.js"
     ];
 
     // Prefetch cache: url → Promise<html string>

@@ -1,6 +1,10 @@
 (function() {
-    // Hàm xử lý click document (đặt ngoài để remove dễ dàng)
-    function handleDocumentClick(e) {
+    // Hàm xử lý click document (lưu vào window để remove dễ dàng)
+    if (window._pmHandleDocClick) {
+        document.removeEventListener('click', window._pmHandleDocClick);
+    }
+
+    window._pmHandleDocClick = function(e) {
         const searchInput = document.getElementById('topSearchInput');
         const searchResults = document.getElementById('searchResultsDropdown');
         if (searchInput && searchResults) {
@@ -8,7 +12,7 @@
                 searchResults.style.display = 'none';
             }
         }
-    }
+    };
 
     function initTopHeader() {
         let searchInput = document.getElementById('topSearchInput');
@@ -250,10 +254,9 @@
             }
         });
 
-        // Ẩn khi click ra ngoài
-        // Xóa listener cũ trước khi add lại để tránh event chồng lấp
-        document.removeEventListener('click', handleDocumentClick);
-        document.addEventListener('click', handleDocumentClick);
+        // Bind sự kiện click ra ngoài để ẩn kết quả tìm kiếm
+        document.removeEventListener('click', window._pmHandleDocClick);
+        document.addEventListener('click', window._pmHandleDocClick);
         
         // Hiện lại khi click vào ô search có nội dung
         searchInput.addEventListener('focus', () => {
