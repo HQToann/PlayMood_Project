@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-async function saveImages() {
+window.saveImages = async function() {
     const avatarInput = document.getElementById('avatarInput');
     const coverInput = document.getElementById('coverInput');
 
@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Xử lý báo cáo người dùng
-async function submitUserReport(event) {
+window.submitUserReport = async function(event) {
     event.preventDefault();
     const btn = event.target;
     const reasonEl = document.getElementById('reportUserReason');
