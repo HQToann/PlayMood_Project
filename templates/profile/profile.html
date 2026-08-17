@@ -69,7 +69,8 @@
 
 
                                 <!-- Mood Thought Bubble -->
-                                {% if target_user.mood and not target_user.mood.is_expired and (target_user.show_mood or request.user == target_user) %}
+                                {% if target_user.mood and not target_user.mood.is_expired %}
+                                {% if target_user.show_mood or request.user == target_user %}
                                 {% firstof target_user.mood.theme.gradient_from target_user.mood.mood_type.theme.gradient_from '#ff758c' as color_from %}
                                 {% firstof target_user.mood.theme.gradient_to target_user.mood.mood_type.theme.gradient_to '#ff7eb3' as color_to %}
                                 <style>
@@ -132,6 +133,7 @@
                                         {% endif %}
                                     </div>
                                 </div>
+                                {% endif %}
                                 {% endif %}
 
                             </div>
