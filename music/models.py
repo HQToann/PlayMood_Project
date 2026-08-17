@@ -407,6 +407,7 @@ class Comment(models.Model):
         db_table = 'music_comment'
         ordering = ['created_at']
         verbose_name = 'Bình luận'
+        verbose_name_plural = 'Bình luận'
 
     def __str__(self):
         return f'{self.user.username}: {self.content[:50]}'
@@ -587,6 +588,7 @@ class Report(models.Model):
         db_table = 'music_report'
         ordering = ['-created_at']
         verbose_name = 'Báo cáo vi phạm'
+        verbose_name_plural = 'Báo cáo vi phạm'
 
     def __str__(self):
         return f'Report({self.target_type}/{self.target_id}, {self.status})'

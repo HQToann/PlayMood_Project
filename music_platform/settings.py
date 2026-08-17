@@ -221,6 +221,7 @@ LOGGING = {
 UNFOLD = {
     "SITE_HEADER": "PlayMood Admin",
     "SITE_TITLE": "PlayMood Dashboard",
+    "SITE_SYMBOL": "music_note",
     "COLORS": {
         "primary": {
             "50": "#f0fdf4",
