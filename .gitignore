@@ -5,6 +5,8 @@ Pipfile.lock
 # Biến môi trường — chứa secret keys, KHÔNG commit
 .env
 .env_TN
+.envHT
+
 
 # Python cache
 __pycache__/
