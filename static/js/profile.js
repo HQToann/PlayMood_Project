@@ -356,6 +356,15 @@ window.saveImages = async function() {
 
         const result = await response.json();
         if (response.ok && result.success) {
+            // Update sidebar avatar and mobile header avatar immediately
+            if (result.data && result.data.avatar) {
+                const desktopHeaderAvatar = document.getElementById('headerUserAvatar');
+                if (desktopHeaderAvatar) desktopHeaderAvatar.src = result.data.avatar;
+                
+                const mobileHeaderAvatar = document.getElementById('mobileHeaderUserAvatar');
+                if (mobileHeaderAvatar) mobileHeaderAvatar.src = result.data.avatar;
+            }
+
             if (window.showToast) {
                 window.showToast('Cập nhật ảnh thành công!', 'success');
                 setTimeout(() => {

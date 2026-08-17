@@ -23,7 +23,11 @@
         </a>
                                 <div class="dropdown d-xl-none">
             <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="avatar" class="user-avatar">
+                {% if request.user.avatar %}
+                    <img src="{{ request.user.avatar.url }}" alt="avatar" class="user-avatar" id="mobileHeaderUserAvatar">
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ request.user.get_display_name|urlencode }}&background=random" alt="avatar" class="user-avatar" id="mobileHeaderUserAvatar">
+                {% endif %}
                 <span style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
                     <span style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.get_display_name }}</span>
                     <i class="bi bi-chevron-down small"></i>
