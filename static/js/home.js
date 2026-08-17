@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderArtistCard(artist) {
         var avatar = artist.avatar || DEFAULT_AVATAR;
-        return '<a href="/profile/' + (artist.username || artist.id) + '/" class="artist-card">' +
+        return '<a href="/profile/' + artist.id + '/" class="artist-card">' +
             '<img src="' + esc(avatar) + '" alt="' + esc(artist.display_name) + '" class="artist-avatar" loading="lazy">' +
             '<div class="artist-name">' + esc(artist.display_name) + '</div>' +
             '<div class="artist-role">Nghệ sĩ</div>' +
@@ -66,8 +66,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data && data.data.items && data.data.items.length > 0) {
                     const section = document.getElementById('recommendations-section');
                     const container = document.getElementById('foryou-songs-container');
-                    section.style.display = 'block';
-                    container.innerHTML = data.data.items.slice(0, 5).map(item => renderSongCard(item.song || item)).join('');
+                    if (section && container) {
+                        section.style.display = 'block';
+                        container.innerHTML = data.data.items.slice(0, 5).map(item => renderSongCard(item.song || item)).join('');
+                    }
                 }
             })
             .catch(error => console.error('Lỗi gợi ý bài hát:', error));
@@ -79,8 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data && data.data.items && data.data.items.length > 0) {
                     const section = document.getElementById('artists-section');
                     const container = document.getElementById('recommended-artists-container');
-                    section.style.display = 'block';
-                    container.innerHTML = data.data.items.slice(0, 5).map(renderArtistCard).join('');
+                    if (section && container) {
+                        section.style.display = 'block';
+                        container.innerHTML = data.data.items.slice(0, 5).map(renderArtistCard).join('');
+                    }
                 }
             })
             .catch(error => console.error('Lỗi gợi ý nghệ sĩ:', error));
@@ -92,8 +96,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data && data.data.items && data.data.items.length > 0) {
                     const section = document.getElementById('playlists-section');
                     const container = document.getElementById('recommended-playlists-container');
-                    section.style.display = 'block';
-                    container.innerHTML = data.data.items.slice(0, 5).map(renderPlaylistCard).join('');
+                    if (section && container) {
+                        section.style.display = 'block';
+                        container.innerHTML = data.data.items.slice(0, 5).map(renderPlaylistCard).join('');
+                    }
                 }
             })
             .catch(error => console.error('Lỗi gợi ý playlist:', error));
