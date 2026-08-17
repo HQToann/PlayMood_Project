@@ -73,8 +73,9 @@
 
 
                                 <!-- Mood Thought Bubble -->
-                                {% if target_user.mood and not target_user.mood.is_expired and target_user.mood.mood_type %}
-                                {% with color_from=target_user.mood.theme.gradient_from|default:target_user.mood.mood_type.theme.gradient_from|default:'#ff758c' color_to=target_user.mood.theme.gradient_to|default:target_user.mood.mood_type.theme.gradient_to|default:'#ff7eb3' %}
+                                {% if target_user.mood and not target_user.mood.is_expired %}
+                                {% firstof target_user.mood.theme.gradient_from target_user.mood.mood_type.theme.gradient_from '#ff758c' as color_from %}
+                                {% firstof target_user.mood.theme.gradient_to target_user.mood.mood_type.theme.gradient_to '#ff7eb3' as color_to %}
                                 <style>
                                     .mood-badge-dynamic { position: relative; }
                                     .mood-badge-dynamic::before {
@@ -107,7 +108,11 @@
                                     <div class="badge d-inline-flex align-items-center gap-2 shadow-sm mood-badge-dynamic"
                                         style="font-size: 0.8rem; background: linear-gradient(135deg, var(--mood-from), var(--mood-to)) !important; border-radius: 20px; padding: 6px 12px;">
                                         <div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">
-                                            <span>{{ target_user.mood.mood_type.emoji }}</span> {{ target_user.mood.mood_type.name }}
+                                            {% if target_user.mood.mood_type %}
+                                                <span>{{ target_user.mood.mood_type.emoji|default:'<i class="bi bi-emoji-smile"></i>'|safe }}</span> {{ target_user.mood.mood_type.name }}
+                                            {% else %}
+                                                <i class="bi bi-chat-fill"></i> {{ target_user.mood.status_text|default:'Đang cảm thấy...' }}
+                                            {% endif %}
                                         </div>
                                         {% if target_user.mood.song %}
                                         <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1"
@@ -121,7 +126,6 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                {% endwith %}
                                 {% endif %}
 
 
@@ -141,8 +145,6 @@
                                 <h1 class="fw-bold mb-0 text-white"
                                     style="font-size: 4rem; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px; margin-top: -4px;">
                                     {{ target_user.artist_profile.get_display_name|default:target_user.get_display_name }}</h1>
-                                <div class="profile-handle text-secondary mb-2 mt-1 fs-6">@{{ target_user.username }}
-                                </div>
 
                                 <!-- Tiểu sử ngắn -->
                                 {% if is_own_profile %}
@@ -505,10 +507,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="bioInput" class="form-label text-secondary">Mô tả ngắn gọn về bạn</label>
+                        <style>
+                            #bioInput::placeholder {
+                                color: rgba(255, 255, 255, 0.5) !important;
+                            }
+                        </style>
                         <textarea class="form-control text-light shadow-none" id="bioInput" rows="4" maxlength="70"
                             style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); resize: none;"
-                            placeholder="Nhập tiểu sử (tối đa 70 ký tự)...">{{ target_user.bio|default:'' }}</textarea>
+                            placeholder="Mô tả ngắn gọn về bạn">{{ target_user.bio|default:'' }}</textarea>
                         <div class="form-text text-end text-secondary mt-1"><span id="bioCharCount">0</span>/70 ký tự
                         </div>
                     </div>
@@ -516,7 +522,7 @@
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4"
                         data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4" onclick="saveBio()"
+                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;" onclick="saveBio()"
                         data-bs-dismiss="modal">Lưu thay đổi</button>
                 </div>
             </div>
@@ -538,14 +544,17 @@
                     <form id="editImagesForm" enctype="multipart/form-data">
                         <div class="mb-4">
                             <label class="form-label text-secondary fw-semibold mb-2">Ảnh đại diện</label>
-                            <div class="d-flex align-items-center gap-3">
-                                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80"
+                            <div class="d-flex align-items-center justify-content-between gap-3">
+                                <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80{% endif %}"
                                     id="avatarPreview" alt="Avatar"
                                     class="rounded-circle object-fit-cover shadow-sm flex-shrink-0"
                                     style="width: 70px; height: 70px; border: 2px solid var(--bg-main);">
-                                <input type="file" class="form-control text-light shadow-none" id="avatarInput"
-                                    accept="image/*"
-                                    style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                                <div>
+                                    <label for="avatarInput" class="btn btn-outline-light rounded-pill px-3 m-0" style="cursor: pointer; border-color: rgba(255,255,255,0.2); font-size: 0.9rem;">
+                                        <i class="bi bi-camera me-2"></i>Chọn ảnh
+                                    </label>
+                                    <input type="file" class="d-none" id="avatarInput" accept="image/*">
+                                </div>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -553,12 +562,15 @@
                             <div class="d-flex flex-column gap-2">
                                 <div
                                     style="width: 100%; height: 100px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                                    <img src="{% if request.user.cover %}{{ request.user.cover.url }}{% else %}https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80{% endif %}"
                                         id="coverPreview" alt="Cover" class="w-100 h-100 object-fit-cover">
                                 </div>
-                                <input type="file" class="form-control text-light shadow-none" id="coverInput"
-                                    accept="image/*"
-                                    style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                                <div class="text-end mt-2">
+                                    <label for="coverInput" class="btn btn-outline-light rounded-pill px-3 m-0" style="cursor: pointer; border-color: rgba(255,255,255,0.2); font-size: 0.9rem;">
+                                        <i class="bi bi-image me-2"></i>Tải ảnh lên
+                                    </label>
+                                    <input type="file" class="d-none" id="coverInput" accept="image/*">
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -566,7 +578,7 @@
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4"
                         data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4"
+                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;"
                         onclick="saveImages()" data-bs-dismiss="modal">Lưu thay đổi</button>
                 </div>
             </div>
@@ -612,7 +624,7 @@
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4"
                         data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-light text-dark fw-bold rounded-pill px-4"
+                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;"
                         onclick="saveSocials()" data-bs-dismiss="modal">Lưu thay đổi</button>
                 </div>
             </div>

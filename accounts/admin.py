@@ -7,13 +7,12 @@ from accounts.models import User, ArtistVerification, BlockList
 class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'role', 'is_active', 'created_at')
     list_filter = ('role', 'is_active', 'is_private')
-    search_fields = ('username', 'email', 'display_name')
+    search_fields = ('username', 'email')
     ordering = ('-created_at',)
 
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Thông tin bổ sung', {
             'fields': (
-                'display_name',
                 'avatar',
                 'bio',
                 'role',

@@ -293,6 +293,11 @@
                                 alt="User Avatar" class="rounded-circle object-fit-cover"
                                 style="width: 40px; height: 40px;">
                             <div class="flex-grow-1 d-flex gap-2">
+                                <style>
+                                    #commentInput::placeholder {
+                                        color: rgba(255, 255, 255, 0.6) !important;
+                                    }
+                                </style>
                                 <input type="text" id="commentInput"
                                     class="form-control bg-transparent text-white border-secondary border-opacity-50"
                                     placeholder="Viết bình luận của bạn..." style="border-radius: 20px;">
@@ -313,8 +318,7 @@
 
         </div>
 
-        <!-- PLAYER BAR -->
-        {% include 'includes/player_bar.html' %}
+        <!-- PLAYER BAR removed here to avoid duplicate IDs -->
     </div>
     <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
         style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">

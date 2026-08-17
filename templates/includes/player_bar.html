@@ -38,12 +38,11 @@
         <footer class="player-bar pb-idle" id="globalPlayerBar">
             <!-- Info -->
             <div class="player-info">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='6' fill='%23222'/%3E%3Ctext x='50%25' y='54%25' font-size='22' text-anchor='middle' dominant-baseline='middle' fill='%23555'%3E%E2%99%AA%3C/text%3E%3C/svg%3E" alt="Cover" class="player-cover" id="pbCover" style="border-radius: 6px;">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='6' fill='%23222'/%3E%3Ctext x='50%25' y='54%25' font-size='22' text-anchor='middle' dominant-baseline='middle' fill='%23555'%3E%E2%99%AA%3C/text%3E%3C/svg%3E" alt="Cover" class="player-cover" id="pbCover" style="border-radius: 6px; cursor: pointer;" onclick="if(window.currentSongId) window.goToPage('/song/?id=' + window.currentSongId);">
                 <div class="player-text">
-                    <div class="player-title" id="pbTitle">Chưa có bài nào</div>
+                    <div class="player-title" id="pbTitle" style="cursor: pointer;" onclick="if(window.currentSongId) window.goToPage('/song/?id=' + window.currentSongId);">Chưa có bài nào</div>
                     <div class="text-muted-custom player-artist" id="pbArtist">Chọn một bài hát để bắt đầu</div>
                 </div>
-                <button class="btn-icon ms-2" id="pbHeartBtn" title="Yêu thích"><i class="bi bi-heart" id="pbHeartIcon"></i></button>
             </div>
             
             <!-- Controls -->

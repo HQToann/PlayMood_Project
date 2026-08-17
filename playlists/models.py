@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from music_platform.utils import optimize_cloudinary_url
 
 
 #playlist do người dung tạo
@@ -62,13 +63,13 @@ class Playlist(models.Model):
             'id': str(self.id),
             'title': self.title,
             'description': self.description,
-            'cover_image': self.cover_image.url if self.cover_image else None,
+            'cover_image': optimize_cloudinary_url(self.cover_image.url, 'image') if self.cover_image else None,
             'is_public': self.is_public,
             'owner': {
                 'id': str(self.owner.id),
                 'username': self.owner.username,
                 'display_name': self.owner.get_display_name(),
-                'avatar': self.owner.avatar.url if self.owner.avatar else None,
+                'avatar': optimize_cloudinary_url(self.owner.avatar.url, 'image') if self.owner.avatar else None,
             },
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),

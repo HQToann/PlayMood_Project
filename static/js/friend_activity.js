@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ─── Load My Mood Badge ─────────────────────────────────────────────────
     async function loadMyMoodBadge() {
         const myMoodTag = document.getElementById('myMoodBadge');
+        const myMoodWrapper = document.getElementById('myMoodBadgeWrapper');
         if (!myMoodTag) return;
 
         try {
@@ -178,26 +179,53 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.success && data.data) {
                 const mood = data.data;
-                myMoodTag.style.display = 'inline-block';
-                if (mood.theme) {
-                    myMoodTag.style.background = `linear-gradient(135deg, ${mood.theme.gradient_from}, ${mood.theme.gradient_to})`;
+                
+                if (mood.is_expired) {
+                    myMoodTag.style.display = 'none';
+                    if (myMoodWrapper) myMoodWrapper.style.display = 'none';
+                    return;
                 }
+                
+                myMoodTag.style.display = 'inline-flex';
+                if (myMoodWrapper) myMoodWrapper.style.display = 'block';
+
+                const gradientFrom = mood.theme?.gradient_from || mood.mood_type?.theme?.gradient_from || '#ff758c';
+                const gradientTo = mood.theme?.gradient_to || mood.mood_type?.theme?.gradient_to || '#ff7eb3';
+                myMoodTag.style.background = `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`;
+                myMoodTag.style.setProperty('--mood-from', gradientFrom);
+                if (myMoodWrapper) myMoodWrapper.style.setProperty('--mood-from', gradientFrom);
                 myMoodTag.style.color = '#fff';
 
-                let contentHtml = '';
+                let contentHtml = `<div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">`;
                 if (mood.mood_type) {
-                    contentHtml = `<span class="me-1">${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
+                    contentHtml += `<span>${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
                 } else {
-                    contentHtml = `<i class="bi bi-chat-fill me-1"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
+                    contentHtml += `<i class="bi bi-chat-fill"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
                 }
+                contentHtml += `</div>`;
+
+                if (mood.song) {
+                    contentHtml += `
+                    <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1" style="width: 100px;">
+                        <div class="marquee-wrapper" style="overflow: hidden; white-space: nowrap; height: 16px; display: flex; align-items: center; width: 100%;">
+                            <div class="marquee-left" style="display: flex;">
+                                <span class="text-white" style="font-size: 0.8rem; padding-right: 20px;">${mood.song.title}</span>
+                                <span class="text-white" style="font-size: 0.8rem; padding-right: 20px;">${mood.song.title}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
                 myMoodTag.innerHTML = contentHtml;
                 myMoodTag.title = mood.status_text || 'Tâm trạng hiện tại của bạn';
             } else {
                 myMoodTag.style.display = 'none';
+                if (myMoodWrapper) myMoodWrapper.style.display = 'none';
             }
         } catch (error) {
             console.error("Lỗi khi tải mood badge:", error);
             myMoodTag.style.display = 'none';
+            if (myMoodWrapper) myMoodWrapper.style.display = 'none';
         }
     }
 
@@ -213,15 +241,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const globalSearchResults = document.getElementById('globalUserSearchResults');
     let searchTimeout = null;
 
-    if (globalSearchInput && globalSearchResults) {
-        const addFriendModal = document.getElementById('addFriendModal');
-        if (addFriendModal) {
-            addFriendModal.addEventListener('show.bs.modal', () => {
-                globalSearchInput.value = '';
-                globalSearchResults.innerHTML = '<div class="text-center text-muted-custom py-3 small">Nhập từ khóa để tìm kiếm...</div>';
-            });
+    document.addEventListener('show.bs.modal', (e) => {
+        if (e.target.id === 'addFriendModal') {
+            const searchInput = document.getElementById('globalUserSearchInput');
+            const searchResults = document.getElementById('globalUserSearchResults');
+            if (searchInput) searchInput.value = '';
+            if (searchResults) searchResults.innerHTML = '<div class="text-center text-muted-custom py-3 small">Nhập từ khóa để tìm kiếm...</div>';
+        } else if (e.target.id === 'receivedRequestsModal') {
+            if (typeof loadReceivedRequests === 'function') loadReceivedRequests();
+        } else if (e.target.id === 'sentRequestsModal') {
+            if (typeof loadSentRequests === 'function') loadSentRequests();
+        } else if (e.target.id === 'friendsListModal') {
+            if (typeof loadFriendsList === 'function') loadFriendsList();
         }
+    });
 
+    if (globalSearchInput && globalSearchResults) {
         globalSearchInput.addEventListener('input', e => {
             const query = e.target.value.trim();
             clearTimeout(searchTimeout);
@@ -339,10 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════════════
     // RECEIVED REQUESTS MODAL (Yêu cầu nhận được)
     // ═══════════════════════════════════════════════════════════════════════
-    const receivedModal = document.getElementById('receivedRequestsModal');
-    if (receivedModal) {
-        receivedModal.addEventListener('show.bs.modal', () => loadReceivedRequests());
-    }
+    // Event listener delegated to document
 
     async function loadReceivedRequests() {
         const container = document.getElementById('receivedRequestsList');
@@ -392,10 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════════════
     // SENT REQUESTS MODAL (Yêu cầu đã gửi)
     // ═══════════════════════════════════════════════════════════════════════
-    const sentModal = document.getElementById('sentRequestsModal');
-    if (sentModal) {
-        sentModal.addEventListener('show.bs.modal', () => loadSentRequests());
-    }
+    // Event listener delegated to document
 
     async function loadSentRequests() {
         const container = document.getElementById('sentRequestsList');
@@ -439,10 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ═══════════════════════════════════════════════════════════════════════
     // FRIENDS LIST MODAL (Danh sách bạn bè)
     // ═══════════════════════════════════════════════════════════════════════
-    const friendsModal = document.getElementById('friendsListModal');
-    if (friendsModal) {
-        friendsModal.addEventListener('show.bs.modal', () => loadFriendsList());
-    }
+    // Event listener delegated to document
 
     async function loadFriendsList() {
         const container = document.getElementById('friendsListContainer');

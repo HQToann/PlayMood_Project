@@ -141,19 +141,11 @@
                                             <i class="bi bi-chevron-down ms-1"
                                                 style="color:rgba(255,255,255,0.3); font-size:0.7rem;"></i>
                                         </div>
-                                        <ul class="dropdown-menu custom-dropdown-menu">
-                                            <li><a class="dropdown-item custom-dropdown-item" href="#"
-                                                    onclick="selectExpires(event, 1, 'Tự xóa sau 1 giờ')">Tự xóa sau 1
-                                                    giờ</a></li>
-                                            <li><a class="dropdown-item custom-dropdown-item" href="#"
-                                                    onclick="selectExpires(event, 4, 'Tự xóa sau 4 giờ')">Tự xóa sau 4
-                                                    giờ</a></li>
-                                            <li><a class="dropdown-item custom-dropdown-item" href="#"
-                                                    onclick="selectExpires(event, 12, 'Tự xóa sau 12 giờ')">Tự xóa sau
-                                                    12 giờ</a></li>
-                                            <li><a class="dropdown-item custom-dropdown-item active" href="#"
-                                                    onclick="selectExpires(event, 24, 'Tự xóa sau 24 giờ (Mặc định)')">Tự
-                                                    xóa sau 24 giờ (Mặc định)</a></li>
+                                        <ul class="dropdown-menu custom-dropdown-menu" id="expiresDropdownMenu">
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#" data-val="1" data-text="Tự xóa sau 1 giờ">Tự xóa sau 1 giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#" data-val="4" data-text="Tự xóa sau 4 giờ">Tự xóa sau 4 giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#" data-val="12" data-text="Tự xóa sau 12 giờ">Tự xóa sau 12 giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item active" href="#" data-val="24" data-text="Tự xóa sau 24 giờ (Mặc định)">Tự xóa sau 24 giờ (Mặc định)</a></li>
                                         </ul>
                                         <input type="hidden" name="expires_hours" id="expires_hours_input" value="24">
                                     </div>
@@ -305,7 +297,7 @@
                     </style>
 
     <script src="{% static 'js/main.js' %}?v=2.2"></script>
-    <script src="{% static 'js/mood.js' %}?v=2.8"></script>
+    <script src="{% static 'js/mood.js' %}?v=2.14"></script>
 
                 </div>
             </main>
@@ -356,7 +348,7 @@
                 </div>
 
                 <div class="search-bar mb-4 w-100"
-                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); transform: none !important;">
                     <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
                     <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
                 </div>
@@ -400,27 +392,17 @@
     </div>
 
     <!-- Search Music Modal -->
-    <style>
-        #musicSearchInput::placeholder {
-            color: rgba(255, 255, 255, 0.6) !important;
-        }
 
-        #musicSearchInput:focus {
-            border-color: rgba(255, 255, 255, 0.5) !important;
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) !important;
-            background: rgba(0, 0, 0, 0.4) !important;
-        }
-    </style>
     <div class="modal fade" id="searchMusicModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content text-white"
                 style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
-                <div class="modal-header border-bottom-0 pb-0">
+                <div class="modal-header border-bottom-0">
                     <h5 class="modal-title fw-bold">Tìm kiếm bài hát</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body pb-3 pt-0">
                     <input type="text" id="musicSearchInput" class="form-control text-white mb-3"
                         placeholder="Nhập tên bài hát hoặc ca sĩ..."
                         style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; color: #fff;">

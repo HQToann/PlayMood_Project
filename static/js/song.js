@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('detail-title').textContent = song.title;
 
                     const artistName = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-                    const artistAvatar = (song.artist && song.artist.avatar) ? song.artist.avatar : 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80';
+                    const artistAvatar = (song.artist && song.artist.avatar) ? song.artist.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(artistName)}&background=random`;
 
                     const artistNameEl = document.getElementById('detail-artist-name');
                     artistNameEl.textContent = artistName;
@@ -152,8 +152,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                     }
                                 } else {
                                     // Cập nhật số lượt thích UI
-                                    const currentLikes = parseInt(document.getElementById('detail-likes').innerText.trim()) || 0;
-                                    document.getElementById('detail-likes').innerHTML = `<i class="bi bi-heart-fill" style="font-size:0.75rem;"></i> ${isLiked ? currentLikes - 1 : currentLikes + 1}`;
+                                    const currentLikes = parseInt(document.getElementById('detail-likes').innerText.replace(/\D/g, '')) || 0;
+                                    const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
+                                    document.getElementById('detail-likes').innerHTML = `<i class="bi bi-heart-fill" style="font-size:0.75rem;"></i> ${newLikes.toLocaleString('vi-VN')}`;
+                                    
+                                    // Dispatch event to sync with player bar
+                                    document.dispatchEvent(new CustomEvent('songLikeToggled', { 
+                                        detail: { songId: songId, isLiked: !isLiked, likeCount: newLikes } 
+                                    }));
                                 }
                             } catch (err) {
                                 console.error(err);
@@ -208,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     </li>
                                     <li><hr class="dropdown-divider border-secondary opacity-25 my-1"></li>
                                     <li class="px-2 pb-2" onclick="event.stopPropagation()">
-                                        <div class="search-bar position-relative" style="background: rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 10px; display: flex; align-items: center;">
+                                        <div class="playlist-search-container position-relative" style="background: rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 10px; display: flex; align-items: center;">
                                             <i class="bi bi-search text-secondary" style="font-size: 0.85rem;"></i>
                                             <input type="text" id="playlist-search-input" placeholder="Tìm kiếm playlist..." class="text-white" style="background: none; border: none; outline: none; width: 100%; margin-left: 8px; font-size: 0.9rem;" onclick="event.stopPropagation()">
                                         </div>
@@ -673,6 +679,31 @@ window.deleteComment = async function(commentId) {
         if (window.showToast) showToast('Lỗi kết nối khi xóa bình luận', 'error');
     }
 };
+
+// Lắng nghe sự kiện like từ player.js để đồng bộ giao diện
+document.addEventListener('songLikeToggled', function(e) {
+    const params = new URLSearchParams(window.location.search);
+    const currentPageSongId = params.get('id');
+    if (currentPageSongId && currentPageSongId == e.detail.songId) {
+        const likeBtn = document.getElementById('detail-like-btn');
+        if (likeBtn) {
+            const isCurrentlyLiked = likeBtn.classList.contains('bi-heart-fill');
+            if (isCurrentlyLiked !== e.detail.isLiked) {
+                if (e.detail.isLiked) {
+                    likeBtn.classList.remove('bi-heart');
+                    likeBtn.classList.add('bi-heart-fill', 'text-accent');
+                } else {
+                    likeBtn.classList.remove('bi-heart-fill', 'text-accent');
+                    likeBtn.classList.add('bi-heart');
+                }
+                
+                if (e.detail.likeCount !== undefined) {
+                    document.getElementById('detail-likes').innerHTML = `<i class="bi bi-heart-fill" style="font-size:0.75rem;"></i> ${e.detail.likeCount.toLocaleString('vi-VN')}`;
+                }
+            }
+        }
+    }
+});
 
 // Fetch comments khi vào trang
 if (commentSongId) {

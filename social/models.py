@@ -12,6 +12,9 @@ Tất cả PK là UUIDField theo quy ước chung của hệ thống.
 import uuid
 from django.db import models
 from django.utils import timezone
+from accounts.models import User
+from music.models import Song
+from music_platform.utils import optimize_cloudinary_url
 
 class Follow(models.Model):
     """
@@ -87,16 +90,16 @@ class FollowRequest(models.Model):
         return {
             'id': str(self.id),
             'sender': {
-                'id': str(self.sender.id),
+                'id': str(self.sender_id),
                 'username': self.sender.username,
                 'display_name': self.sender.get_display_name(),
-                'avatar': self.sender.avatar.url if self.sender.avatar else None,
+                'avatar': optimize_cloudinary_url(self.sender.avatar.url, 'image') if self.sender.avatar else None,
             },
             'receiver': {
-                'id': str(self.receiver.id),
+                'id': str(self.receiver_id),
                 'username': self.receiver.username,
                 'display_name': self.receiver.get_display_name(),
-                'avatar': self.receiver.avatar.url if self.receiver.avatar else None,
+                'avatar': optimize_cloudinary_url(self.receiver.avatar.url, 'image') if self.receiver.avatar else None,
             },
             'created_at': self.created_at.isoformat(),
         }
@@ -307,7 +310,7 @@ class Mood(models.Model):
                 'id': str(self.user_id),
                 'username': self.user.username,
                 'display_name': self.user.get_display_name(),
-                'avatar': self.user.avatar.url if self.user.avatar else None,
+                'avatar': optimize_cloudinary_url(self.user.avatar.url, 'image') if self.user.avatar else None,
             },
             'mood_type': self.mood_type.to_dict() if self.mood_type_id else None,
             'status_text': self.status_text,
@@ -315,7 +318,7 @@ class Mood(models.Model):
                 'id': str(self.song_id),
                 'title': self.song.title,
                 'artist_display_name': self.song.artist.get_display_name(),
-                'cover_image': self.song.cover_image.url if self.song.cover_image else None,
+                'cover_image': optimize_cloudinary_url(self.song.cover_image.url, 'image') if self.song.cover_image else None,
             } if self.song_id else None,
             'theme': self.theme.to_dict() if self.theme_id else None,
             'expires_at': self.expires_at.isoformat(),
@@ -401,7 +404,7 @@ class FriendActivity(models.Model):
                 'id': str(self.user_id),
                 'username': self.user.username,
                 'display_name': self.user.get_display_name(),
-                'avatar': self.user.avatar.url if self.user.avatar else None,
+                'avatar': optimize_cloudinary_url(self.user.avatar.url, 'image') if self.user.avatar else None,
             },
             'activity_type': self.activity_type,
             'extra_text': self.extra_text,
@@ -412,7 +415,7 @@ class FriendActivity(models.Model):
                 'id': str(self.song_id),
                 'title': self.song.title,
                 'artist_display_name': self.song.artist.get_display_name(),
-                'cover_image': self.song.cover_image.url if self.song.cover_image else None,
+                'cover_image': optimize_cloudinary_url(self.song.cover_image.url, 'image') if self.song.cover_image else None,
             }
         else:
             data['song'] = None

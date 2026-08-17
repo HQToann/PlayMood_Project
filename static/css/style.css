@@ -973,3 +973,7 @@ body {
             --pm-radius-sm:     8px;
             --transition:       0.25s ease;
         }
+
+/* Custom styles for Mood Search Modal */
+#musicSearchInput::placeholder { color: rgba(255, 255, 255, 0.6) !important; }
+#musicSearchInput:focus { border-color: rgba(255, 255, 255, 0.5) !important; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) !important; background: rgba(0, 0, 0, 0.4) !important; }

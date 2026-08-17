@@ -47,7 +47,6 @@
                                 <div class="settings-item px-4 opacity-50 user-select-none">
                                     <div class="settings-item-info">
                                         <div class="settings-item-title">Tên đăng nhập (Username)</div>
-                                        <div class="settings-item-desc">@{{ request.user.username }}</div>
                                     </div>
                                     <div class="settings-item-action"></div>
                                 </div>
@@ -69,8 +68,13 @@
                                 </div>
                                 <div class="settings-item px-4">
                                     <div class="settings-item-info">
+                                        {% if request.user.role == 'artist' %}
+                                        <div class="settings-item-title">Nghệ danh</div>
+                                        <div class="settings-item-desc" id="display_name_text">{{ request.user.artist_profile.stage_name|default:request.user.username }}</div>
+                                        {% else %}
                                         <div class="settings-item-title">Tên hiển thị</div>
-                                        <div class="settings-item-desc">Tên người dùng được hiển thị trên PlayMood</div>
+                                        <div class="settings-item-desc" id="display_name_text">{{ request.user.username }}</div>
+                                        {% endif %}
                                     </div>
                                     <div class="settings-item-action">
                                         <button class="btn btn-outline-light rounded-pill btn-sm px-3" data-bs-toggle="modal" data-bs-target="#changeDisplayNameModal">Chỉnh sửa</button>
@@ -377,10 +381,12 @@
                                 required>
                         </div>
                         <div class="mb-3">
-                            <label for="id_card_image" class="form-label text-white mb-1">Ảnh chụp giấy tờ tùy thân
-                                (JPG/PNG) <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control bg-dark border-secondary text-white"
-                                id="id_card_image" accept=".jpg, .jpeg, .png" required>
+                            <label for="id_card_image" class="form-label text-white mb-1">Ảnh chụp giấy tờ tùy thân (JPG/PNG) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <label class="input-group-text bg-secondary text-white border-secondary" for="id_card_image" style="cursor: pointer;">Chọn tệp</label>
+                                <input type="file" class="d-none" id="id_card_image" accept=".jpg, .jpeg, .png" required onchange="document.getElementById('id_card_filename').value = this.files[0] ? this.files[0].name : ''">
+                                <input type="text" class="form-control bg-dark border-secondary text-white" id="id_card_filename" placeholder="Không có tệp nào được chọn" readonly style="cursor: pointer;" onclick="document.getElementById('id_card_image').click()">
+                            </div>
                             <div class="mt-2 text-center d-none" id="id_card_preview_container">
                                 <img id="id_card_preview" src="" alt="Image preview"
                                     class="img-fluid rounded border border-secondary"
@@ -395,10 +401,8 @@
                     </form>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
-                        data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4"
-                        onclick="handleArtistRegistration()">Gửi đăng ký</button>
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;" onclick="handleArtistRegistration()">Gửi đăng ký</button>
                 </div>
             </div>
         </div>
@@ -552,15 +556,25 @@
         <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
             <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
                 <div class="modal-header border-bottom-0">
+                    {% if request.user.role == 'artist' %}
+                    <h5 class="modal-title fw-bold">Đổi nghệ danh</h5>
+                    {% else %}
                     <h5 class="modal-title fw-bold">Đổi tên hiển thị</h5>
+                    {% endif %}
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body px-4 pb-4 pt-2">
                     <form id="changeDisplayNameForm">
                         <div class="mb-4">
+                            {% if request.user.role == 'artist' %}
+                            <label class="form-label text-secondary small mb-1">Nghệ danh mới</label>
+                            <div class="auth-form-group mb-0">
+                                <input type="text" class="auth-input" id="new_username" value="{{ request.user.artist_profile.stage_name|default:request.user.username }}" required maxlength="20" placeholder="Tối đa 20 ký tự">
+                            {% else %}
                             <label class="form-label text-secondary small mb-1">Tên hiển thị mới</label>
                             <div class="auth-form-group mb-0">
-                                <input type="text" class="auth-input" id="new_display_name" value="{{ request.user.display_name|default:request.user.username }}" required maxlength="10" placeholder="Tối đa 10 ký tự">
+                                <input type="text" class="auth-input" id="new_username" value="{{ request.user.username }}" required maxlength="20" placeholder="Tối đa 20 ký tự">
+                            {% endif %}
                                 <i class="bi bi-person"></i>
                             </div>
                         </div>

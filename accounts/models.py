@@ -14,6 +14,8 @@ import secrets
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from music_platform.utils import optimize_cloudinary_url
 from datetime import timedelta
 
 class User(AbstractUser):
@@ -53,20 +55,15 @@ class User(AbstractUser):
         verbose_name='Email',
     )
 
-    # Username vẫn bắt buộc
+    # Username bây giờ là tên hiển thị (không unique)
     username = models.CharField(
-        max_length=50,
-        unique=True,
-        verbose_name='Tên đăng nhập',
-    )
-
-    # Tên hiển thị - có thể trùng
-    display_name = models.CharField(
         max_length=100,
         blank=True,
         default='',
         verbose_name='Tên hiển thị',
     )
+
+
 
     # Avatar lưu trên Cloudinary
     avatar = models.ImageField(
@@ -144,14 +141,14 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
     def get_display_name(self):
-        """Trả tên hiển thị. Nếu là artist trả stage_name, fallback về display_name hoặc username."""
+        """Trả tên hiển thị. Nếu là artist trả stage_name, fallback về username."""
         if self.role == self.ROLE_ARTIST:
             try:
                 if hasattr(self, 'artist_profile') and self.artist_profile.stage_name:
                     return self.artist_profile.stage_name
             except Exception:
                 pass
-        return self.display_name or self.username
+        return self.username
 
     
     def to_dict(self, include_private=False):
@@ -167,7 +164,7 @@ class User(AbstractUser):
             'id': str(self.id),
             'username': self.username,
             'display_name': self.get_display_name(),
-            'avatar': self.avatar.url if self.avatar else None,
+            'avatar': optimize_cloudinary_url(self.avatar.url, 'image') if self.avatar else None,
             'bio': self.bio,
             'role': self.role,
             'is_private': self.is_private,

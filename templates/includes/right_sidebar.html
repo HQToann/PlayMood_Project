@@ -2,43 +2,102 @@
             <!-- RIGHT SIDEBAR (Friends Activity) -->
             <aside class="sidebar-right d-none d-xl-block">
                 <!-- Header Actions for Desktop Sidebar -->
-                <div class="d-flex justify-content-end align-items-center mb-4 gap-2">
+                <div class="mb-4">
                     {% if request.user.is_authenticated %}
-                    <!-- User Mood Tag -->
-                    <div id="myMoodBadge" class="badge rounded-pill px-3 py-2 shadow-sm me-auto" style="display: none; background: linear-gradient(135deg, #F8B4B4, #E99CBB); color: #121929; font-weight: 600; font-size: 0.8rem; cursor: pointer;" title="Tâm trạng hiện tại của bạn">
-                        <i class="bi bi-heart-fill me-1 text-accent"></i> Lãng Mạn
-                    </div>
                     
-                    <a href="{% url 'notifications_page' %}" class="btn-icon text-decoration-none" style="display: inline-flex; align-items: center; justify-content: center; color: inherit;">
-                        <div class="position-relative d-inline-flex">
-                            <i class="bi bi-bell"></i>
-                            <span class="bell-badge position-absolute badge rounded-pill bg-danger" style="display:none; font-size: 0.55rem; padding: 2px 4px; top: 0; right: 0;"></span>
+                    <!-- Single Row: Avatar with Mood Bubble -> Name -> Bell -> Menu -->
+                    <div class="d-flex align-items-end justify-content-between mb-3">
+                        <div class="d-flex align-items-end gap-2">
+                            <!-- Avatar with relative positioning -->
+                            <div class="position-relative">
+                                {% if request.user.avatar %}
+                                <img src="{{ request.user.avatar.url }}" alt="avatar" class="rounded-circle shadow-sm" id="headerUserAvatar" style="width: 48px; height: 48px; object-fit: cover;">
+                                {% else %}
+                                <img src="https://ui-avatars.com/api/?name={{ request.user.get_display_name|urlencode }}&background=random" alt="avatar" class="rounded-circle shadow-sm" id="headerUserAvatar" style="width: 48px; height: 48px; object-fit: cover;">
+                                {% endif %}
+
+                                <style>
+                                    .header-mood-bubble { position: absolute !important; top: -18px; left: 40px; z-index: 10; transform: scale(0.75); transform-origin: bottom left; animation: float-bubble 3s ease-in-out infinite; }
+                                    @keyframes float-bubble {
+                                        0%, 100% { transform: scale(0.75) translateY(0); }
+                                        50% { transform: scale(0.75) translateY(-5px); }
+                                    }
+                                    .header-mood-bubble::before {
+                                        content: ''; position: absolute; bottom: -6px; left: 12px; width: 10px; height: 10px;
+                                        border-radius: 50%; background-color: var(--mood-from, #ff758c); z-index: 1;
+                                    }
+                                    .header-mood-bubble::after {
+                                        content: ''; position: absolute; bottom: -13px; left: 4px; width: 6px; height: 6px;
+                                        border-radius: 50%; background-color: var(--mood-from, #ff758c); z-index: 1;
+                                        box-shadow: 10px 1px 0 -1.5px var(--mood-from, #ff758c);
+                                    }
+                                </style>
+                                {% firstof request.user.mood.theme.gradient_from request.user.mood.mood_type.theme.gradient_from '#ff758c' as mood_color_from %}
+                                {% firstof request.user.mood.theme.gradient_to request.user.mood.mood_type.theme.gradient_to '#ff7eb3' as mood_color_to %}
+                                <div id="myMoodBadgeWrapper" class="header-mood-bubble" style="display: none; --mood-from: {{ mood_color_from }};">
+                                    <div id="myMoodBadge" class="badge d-inline-flex align-items-center gap-2 shadow-sm" 
+                                        style="position: relative; z-index: 2; background: linear-gradient(135deg, var(--mood-from), var(--mood-to)); font-size: 0.8rem; border-radius: 20px; padding: 6px 12px; cursor: pointer; white-space: nowrap; --mood-from: {{ mood_color_from }}; --mood-to: {{ mood_color_to }};" 
+                                        title="{{ request.user.mood.status_text|default:'Cảm xúc hiện tại' }}" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                                        
+                                        <div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">
+                                            {% if request.user.mood.mood_type %}
+                                                <span>{{ request.user.mood.mood_type.emoji|default:'<i class="bi bi-emoji-smile"></i>'|safe }}</span> {{ request.user.mood.mood_type.name }}
+                                            {% else %}
+                                                <i class="bi bi-chat-fill"></i> {{ request.user.mood.status_text|default:'Đang cảm thấy...' }}
+                                            {% endif %}
+                                        </div>
+                                        {% if request.user.mood.song %}
+                                        <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1"
+                                            style="width: 100px;">
+                                            <div class="marquee-wrapper"
+                                                style="overflow: hidden; white-space: nowrap; height: 16px; display: flex; align-items: center; width: 100%;">
+                                                <div class="marquee-left" style="display: flex;">
+                                                    <span class="text-white" style="font-size: 0.8rem; padding-right: 20px;">{{ request.user.mood.song.title }}</span>
+                                                    <span class="text-white" style="font-size: 0.8rem; padding-right: 20px;">{{ request.user.mood.song.title }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Name -->
+                            <div class="text-white fw-bold" style="font-size: 1.25rem; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1; margin-bottom: 2px;">
+                                {{ request.user.get_display_name }}
+                            </div>
                         </div>
-                    </a>
-                    <div class="dropdown">
-                        <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
-                            {% if request.user.avatar %}
-                            <img src="{{ request.user.avatar.url }}" alt="avatar" class="user-avatar" id="headerUserAvatar" style="object-fit: cover;">
-                            {% else %}
-                            <img src="https://ui-avatars.com/api/?name={{ request.user.get_display_name|urlencode }}&background=random" alt="avatar" class="user-avatar" id="headerUserAvatar" style="object-fit: cover;">
-                            {% endif %}
-                            <span style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                                <span style="max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">{{ request.user.get_display_name }}</span>
-                                <i class="bi bi-chevron-down small"></i>
-                            </span>
+
+                        <div class="d-flex align-items-center gap-1" style="margin-bottom: -10px;">
+                            <!-- Notification Bell -->
+                            <a href="{% url 'notifications_page' %}" class="btn-icon text-decoration-none flex-shrink-0" style="display: inline-flex; align-items: center; justify-content: center; color: white; padding: 8px;">
+                                <div class="position-relative d-inline-flex">
+                                    <i class="bi bi-bell" style="font-size: 1.3rem;"></i>
+                                    <span class="bell-badge position-absolute badge rounded-pill bg-danger" style="display:none; font-size: 0.55rem; padding: 3px 5px; top: -2px; right: -2px;"></span>
+                                </div>
+                            </a>
+
+                            <!-- Dropdown Menu (Hamburger icon) -->
+                            <div class="dropdown">
+                                <button class="btn btn-link text-white p-0 border-0 shadow-none d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: rgba(255,255,255,0.7) !important; padding: 4px;">
+                                    <i class="bi bi-list fs-3"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <li><a class="dropdown-item py-2" href="{% url 'profile_page' %}"><i class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
+                                    <li><a class="dropdown-item py-2" href="{% url 'settings_page' %}"><i class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
+                                    <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                                    <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i> Đăng xuất</a></li>
+                                </ul>
+                            </div>
                         </div>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="background-color: var(--bg-card); min-width: 200px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                            <li><a class="dropdown-item py-2" href="{% url 'profile_page' %}"><i class="bi bi-person me-3 text-muted-custom"></i> Hồ sơ cá nhân</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'settings_page' %}"><i class="bi bi-gear me-3 text-muted-custom"></i> Cài đặt</a></li>
-                            <li><hr class="dropdown-divider border-secondary opacity-25"></li>
-                            <li><a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal"><i class="bi bi-box-arrow-right me-3"></i> Đăng xuất</a></li>
-                        </ul>
                     </div>
+
                     {% else %}
                     <!-- Chưa đăng nhập: hiển thị nút Đăng nhập -->
-                    <a href="/auth/login/" class="btn btn-sm rounded-pill fw-semibold ms-auto" style="background-color: var(--accent-color); color: #121929; border: none; padding: 6px 20px;">
-                        <i class="bi bi-person-fill me-1"></i> Đăng nhập
-                    </a>
+                    <div class="text-center py-2">
+                        <a href="/auth/login/" class="btn rounded-pill fw-semibold w-100 shadow-sm" style="background-color: var(--accent-color); color: #121929; border: none; padding: 10px 20px;">
+                            <i class="bi bi-person-fill me-2"></i> Đăng nhập / Đăng ký
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
 
@@ -50,7 +109,7 @@
                         <i class="bi bi-person-plus-fill text-muted-custom" style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.classList.replace('text-muted-custom', 'text-white')" onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè" data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
                     </div>
                 </div>
-                <div class="search-bar mb-4 mt-5 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                <div class="search-bar mb-4 mt-5 w-100" style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); transform: none !important;">
                     <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
                     <input type="text" id="friendSearchInput" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
                 </div>
@@ -100,7 +159,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body px-4 py-3">
-                    <div class="search-bar mb-4 w-100" style="padding: 10px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="search-bar mb-4 w-100" style="padding: 10px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.05); transform: none !important;">
                         <i class="bi bi-search text-muted-custom" style="font-size: 1rem;"></i>
                         <input type="text" id="globalUserSearchInput" placeholder="Tìm kiếm theo Tên, Email hoặc Username..." style="font-size: 0.95rem; background: none; border: none; color: white; outline: none; width: 85%; margin-left: 10px;">
                     </div>
@@ -124,7 +183,7 @@
         window.LOGIN_URL = "/auth/login/";
     </script>
     {% if request.user.is_authenticated %}
-    <script src="{% static 'js/friend_activity.js' %}?v=2.3"></script>
+    <script src="{% static 'js/friend_activity.js' %}?v=2.4"></script>
     {% endif %}
     <style>
         /* Custom marquee starting from left (seamless loop) */

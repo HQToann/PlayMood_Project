@@ -574,7 +574,14 @@ function togglePlay() {
     if (isPlaying) {
         globalAudio.pause();
     } else {
-        globalAudio.play();
+        const playPromise = globalAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                if (error.name !== 'AbortError') {
+                    console.error("Playback error:", error);
+                }
+            });
+        }
     }
     isPlaying = !isPlaying;
     updatePlayIcon();
@@ -683,6 +690,12 @@ async function toggleLike() {
             const serverLiked = data.data.is_liked ?? data.data.liked ?? _isLiked;
             _isLiked = serverLiked;
             updateHeartUI(_isLiked);
+            
+            // Dispatch event to sync with song page
+            document.dispatchEvent(new CustomEvent('songLikeToggled', { 
+                detail: { songId: currentSongId, isLiked: _isLiked, likeCount: data.data.like_count } 
+            }));
+            
             if (window.showToast) window.showToast(
                 _isLiked ? 'Đã thêm vào yêu thích ❤️' : 'Đã bỏ yêu thích',
                 _isLiked ? 'success' : 'info'
@@ -763,7 +776,17 @@ window.playSong = async function (songId, event, fromHistory = false) {
 
         // Play
         globalAudio.src = song.audio_file;
-        await globalAudio.play();
+        try {
+            await globalAudio.play();
+        } catch (playErr) {
+            if (playErr.name === 'AbortError') {
+                console.log("Play interrupted by new load, ignoring...");
+                return; // Ngừng chạy tiếp các lệnh lưu lịch sử nếu bài bị huỷ
+            } else {
+                throw playErr; // Các lỗi thật thì ném ra cho catch bên ngoài xử lý
+            }
+        }
+
         currentSongId = String(songId);
         isPlaying = true;
         updatePlayIcon();
@@ -1161,6 +1184,17 @@ window.closeAllPlayerPanels = function () {
 // Reset panels khi chuyển trang (tương thích HTMX, Turbo, reload bình thường)
 window.addEventListener('beforeunload', window.closeAllPlayerPanels);
 document.addEventListener('htmx:beforeRequest', window.closeAllPlayerPanels);
+
+// Đồng bộ trạng thái Like từ trang chi tiết bài hát sang Player Bar
+document.addEventListener('songLikeToggled', function(e) {
+    // currentSongId is global string in player.js
+    if (e.detail.songId && String(e.detail.songId) === String(currentSongId)) {
+        if (_isLiked !== e.detail.isLiked) {
+            _isLiked = e.detail.isLiked;
+            updateHeartUI(_isLiked);
+        }
+    }
+});
 document.addEventListener('turbo:before-visit', window.closeAllPlayerPanels);
 document.addEventListener('turbolinks:before-visit', window.closeAllPlayerPanels);
 

@@ -14,8 +14,7 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 
-# Handler tuỳ chỉnh
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 
 LOGIN_URL = '/auth/login/'
@@ -113,7 +112,11 @@ def handler429(request):
     )
 
 # URL Patterns
+def dummy_favicon(request):
+    return redirect('https://res.cloudinary.com/jibxercm/image/upload/v1786899540/music_platform/assets/favicon.svg')
+
 urlpatterns = [
+    path('favicon.ico', dummy_favicon),
     # Frontend Routes - Yêu cầu đăng nhập
     path('', home_view, name='home'),
     path('auth/login/', TemplateView.as_view(template_name='auth/login.html'), name='login_page'),

@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -116,17 +116,32 @@
                                         <div class="mb-4">
                                             <label class="form-label fw-bold text-white fs-5 mb-3">Tệp âm thanh <span class="text-danger">*</span></label>
                                             <div class="p-4 rounded-3" style="background-color: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
-                                                <input class="form-control bg-dark text-white border-secondary" type="file" name="audio_file" accept=".mp3, .flac, .wav" required>
-                                                <div class="form-text text-secondary mt-2">Chỉ chấp nhận các định dạng: .mp3, .flac, .wav</div>
+                                                <label for="audioFileInput" class="btn btn-outline-light w-100 mb-3 px-3 text-white" style="border-radius: 8px; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); cursor: pointer;">
+                                                    <i class="bi bi-file-earmark-music me-2"></i> Chọn tệp âm thanh
+                                                </label>
+                                                <div id="audioFileName" class="text-white fw-medium text-center mb-1" style="font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Chưa có tệp nào được chọn</div>
+                                                <input class="position-absolute opacity-0" style="width: 1px; height: 1px; z-index: -1;" type="file" id="audioFileInput" name="audio_file" accept=".mp3, .flac, .wav" required onchange="
+                                                    const file = this.files[0];
+                                                    const nameDisplay = document.getElementById('audioFileName');
+                                                    if (file) {
+                                                        nameDisplay.textContent = file.name;
+                                                        nameDisplay.classList.add('text-success');
+                                                        nameDisplay.classList.remove('text-white');
+                                                    } else {
+                                                        nameDisplay.textContent = 'Chưa có tệp nào được chọn';
+                                                        nameDisplay.classList.remove('text-success');
+                                                        nameDisplay.classList.add('text-white');
+                                                    }
+                                                ">
+                                                <div class="form-text text-secondary text-center mt-2">Chỉ chấp nhận các định dạng: .mp3, .flac, .wav</div>
                                             </div>
                                         </div>
 
                                         <hr class="border-secondary opacity-25 my-4">
 
-                                        <!-- Tiêu đề (Bắt buộc) -->
                                         <div class="mb-4">
                                             <label class="form-label fw-bold text-white">Tiêu đề bài hát <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control bg-dark text-white border-secondary px-3 py-2" name="title" placeholder="Nhập tên bài hát..." maxlength="200" required>
+                                            <input type="text" class="form-control pm-input px-3 py-2" name="title" placeholder="Nhập tên bài hát..." maxlength="200" required>
                                             <div class="form-text text-secondary mt-1">Tối đa 200 ký tự</div>
                                         </div>
 
@@ -134,7 +149,7 @@
                                             <!-- Thể loại -->
                                             <div class="col-md-6">
                                                 <label class="form-label fw-semibold text-white">Thể loại</label>
-                                                <select class="form-select bg-dark text-white border-secondary px-3 py-2" name="genre_id" id="genreSelect" required>
+                                                <select class="form-select pm-input px-3 py-2" name="genre_id" id="genreSelect" required>
                                                     <option value="" selected>-- Chọn thể loại --</option>
                                                 </select>
                                             </div>
@@ -142,7 +157,7 @@
                                             <!-- Trạng thái -->
                                             <div class="col-md-6">
                                                 <label class="form-label fw-semibold text-white">Trạng thái phát hành</label>
-                                                <select class="form-select bg-dark text-white border-secondary px-3 py-2" name="status">
+                                                <select class="form-select pm-input px-3 py-2" name="status">
                                                     <option value="draft" selected>Bản nháp (Draft)</option>
                                                     <option value="published">Phát hành ngay (Published)</option>
                                                 </select>
@@ -152,11 +167,11 @@
                                         <!-- Lời bài hát -->
                                         <div class="mb-4">
                                             <label class="form-label fw-semibold text-white">Lời bài hát</label>
-                                            <textarea class="form-control bg-dark text-white border-secondary p-3" name="lyrics" rows="6" placeholder="Nhập lời bài hát tại đây..."></textarea>
+                                            <textarea class="form-control pm-input p-3" name="lyrics" rows="6" placeholder="Nhập lời bài hát tại đây..."></textarea>
                                         </div>
 
                                         <!-- Cho phép tải xuống -->
-                                        <div class="mb-5 bg-dark p-3 rounded-3 border border-secondary border-opacity-50 d-flex align-items-center justify-content-between">
+                                        <div class="mb-5 p-3 rounded-3 d-flex align-items-center justify-content-between" style="background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
                                             <div>
                                                 <div class="fw-semibold text-white mb-1">Cho phép tải xuống</div>
                                                 <div class="text-secondary small">Người nghe có thể tải bài hát này về thiết bị của họ</div>
@@ -177,8 +192,13 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
+            <!-- Include right sidebar INSIDE main-wrapper -->
+            {% include 'includes/right_sidebar.html' %}
         </div>
+        
+        <!-- PLAYER BAR OUTSIDE main-wrapper -->
+        {% include 'includes/player_bar.html' %}
     </div>
 
     <!-- Success Toast Notification -->

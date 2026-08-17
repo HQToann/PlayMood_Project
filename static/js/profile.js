@@ -272,6 +272,10 @@ async function saveImages() {
     }
 
     try {
+        if (window.showToast) {
+            window.showToast('Đang tải ảnh lên hệ thống, vui lòng đợi...', 'info');
+        }
+
         const csrfToken = getCookie('csrftoken');
         const response = await fetch('/api/v1/accounts/me/images/', {
             method: 'POST',
@@ -283,14 +287,29 @@ async function saveImages() {
 
         const result = await response.json();
         if (response.ok && result.success) {
-            window.location.reload();
+            if (window.showToast) {
+                window.showToast('Cập nhật ảnh thành công!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                window.location.reload();
+            }
         } else {
             console.error('Lỗi khi lưu hình ảnh:', result);
-            alert(result.error?.message || 'Có lỗi xảy ra khi lưu hình ảnh');
+            if (window.showToast) {
+                window.showToast(result.error?.message || 'Có lỗi xảy ra khi lưu hình ảnh', 'error');
+            } else {
+                alert(result.error?.message || 'Có lỗi xảy ra khi lưu hình ảnh');
+            }
         }
     } catch (e) {
         console.error('Lỗi khi lưu hình ảnh:', e);
-        alert('Có lỗi xảy ra khi lưu hình ảnh');
+        if (window.showToast) {
+            window.showToast('Có lỗi xảy ra khi lưu hình ảnh', 'error');
+        } else {
+            alert('Có lỗi xảy ra khi lưu hình ảnh');
+        }
     }
 }
 
@@ -332,3 +351,48 @@ window.saveSocials = async function () {
         else alert('Lỗi kết nối');
     }
 }
+
+// Bio Logic
+window.saveBio = async function() {
+    const bioInput = document.getElementById('bioInput');
+    if (!bioInput) return;
+    
+    const bioText = bioInput.value;
+    try {
+        const res = await fetch('/api/v1/accounts/me/', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ bio: bioText })
+        });
+        const json = await res.json();
+        
+        if (res.ok && json.success) {
+            if (window.showToast) window.showToast('Đã cập nhật tiểu sử thành công!', 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            const errorMsg = json.error?.message || 'Lỗi khi cập nhật tiểu sử';
+            if (window.showToast) window.showToast(errorMsg, 'error');
+            else alert(errorMsg);
+        }
+    } catch (e) {
+        console.error(e);
+        if (window.showToast) window.showToast('Lỗi kết nối máy chủ', 'error');
+        else alert('Lỗi kết nối máy chủ');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const bioInput = document.getElementById('bioInput');
+    const bioCharCount = document.getElementById('bioCharCount');
+    
+    if (bioInput && bioCharCount) {
+        const updateCount = () => {
+            bioCharCount.textContent = bioInput.value.length;
+        };
+        bioInput.addEventListener('input', updateCount);
+        updateCount(); // Initial count
+    }
+});

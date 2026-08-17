@@ -21,6 +21,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils.text import slugify
+from music_platform.utils import optimize_cloudinary_url
 
 # Determine storage for audio based on settings
 if 'cloudinary' in settings.STORAGES.get('default', {}).get('BACKEND', ''):
@@ -256,11 +257,11 @@ class Song(models.Model):
                 'id': str(self.artist_id),
                 'username': self.artist.username,
                 'display_name': self.artist.get_display_name(),
-                'avatar': self.artist.avatar.url if self.artist.avatar else None,
+                'avatar': optimize_cloudinary_url(self.artist.avatar.url, 'image') if self.artist.avatar else None,
             },
             'genre': self.genre.to_dict() if self.genre else None,
-            'audio_file': self.audio_file.url if (self.audio_file and viewer and viewer.is_authenticated) else None,
-            'cover_image': self.cover_image.url if self.cover_image else None,
+            'audio_file': optimize_cloudinary_url(self.audio_file.url, 'audio') if (self.audio_file and viewer and viewer.is_authenticated) else None,
+            'cover_image': optimize_cloudinary_url(self.cover_image.url, 'image') if self.cover_image else None,
             'lyrics': self.lyrics,
             'duration': self.duration,
             'play_count': self.play_count,
@@ -417,7 +418,7 @@ class Comment(models.Model):
                 'id': str(self.user_id),
                 'username': self.user.username,
                 'display_name': self.user.get_display_name(),
-                'avatar': self.user.avatar.url if self.user.avatar else None,
+                'avatar': optimize_cloudinary_url(self.user.avatar.url, 'image') if self.user.avatar else None,
             },
             'content': self.content,
             'like_count': self.comment_likes.count(),
@@ -683,7 +684,7 @@ class Album(models.Model):
             for asong in self.album_songs.select_related('song', 'song__artist').order_by('order', 'added_at')
         ]
         # Fallback cover: dùng cover bài đầu tiên nếu album chưa có cover
-        cover_url = self.cover_image.url if self.cover_image else (
+        cover_url = optimize_cloudinary_url(self.cover_image.url, 'image') if self.cover_image else (
             songs[0]['song']['cover_image'] if songs else None
         )
         return {
@@ -699,7 +700,7 @@ class Album(models.Model):
                 'id': str(self.artist_id),
                 'username': self.artist.username,
                 'display_name': self.artist.get_display_name(),
-                'avatar': self.artist.avatar.url if self.artist.avatar else None,
+                'avatar': optimize_cloudinary_url(self.artist.avatar.url, 'image') if self.artist.avatar else None,
             },
             'song_count': len(songs),
             'songs': songs,

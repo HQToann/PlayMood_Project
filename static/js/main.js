@@ -75,7 +75,11 @@ async function handleLogout(event) {
             window.location.href = '/auth/login/';
         } else {
             console.error('Logout failed');
-            alert('Đăng xuất thất bại, vui lòng thử lại.');
+            if (window.showToast) {
+                window.showToast('Đăng xuất thất bại, vui lòng thử lại.', false);
+            } else {
+                alert('Đăng xuất thất bại, vui lòng thử lại.');
+            }
             if (event) {
                 const btn = event.currentTarget;
                 btn.innerHTML = 'Đăng xuất';
@@ -84,7 +88,11 @@ async function handleLogout(event) {
         }
     } catch (error) {
         console.error('Error during logout:', error);
-        alert('Có lỗi xảy ra, vui lòng thử lại.');
+        if (window.showToast) {
+            window.showToast('Có lỗi xảy ra, vui lòng thử lại.', false);
+        } else {
+            alert('Có lỗi xảy ra, vui lòng thử lại.');
+        }
         if (event) {
             const btn = event.currentTarget;
             btn.innerHTML = 'Đăng xuất';
@@ -231,12 +239,20 @@ window.toggleFollowUser = async function(userId, btnElement) {
                 btnElement.classList.add('btn-outline-light', 'text-white');
             }
         } else {
-            alert(data.error?.message || 'Lỗi xử lý yêu cầu');
+            if (window.showToast) {
+                window.showToast(data.error?.message || 'Lỗi xử lý yêu cầu', false);
+            } else {
+                alert(data.error?.message || 'Lỗi xử lý yêu cầu');
+            }
             btnElement.innerText = originalText;
         }
     } catch (err) {
         console.error(err);
-        alert('Lỗi kết nối');
+        if (window.showToast) {
+            window.showToast('Lỗi kết nối', false);
+        } else {
+            alert('Lỗi kết nối');
+        }
         btnElement.innerText = originalText;
     } finally {
         btnElement.disabled = false;

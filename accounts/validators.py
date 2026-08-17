@@ -15,15 +15,11 @@ import re
 from music_platform.sanitize import sanitize_text
 from accounts.exceptions import ValidationError
 
-# Hằng số giới hạn
 USERNAME_MIN = 3
-USERNAME_MAX = 50
+USERNAME_MAX = 20
 PASSWORD_MIN = 8
-DISPLAY_NAME_MAX = 10
+DISPLAY_NAME_MAX = 20
 BIO_MAX = 100
-
-# Pattern username: chỉ chữ cái, số, dấu gạch dưới, dấu chấm, gạch ngang
-USERNAME_PATTERN = re.compile(r'^[\w.\-]+$')
 
 # Các loại file hợp cho minh chứng
 ALLOWED_ID_CARD_TYPES = {'image/jpeg', 'image/png', 'application/pdf'}
@@ -52,8 +48,6 @@ def validate_register(data: dict) -> dict:
         errors['username'] = [f'Tên đăng nhập phải có ít nhất {USERNAME_MIN} ký tự']
     elif len(username) > USERNAME_MAX:
         errors['username'] = [f'Tên đăng nhập tối đa {USERNAME_MAX} ký tự']
-    elif not USERNAME_PATTERN.match(username):
-        errors['username'] = ['Tên đăng nhập chỉ gồm chữ cái, số, dấu chấm, gạch dưới, gạch ngang']
     
     # email
     email = data.get('email', '').strip().lower()
@@ -120,12 +114,12 @@ def validate_update_profile(data: dict) -> dict:
     errors = {}
     result = {}
 
-    if 'display_name' in data:
-        display_name = sanitize_text(data['display_name'])
-        if len(display_name) > DISPLAY_NAME_MAX:
-            errors['display_name'] = [f'Tên hiển thị tối đa {DISPLAY_NAME_MAX} ký tự']
+    if 'username' in data:
+        username = sanitize_text(data['username'])
+        if len(username) > DISPLAY_NAME_MAX:
+            errors['username'] = [f'Tên hiển thị tối đa {DISPLAY_NAME_MAX} ký tự']
         else:
-            result['display_name'] = display_name
+            result['username'] = username
     
     if 'bio' in data:
         bio = sanitize_text(data['bio'])
@@ -134,14 +128,7 @@ def validate_update_profile(data: dict) -> dict:
         else:
             result['bio'] = bio
     
-    if 'username' in data:
-        username = data['username'].strip()
-        if len(username) < USERNAME_MIN or len(username) > USERNAME_MAX:
-            errors['username'] = [f'Tên đăng nhập từ {USERNAME_MIN} - {USERNAME_MAX} ký tự']
-        elif not USERNAME_PATTERN.match(username):
-            errors['username'] = ['Tên đăng nhập chứa ký tự không hợp lệ']
-        else:
-            result['username'] = username
+
 
     if errors:
         raise ValidationError('Dữ liệu cập nhật không hợp lệ', fields=errors)

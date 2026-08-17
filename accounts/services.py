@@ -128,23 +128,19 @@ def update_profile(user: User, data: dict) -> User:
     Args:
         user: User cần cập nhật
         data: dict đã validate từ validators.validate_update_profile()
-              Có thể chứa: display_name, bio, username
+              Có thể chứa: username, bio
 
     Returns:
         User sau khi cập nhật
-
-    Raises:
-        AlreadyExists: nếu username mới đã tồn tại
     """
-    if 'username' in data:
-        if (
-            data['username'].lower() != user.username.lower()
-            and check_username_exists(data['username'])
-        ):
-            raise AlreadyExists('Tên đăng nhập này đã tồn tại')
-    
     for field, value in data.items():
         setattr(user, field, value)
+        
+        # Đồng bộ stage_name cho nghệ sĩ nếu họ đổi tên hiển thị (username)
+        if field == 'username' and user.role == user.ROLE_ARTIST:
+            if hasattr(user, 'artist_profile'):
+                user.artist_profile.stage_name = value
+                user.artist_profile.save(update_fields=['stage_name'])
 
     user.save(update_fields=list(data.keys()) + ['updated_at'])
     logger.info('Profile updated: %s', user.username)

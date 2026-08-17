@@ -23,8 +23,13 @@
                                 <i class="bi bi-image" id="playlistCoverPlaceholder"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <input type="file" class="pm-input" id="playlistCover" accept="image/*" style="padding:.45rem .7rem;cursor:pointer;" onchange="
+                                <label for="playlistCover" class="btn btn-outline-light btn-sm mb-1 px-3 text-white" style="border-radius: 8px; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05);">
+                                    <i class="bi bi-folder2-open me-1"></i> Chọn tệp
+                                </label>
+                                <div id="playlistCoverName" class="text-secondary mb-2" style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 250px;">Chưa có tệp nào được chọn</div>
+                                <input type="file" class="d-none" id="playlistCover" accept="image/*" onchange="
                                     const file = this.files[0];
+                                    const nameDisplay = document.getElementById('playlistCoverName');
                                     if (file) {
                                         const reader = new FileReader();
                                         reader.onload = function(e) {
@@ -33,9 +38,16 @@
                                             document.getElementById('playlistCoverPlaceholder').style.display = 'none';
                                         }
                                         reader.readAsDataURL(file);
+                                        nameDisplay.textContent = file.name;
+                                        nameDisplay.classList.add('text-light');
+                                        nameDisplay.classList.remove('text-secondary');
+                                    } else {
+                                        nameDisplay.textContent = 'Chưa có tệp nào được chọn';
+                                        nameDisplay.classList.remove('text-light');
+                                        nameDisplay.classList.add('text-secondary');
                                     }
                                 ">
-                                <small class="text-secondary d-block mt-1" style="font-size:.72rem;">
+                                <small class="text-secondary d-block" style="font-size:.72rem;">
                                     JPG, PNG, WEBP · khuyến nghị 500×500 px
                                 </small>
                             </div>

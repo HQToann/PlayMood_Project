@@ -28,15 +28,17 @@
                     if (result.success && result.data) {
                         const status = result.data.status;
                         const actionContainer = document.getElementById('artist-register-action');
-                        if (status === 'pending') {
-                            actionContainer.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-circle-fill me-1" style="font-size: 0.7rem;"></i> Chờ duyệt...</span>';
-                        } else if (status === 'approved') {
-                            actionContainer.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Đã được chấp thuận</span>';
-                        } else if (status === 'rejected') {
-                            const infoContainer = document.getElementById('artist-register-info');
-                            const existingError = document.getElementById('artist-register-error');
-                            if (existingError) existingError.remove();
-                            infoContainer.insertAdjacentHTML('beforeend', '<div id="artist-register-error" class="text-danger small mt-1 fw-bold"><i class="bi bi-circle-fill me-1" style="font-size: 0.7rem;"></i> Bị từ chối. Vui lòng đăng ký lại</div>');
+                        if (actionContainer) {
+                            if (status === 'pending') {
+                                actionContainer.innerHTML = '<span class="text-warning fw-bold"><i class="bi bi-circle-fill me-1" style="font-size: 0.7rem;"></i> Chờ duyệt...</span>';
+                            } else if (status === 'approved') {
+                                actionContainer.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Đã được chấp thuận</span>';
+                            } else if (status === 'rejected') {
+                                const infoContainer = document.getElementById('artist-register-info');
+                                const existingError = document.getElementById('artist-register-error');
+                                if (existingError) existingError.remove();
+                                infoContainer.insertAdjacentHTML('beforeend', '<div id="artist-register-error" class="text-danger small mt-1 fw-bold"><i class="bi bi-circle-fill me-1" style="font-size: 0.7rem;"></i> Bị từ chối. Vui lòng đăng ký lại</div>');
+                            }
                         }
                     }
                 }
@@ -68,7 +70,7 @@
 
             try {
                 // Hiển thị trạng thái đang tải (tùy chọn)
-                const btn = document.querySelector('#artistRegisterModal .btn-primary');
+                const btn = document.querySelector('#artistRegisterModal button[onclick="handleArtistRegistration()"]');
                 const originalBtnText = btn.innerHTML;
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang gửi...';
                 btn.disabled = true;
@@ -99,6 +101,8 @@
                     // Reset form
                     form.reset();
                     document.getElementById('id_card_preview_container').classList.add('d-none');
+                    
+                    if (window.showToast) window.showToast('Đã gửi yêu cầu đăng ký nghệ sĩ thành công!', 'success');
                 } else {
                     let errorMsg = 'Không thể gửi đăng ký.';
                     if (result.error && result.error.fields) {
@@ -107,11 +111,13 @@
                     } else if (result.error && result.error.message) {
                         errorMsg = result.error.message;
                     }
-                    alert('Lỗi: ' + errorMsg);
+                    if (window.showToast) window.showToast('Lỗi: ' + errorMsg, 'error');
+                    else alert('Lỗi: ' + errorMsg);
                 }
             } catch (e) {
                 console.error(e);
-                alert('Lỗi kết nối máy chủ. Vui lòng thử lại sau.');
+                if (window.showToast) window.showToast('Lỗi kết nối máy chủ. Vui lòng thử lại sau.', 'error');
+                else alert('Lỗi kết nối máy chủ. Vui lòng thử lại sau.');
             }
         }
 
@@ -182,8 +188,9 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
                 btn.disabled = true;
 
+                const usernameInput = document.getElementById('new_username') || document.getElementById('new_display_name');
                 const payload = {
-                    display_name: document.getElementById('new_display_name').value
+                    username: usernameInput ? usernameInput.value : ''
                 };
 
                 try {

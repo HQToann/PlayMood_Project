@@ -9,6 +9,7 @@ var selectedThemeId = null;
 
 function renderThemes() {
     const picker = document.getElementById('themeColorPicker');
+    if (!picker) return;
     picker.innerHTML = '';
     MOOD_THEMES.forEach(theme => {
         const div = document.createElement('div');
@@ -57,6 +58,7 @@ function selectTheme(themeId) {
 
 function renderMoodTypes(moodTypes) {
     const grid = document.getElementById('moodTypeGrid');
+    if (!grid) return;
     grid.innerHTML = '';
     moodTypes.forEach(mt => {
         const div = document.createElement('div');
@@ -313,25 +315,60 @@ async function loadMoodData() {
             MOOD_TYPES = typesRes.data;
             // Bản mood types API trả về cần có object theme lồng nhau để render
             renderMoodTypes(MOOD_TYPES);
+            
+            // Auto select first mood type to prevent "default tag" (empty tag) issue
+            const moodTypeInput = document.getElementById('mood_type_id');
+            if (MOOD_TYPES.length > 0 && moodTypeInput && !moodTypeInput.value) {
+                setTimeout(() => {
+                    const firstEl = document.querySelector('.mood-card-item');
+                    if (firstEl) selectMood(MOOD_TYPES[0], firstEl);
+                }, 100);
+            }
         }
 
         // Hiển thị Tâm trạng hiện tại
         const myMoodTag = document.getElementById('myMoodBadge');
+        const myMoodWrapper = document.getElementById('myMoodBadgeWrapper');
         if (myMoodRes.success && myMoodRes.data) {
             const mood = myMoodRes.data;
             if (myMoodTag) {
-                myMoodTag.style.display = 'inline-block';
-                myMoodTag.style.background = `linear-gradient(135deg, ${mood.theme.gradient_from}, ${mood.theme.gradient_to})`;
+                if (mood.is_expired) {
+                    myMoodTag.style.display = 'none';
+                    if (myMoodWrapper) myMoodWrapper.style.display = 'none';
+                } else {
+                    myMoodTag.style.display = 'inline-flex';
+                    if (myMoodWrapper) myMoodWrapper.style.display = 'block';
+
+                    const gradientFrom = mood.theme?.gradient_from || mood.mood_type?.theme?.gradient_from || '#ff758c';
+                const gradientTo = mood.theme?.gradient_to || mood.mood_type?.theme?.gradient_to || '#ff7eb3';
+                myMoodTag.style.background = `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`;
+                myMoodTag.style.setProperty('--mood-from', gradientFrom);
+                if (myMoodWrapper) myMoodWrapper.style.setProperty('--mood-from', gradientFrom);
                 myMoodTag.style.color = '#fff';
 
-                let contentHtml = '';
+                let contentHtml = `<div class="d-flex align-items-center gap-1 flex-shrink-0 text-white">`;
                 if (mood.mood_type) {
-                    contentHtml = `<span class="me-1">${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
+                    contentHtml += `<span>${mood.mood_type.emoji || '<i class="bi bi-emoji-smile"></i>'}</span> ${mood.mood_type.name}`;
                 } else {
-                    contentHtml = `<i class="bi bi-chat-fill me-1"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
+                    contentHtml += `<i class="bi bi-chat-fill"></i> ${mood.status_text || 'Đang cảm thấy...'}`;
                 }
+                contentHtml += `</div>`;
+
+                if (mood.song) {
+                    contentHtml += `
+                    <div class="border-start border-light border-opacity-25 ps-2 ms-1 d-flex align-items-center gap-1" style="width: 100px;">
+                        <div class="marquee-wrapper" style="overflow: hidden; white-space: nowrap; height: 16px; display: flex; align-items: center; width: 100%;">
+                            <div class="marquee-left" style="display: flex;">
+                                <span class="text-white" style="font-size: 0.8rem; padding-right: 20px;">${mood.song.title}</span>
+                                <span class="text-white" style="font-size: 0.8rem; padding-right: 20px;">${mood.song.title}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                
                 myMoodTag.innerHTML = contentHtml;
                 myMoodTag.title = mood.status_text || 'Tâm trạng hiện tại của bạn';
+                } // Close else block
             }
 
             // Nếu user đang có mood, tự động hiện gợi ý luôn
@@ -347,6 +384,7 @@ async function loadMoodData() {
             }
         } else {
             if (myMoodTag) myMoodTag.style.display = 'none';
+            if (myMoodWrapper) myMoodWrapper.style.display = 'none';
             loadDefaultRecommendations();
         }
     } catch (e) {
@@ -357,21 +395,32 @@ async function loadMoodData() {
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     loadMoodData();
+
+    // Event delegation for expires hours
+    const expiresDropdownMenu = document.getElementById('expiresDropdownMenu');
+    if (expiresDropdownMenu) {
+        expiresDropdownMenu.addEventListener('click', (e) => {
+            const item = e.target.closest('.custom-dropdown-item');
+            if (item) {
+                e.preventDefault();
+                const val = item.dataset.val;
+                const text = item.dataset.text;
+                
+                const input = document.getElementById('expires_hours_input');
+                if (input) input.value = val;
+                
+                const textEl = document.getElementById('selectedExpiresText');
+                if (textEl) textEl.textContent = text;
+
+                // Update active state
+                const items = expiresDropdownMenu.querySelectorAll('.custom-dropdown-item');
+                items.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            }
+        });
+    }
 });
-
-// Select expires hours
-function selectExpires(event, val, text) {
-    event.preventDefault();
-    document.getElementById('expires_hours_input').value = val;
-    document.getElementById('selectedExpiresText').textContent = text;
-
-    // Update active state
-    const items = event.currentTarget.closest('.custom-dropdown-menu').querySelectorAll('.custom-dropdown-item');
-    items.forEach(item => item.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-}
-
-
+// Event delegation for select expires hours handled in DOMContentLoaded
 
 // Handle form submit
 async function handlePostMood(event) {
@@ -476,6 +525,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // Event delegation for song selection
+        searchResults.addEventListener('click', (e) => {
+            const item = e.target.closest('.song-result-item');
+            if (item) {
+                selectSong(item.dataset.id, item.dataset.title, item.dataset.artist, item.dataset.cover);
+            }
+        });
     }
 });
 
@@ -545,14 +602,20 @@ function renderSearchResults(songs, searchResultsEl, append = false) {
     songs.forEach(song => {
         // Nếu cover_image null, dùng ảnh mặc định
         const cover = song.cover_image || 'https://via.placeholder.com/150?text=No+Cover';
-        // Tên artist (dùng map lấy tên nếu trả về array)
-        const artistNames = Array.isArray(song.artists) ? song.artists.map(a => a.name).join(', ') : 'Unknown Artist';
+        // Tên artist
+        const artistNames = song.artist ? (song.artist.display_name || song.artist.username) : 'Không rõ';
+        
+        const safeTitle = song.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeArtist = artistNames.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
         html += `
-                                    <div class="d-flex align-items-center gap-3 p-2 rounded" style="cursor: pointer; transition: background 0.2s;" 
+                                    <div class="d-flex align-items-center gap-3 p-2 rounded song-result-item" style="cursor: pointer; transition: background 0.2s;" 
                                          onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
                                          onmouseout="this.style.background='transparent'"
-                                         onclick="selectSong('${song.id}', '${song.title.replace(/'/g, "\\'")}', '${artistNames.replace(/'/g, "\\'")}', '${cover}')">
+                                         data-id="${song.id}" 
+                                         data-title="${song.title.replace(/"/g, '&quot;')}" 
+                                         data-artist="${artistNames.replace(/"/g, '&quot;')}" 
+                                         data-cover="${cover.replace(/"/g, '&quot;')}">
                                         <img src="${cover}" alt="${song.title}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;">
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${song.title}</div>
@@ -596,9 +659,23 @@ function selectSong(id, title, artist, cover) {
     // Đóng modal an toàn
     const modalEl = document.getElementById('searchMusicModal');
     if (modalEl) {
-        const closeBtn = modalEl.querySelector('.btn-close');
-        if (closeBtn) closeBtn.click();
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) {
+            modalInstance.hide();
+        } else {
+            const closeBtn = modalEl.querySelector('.btn-close');
+            if (closeBtn) closeBtn.click();
+        }
     }
+    
+    // Đảm bảo không còn backdrop nào kẹt lại cản trở click
+    setTimeout(() => {
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(b => b.remove());
+    }, 300);
 }
 
 function resetSongAttachmentUI() {

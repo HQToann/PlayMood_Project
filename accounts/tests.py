@@ -515,15 +515,15 @@ class MyProfileViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()['success'])
 
-    def test_patch_display_name(self):
+    def test_patch_username(self):
         response = self.client.patch(
             '/api/v1/accounts/me/',
-            data=json.dumps({'display_name': 'New Name'}),
+            data=json.dumps({'username': 'New Name'}),
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 200)
         self.user.refresh_from_db()
-        self.assertEqual(self.user.display_name, 'New Name')
+        self.assertEqual(self.user.username, 'New Name')
 
     def test_patch_sanitizes_xss(self):
         """Bio với XSS phải được sanitize trước khi lưu (Fix R12)."""
@@ -540,7 +540,7 @@ class MyProfileViewTest(TestCase):
         self.client.logout()
         response = self.client.patch(
             '/api/v1/accounts/me/',
-            data=json.dumps({'display_name': 'X'}),
+            data=json.dumps({'username': 'X'}),
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 401)
@@ -705,12 +705,11 @@ class UserModelTest(TestCase):
 
     def test_get_display_name_fallback(self):
         user = make_user('fallback', 'fallback@example.com')
-        user.display_name = ''
         self.assertEqual(user.get_display_name(), 'fallback')
 
     def test_get_display_name_set(self):
         user = make_user('withname', 'withname@example.com')
-        user.display_name = 'Real Name'
+        user.username = 'Real Name'
         self.assertEqual(user.get_display_name(), 'Real Name')
 
     def test_to_dict_excludes_email_by_default(self):

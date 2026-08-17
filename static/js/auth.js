@@ -165,7 +165,7 @@ function toggleAuth(isRegister) {
                 const result = await response.json();
                 if (response.ok && result.success) {
                     // Đăng ký thành công, tự động đăng nhập hoặc chuyển về màn hình đăng nhập
-                    alert('Đăng ký thành công! Vui lòng đăng nhập.');
+                    window.showToast('Đăng ký thành công! Vui lòng đăng nhập.', true);
                     toggleAuth(false);
                     document.getElementById('loginEmail').value = email;
                     document.getElementById('loginPassword').value = '';

@@ -229,8 +229,8 @@ def record_play(user, song: Song) -> int:
     user_is_auth = getattr(user, 'is_authenticated', False) and getattr(user, 'id', None)
 
     if user_is_auth:
-        # Kiểm tra đã nghe trong 5 phút chưa để tránh tính trùng
-        cutoff = timezone.now() - timedelta(minutes=5)
+        # Kiểm tra đã nghe trong 1 phút chưa để tránh tính trùng (rút ngắn để dễ test)
+        cutoff = timezone.now() - timedelta(minutes=1)
         already_played = ListenHistory.objects.filter(
             user=user,
             song=song,

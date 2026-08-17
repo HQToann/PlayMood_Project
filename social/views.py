@@ -246,6 +246,8 @@ class MyMoodView(View):
                     'data': mood.to_dict(),
                 }
             )
+        except MoodNotFound:
+            return JsonResponse({'success': True, 'data': None})
         except Exception as e:
             return handle_exception(e)
         
