@@ -179,7 +179,7 @@ EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
 ANYMAIL = {
     "RESEND_API_KEY": config("RESEND_API_KEY", default=""),
 }
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@nhangalaptrinh.id.vn')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
 
 RATELIMIT_ENABLE = config('RATELIMIT_ENABLE', default=False, cast=bool)
