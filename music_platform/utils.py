@@ -1,8 +1,8 @@
 def optimize_cloudinary_url(url, resource_type='image'):
     """
-    Tối ưu hoá URL Cloudinary bằng cách chèn tham số format/quality.
+    Tối ưu hoá URL Cloudinary bằng cách chèn tham số format/quality (chỉ áp dụng cho ảnh).
     - Ảnh: f_auto,q_auto (Tự định dạng WebP/AVIF và nén tự động)
-    - Audio: q_auto (Tự động nén âm thanh ở chất lượng tốt nhất với dung lượng nhỏ nhất)
+    - Audio/Video: Giữ nguyên để tránh lỗi 404 Not Supported.
     """
     if not url:
         return url
@@ -11,10 +11,8 @@ def optimize_cloudinary_url(url, resource_type='image'):
         # Bắt buộc chuyển HTTP sang HTTPS để tránh lỗi Mixed Content khi deploy
         url = url.replace('http://', 'https://')
         
-        # Tránh thêm nhiều lần nếu đã có
-        if '/upload/f_auto' not in url and '/upload/q_auto' not in url:
-            if resource_type == 'image':
-                return url.replace('/upload/', '/upload/f_auto,q_auto/', 1)
-            elif resource_type in ('audio', 'video'):
-                return url.replace('/upload/', '/upload/q_auto/', 1)
+        # Chỉ chèn transformation cho hình ảnh
+        if resource_type == 'image' and '/upload/f_auto' not in url and '/upload/q_auto' not in url:
+            return url.replace('/upload/', '/upload/f_auto,q_auto/', 1)
+            
     return url

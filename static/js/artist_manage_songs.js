@@ -118,11 +118,11 @@
                                 <div class="song-manage-item row align-items-center py-3 px-3 rounded-3 mb-2" style="background-color: rgba(255,255,255,0.02); transition: background-color 0.2s; ${hiddenByAdmin ? 'border: 1px solid rgba(220, 53, 69, 0.4);' : 'border: 1px solid transparent;'}">
                                     <div class="col-12 col-md-5 d-flex align-items-center gap-3 mb-3 mb-md-0">
                                         ${coverUrl 
-                                            ? `<img src="${coverUrl}" alt="cover" class="rounded play-trigger" style="width: 50px; height: 50px; object-fit: cover; cursor:pointer;" data-audio-url="${song.audio_file}">`
-                                            : `<div class="d-flex align-items-center justify-content-center rounded bg-secondary bg-opacity-25 play-trigger" style="width: 50px; height: 50px; cursor:pointer;" data-audio-url="${song.audio_file}"><i class="bi bi-music-note text-secondary fs-4"></i></div>`
+                                            ? `<img src="${coverUrl}" alt="cover" class="rounded play-trigger" style="width: 50px; height: 50px; object-fit: cover; cursor:pointer;" onclick="if(window.playSong)window.playSong('${song.id}', event)">`
+                                            : `<div class="d-flex align-items-center justify-content-center rounded bg-secondary bg-opacity-25 play-trigger" style="width: 50px; height: 50px; cursor:pointer;" onclick="if(window.playSong)window.playSong('${song.id}', event)"><i class="bi bi-music-note text-secondary fs-4"></i></div>`
                                         }
                                         <div>
-                                            <div class="text-white fw-semibold play-trigger" style="cursor:pointer;" data-audio-url="${song.audio_file}">${song.title}</div>
+                                            <div class="text-white fw-semibold play-trigger" style="cursor:pointer;" onclick="if(window.playSong)window.playSong('${song.id}', event)">${song.title}</div>
                                             <div class="text-secondary small">${song.genre ? song.genre.name : 'Chưa phân loại'} • ${dateStr}</div>
                                         </div>
                                     </div>
@@ -428,120 +428,6 @@
                     }
                 });
             }
-            
-            // Audio Player logic
-            const player = new Audio();
-            const pbPlayBtn = document.getElementById('pbPlayBtn');
-            const pbPlayIcon = document.getElementById('pbPlayIcon');
-            const pbTitle = document.getElementById('pbTitle');
-            const pbArtist = document.getElementById('pbArtist');
-            const pbCover = document.getElementById('pbCover');
-            const pbContainer = document.getElementById('globalPlayerBar');
-            
-            const pbCurrentTime = document.getElementById('pbCurrentTime');
-            const pbDuration = document.getElementById('pbDuration');
-            const pbProgressFill = document.getElementById('pbProgressFill');
-            const pbProgressBg = document.getElementById('pbProgressBg');
-            
-            const pbMuteBtn = document.getElementById('pbMuteBtn');
-            const pbMuteIcon = document.getElementById('pbMuteIcon');
-            const pbVolumeFill = document.getElementById('pbVolumeFill');
-            const pbVolumeBg = document.getElementById('pbVolumeBg');
-            
-
-
-            document.body.addEventListener('click', function(e) {
-                const trigger = e.target.closest('[data-audio-url]');
-                if (!trigger) return;
-                
-                const audioUrl = trigger.getAttribute('data-audio-url');
-                if (!audioUrl || audioUrl === 'null') {
-                    showToast('Bài hát này chưa có file âm thanh!', false);
-                    return;
-                }
-                
-                const item = trigger.closest('.song-manage-item');
-                const title = item.querySelector('.text-white').textContent;
-                const cover = item.querySelector('img') ? item.querySelector('img').src : pbCover.src;
-                const artist = window.CURRENT_USER_DISPLAY_NAME || 'Unknown Artist';
-                
-                pbContainer.classList.remove('d-none');
-                pbTitle.textContent = title;
-                pbArtist.textContent = artist;
-                if(item.querySelector('img')) pbCover.src = cover;
-                
-                document.querySelectorAll('.song-manage-item').forEach(el => el.style.backgroundColor = 'rgba(255,255,255,0.02)');
-                
-                if (player.src.includes(audioUrl) && !player.paused) {
-                    player.pause();
-                    pbPlayIcon.className = 'bi bi-play-fill ms-1';
-                } else {
-                    if (!player.src.includes(audioUrl)) {
-                        player.src = audioUrl;
-                    }
-                    player.play().catch(console.error);
-                    pbPlayIcon.className = 'bi bi-pause-fill ms-1';
-                    item.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                }
-            });
-            
-            if (pbPlayBtn) {
-                pbPlayBtn.addEventListener('click', () => {
-                    if (player.src) {
-                        if (player.paused) {
-                            player.play();
-                            pbPlayIcon.className = 'bi bi-pause-fill ms-1';
-                        } else {
-                            player.pause();
-                            pbPlayIcon.className = 'bi bi-play-fill ms-1';
-                        }
-                    }
-                });
-            }
-            
-            player.addEventListener('loadedmetadata', () => {
-                pbDuration.textContent = formatTime(player.duration);
-            });
-            
-            player.addEventListener('timeupdate', () => {
-                pbCurrentTime.textContent = formatTime(player.currentTime);
-                const p = (player.currentTime / player.duration) * 100;
-                if(pbProgressFill) pbProgressFill.style.width = `${p || 0}%`;
-            });
-            
-            if (pbProgressBg) {
-                pbProgressBg.addEventListener('click', (e) => {
-                    const rect = pbProgressBg.getBoundingClientRect();
-                    const pos = (e.clientX - rect.left) / rect.width;
-                    player.currentTime = pos * player.duration;
-                });
-            }
-            
-            player.addEventListener('volumechange', () => {
-                const v = player.muted ? 0 : player.volume;
-                if(pbVolumeFill) pbVolumeFill.style.width = `${v * 100}%`;
-                if(pbMuteIcon) pbMuteIcon.className = player.muted || v === 0 ? 'bi bi-volume-mute' : (v < 0.5 ? 'bi bi-volume-down' : 'bi bi-volume-up');
-            });
-            
-            player.addEventListener('ended', () => {
-                if(pbPlayIcon) pbPlayIcon.className = 'bi bi-play-fill';
-                if(pbProgressFill) pbProgressFill.style.width = '0%';
-                if(pbCurrentTime) pbCurrentTime.textContent = '0:00';
-            });
-            
-            if(pbMuteBtn) {
-                pbMuteBtn.addEventListener('click', () => {
-                    player.muted = !player.muted;
-                });
-            }
-            
-            if (pbVolumeBg) {
-                pbVolumeBg.addEventListener('click', (e) => {
-                    const rect = pbVolumeBg.getBoundingClientRect();
-                    const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                    player.volume = pos;
-                    player.muted = false;
-                });
-            }
+            // Đã xoá logic trình phát Audio nội bộ gây lỗi nhạc đè lên nhau.
 
         });
