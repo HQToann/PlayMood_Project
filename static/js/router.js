@@ -309,7 +309,7 @@
                 // currMain.innerHTML = newMain.innerHTML;
                 
                 // Swap Modals and Offcanvas (excluding global ones)
-                var globalIds = ["createPlaylistModal", "leftSidebar"];
+                var globalIds = ["playlistFormModal", "logoutConfirmModal", "addFriendModal", "mobileMenuOffcanvas", "leftSidebar"];
                 var oldOverlays = Array.from(document.querySelectorAll("body > .modal, body > .offcanvas"));
                 oldOverlays.forEach(function (m) {
                     if (m.id && globalIds.indexOf(m.id) === -1) {
