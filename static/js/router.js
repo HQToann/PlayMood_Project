@@ -285,7 +285,11 @@
             : fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin", cache: "no-store" })
                 .then(function (r) {
                     if (!r.ok) throw new Error(r.status);
-                    if (!shouldIntercept(r.url)) { window.location.href = r.url; return Promise.reject("redirect"); }
+                    if (!shouldIntercept(r.url)) { 
+                        console.error("[Router] redirect fallback! r.url:", r.url, "Original url:", url);
+                        window.location.href = r.url; 
+                        return Promise.reject("redirect"); 
+                    }
                     return r.text();
                 });
 
@@ -296,6 +300,7 @@
             .then(function (results) {
                 var html = results[0];
                 if (!html) {
+                    console.error("[Router] HTML is empty!");
                     window.location.href = url;
                     return Promise.reject("redirect");
                 }
@@ -303,7 +308,11 @@
                 var doc = new DOMParser().parseFromString(html, "text/html");
                 var newMain = doc.querySelector("main.main-content");
                 currMain = document.querySelector("main.main-content");
-                if (!newMain || !currMain) { window.location.href = url; return Promise.reject("bad-structure"); }
+                if (!newMain || !currMain) { 
+                    console.error("[Router] bad-structure fallback! newMain:", !!newMain, "currMain:", !!currMain, "HTML preview:", html.substring(0, 300));
+                    window.location.href = url; 
+                    return Promise.reject("bad-structure"); 
+                }
 
                 // Swap content
                 // currMain.innerHTML = newMain.innerHTML;
