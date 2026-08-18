@@ -178,7 +178,7 @@ function buildPlaylistCard(playlist, index) {
     };
 
     /* Click vào card → đi tới trang chi tiết playlist */
-    card.onclick = () => window.location.href = `/playlist/detail/?id=${playlistId}`;
+    card.onclick = () => window.goToPage ? window.goToPage(`/playlist/detail/?id=${playlistId}`) : window.location.href = `/playlist/detail/?id=${playlistId}`;
     return card;
 }
 

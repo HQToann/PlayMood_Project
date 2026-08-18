@@ -33,7 +33,8 @@ window.togglePlaylistVisibility = function(btn) {
     }
 };
 
-window.openPlaylistFormModal = function(playlist, event) {
+// Hàm gọi mở form (Tạo / Sửa)
+window.openPlaylistFormModal = function(playlist = null, event = null) {
     playlist = playlist || null;
     event = event || null;
     if (event) event.preventDefault();
@@ -97,9 +98,14 @@ window.openPlaylistFormModal = function(playlist, event) {
         return;
     }
 
-    // Fallback: gọi Bootstrap API
+        // Fallback: gọi Bootstrap API
     var modalEl = document.getElementById('playlistFormModal');
     if (modalEl) {
+        // Fix z-index issue by moving modal to body
+        if (modalEl.parentNode !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+        
         var showModal = function() {
             if (typeof bootstrap !== 'undefined') {
                 bootstrap.Modal.getOrCreateInstance(modalEl).show();

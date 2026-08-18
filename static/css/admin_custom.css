@@ -1,0 +1,137 @@
+/* Cấu hình màu cho Dark Mode để khớp với PlayMood (Midnight Blue) */
+html[data-theme="dark"], html.dark, body.dark, html {
+    --bg-base: #121929;
+    --bg-surface: #202A45;
+    --bg-surface-hover: rgba(255, 255, 255, 0.05);
+    background-color: #121929 !important;
+}
+
+/* Sidebar & Header */
+aside, header, #sidebar {
+    background-color: #121929 !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Cards & Tables */
+.bg-white, .dark\:bg-gray-800, .dark\:bg-gray-900, .bg-gray-50, .dark\:bg-white\/5 {
+    background-color: #202A45 !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Đổi màu text phụ */
+.text-gray-500, .dark\:text-gray-400 {
+    color: #8B9BB4 !important;
+}
+
+/* Custom logo styling to match brand-icon */
+#header .material-symbols-outlined {
+    background: linear-gradient(135deg, #CFE8D7 0%, #DFD2E2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.8rem;
+    font-variation-settings: 'FILL' 1;
+}
+
+/* Bỏ background mặc định của icon logo và thay bằng gradient đồng bộ */
+aside a[href="/admin/"] > div {
+    background: linear-gradient(135deg, #CFE8D7 0%, #DFD2E2 100%) !important;
+}
+
+/* Đổi màu icon logo bên trong thành tối để nổi trên nền sáng */
+aside a[href="/admin/"] > div > span {
+    color: #121929 !important;
+    background: none !important;
+    -webkit-text-fill-color: #121929 !important;
+}
+
+/* Bỏ viền của header */
+#header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Dashboard KPI Cards Customization */
+.kpi-card {
+    background: linear-gradient(145deg, #202A45 0%, #171f33 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px -4px rgba(0, 0, 0, 0.3);
+}
+
+.kpi-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.kpi-icon.users {
+    background-color: rgba(140, 225, 178, 0.15);
+    color: #8CE1B2;
+}
+
+.kpi-icon.songs {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #93C5FD;
+}
+
+.kpi-icon.playlists {
+    background-color: rgba(167, 139, 250, 0.15);
+    color: #C4B5FD;
+}
+
+.kpi-icon.listens {
+    background-color: rgba(244, 114, 182, 0.15);
+    color: #F9A8D4;
+}
+
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-label {
+    font-size: 0.875rem;
+    color: #8B9BB4;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+/* Charts Background and text */
+canvas {
+    color: #8B9BB4 !important;
+}
+
+/* Thumbnail images in list views */
+.admin-thumbnail {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.1);
+}
+.admin-cover {
+    width: 60px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.1);
+}

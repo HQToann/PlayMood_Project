@@ -212,7 +212,7 @@ function buildAlbumCard(album, index) {
     };
 
     /* Click vào card → đi tới trang chi tiết album */
-    card.onclick = () => window.location.href = `/album/detail/?id=${albumId}`;
+    card.onclick = () => window.goToPage ? window.goToPage(`/album/detail/?id=${albumId}`) : window.location.href = `/album/detail/?id=${albumId}`;
     return card;
 }
 
@@ -780,4 +780,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (IS_ARTIST) loadAlbums(true);
+});
+
+// Expose UI functions to global window object (fix for router.js IIFE scoping)
+Object.assign(window, {
+    playAlbum,
+    openCreateAlbumModal,
+    openEditAlbum,
+    saveAlbum,
+    openAlbumSongs,
+    addSongToAlbum,
+    removeSongFromAlbum,
+    publishAlbum,
+    unpublishAlbum,
+    askDeleteAlbum,
+    confirmDeleteAlbum,
+    debouncedSearch,
+    loadAlbums
 });

@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from decouple import config, Csv
 import dj_database_url
+from django.templatetags.static import static
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -222,6 +223,11 @@ UNFOLD = {
     "SITE_HEADER": "PlayMood Admin",
     "SITE_TITLE": "PlayMood Dashboard",
     "SITE_SYMBOL": "music_note",
+    "DASHBOARD_CALLBACK": "music_platform.dashboard.dashboard_callback",
+    "THEME": "dark", # Mặc định dark mode
+    "STYLES": [
+        lambda request: static("css/admin_custom.css"),
+    ],
     "COLORS": {
         "primary": {
             "50": "#effdf5",
