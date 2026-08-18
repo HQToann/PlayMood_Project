@@ -246,6 +246,7 @@ body {
     padding: 16px;
     border-left: 1px solid rgba(255, 255, 255, 0.05);
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .friend-item {
@@ -559,7 +560,7 @@ body {
     }
 
     .content-scroll {
-        padding: 10px 10px 160px 10px; /* Tránh bị che bởi thẻ player ở dưới cùng (đặc biệt khi player mở rộng) */
+        padding: 10px 10px 160px 10px !important; /* Tránh bị che bởi thẻ player ở dưới cùng */
     }
 
     .mood-hero-container {
@@ -1186,6 +1187,8 @@ body {
     .section-more-btn {
         font-size: 0.75rem !important;
         padding: 4px 10px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
     }
     .section-header {
         margin-bottom: 0.75rem !important;
@@ -1243,8 +1246,26 @@ body {
 @media (max-width: 992px) and (min-width: 769px) {
     .songs-grid-5:not(.show-all-grid) > *:nth-child(n+4) { display: none !important; }
 }
-@media (max-width: 768px) {
-    /* On mobile, it falls back to 2 columns, so we allow max 6 items (3 perfect rows) */
+@media (max-width: 767px) {
+    /* Chuyển các grid 5 cột ở chế độ overview thành thanh trượt ngang trên di động */
+    .songs-grid-5:not(.show-all-grid) {
+        display: flex !important;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding-bottom: 10px;
+        gap: 15px;
+    }
+    .songs-grid-5:not(.show-all-grid)::-webkit-scrollbar {
+        display: none;
+    }
+    .songs-grid-5:not(.show-all-grid) > * {
+        width: 130px !important;
+        min-width: 130px !important;
+        flex: 0 0 auto;
+    }
+    
+    /* Giới hạn 6 item cho thanh trượt ngang */
     .songs-grid-5:not(.show-all-grid) > *:nth-child(n+7) { display: none !important; }
 }
 

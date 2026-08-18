@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
+async function initSearchPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const q = urlParams.get('q') || '';
     
@@ -14,9 +14,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('keywordDisplayError').textContent = q;
         await performSearch(q);
     } else {
-        document.getElementById('loadingIndicator').style.display = 'none';
-        document.getElementById('noResults').style.display = 'block';
-        document.getElementById('keywordDisplayError').textContent = '...';
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const noResults = document.getElementById('noResults');
+        const keywordDisplayError = document.getElementById('keywordDisplayError');
+        
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (noResults) noResults.style.display = 'block';
+        if (keywordDisplayError) keywordDisplayError.textContent = '...';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initSearchPage);
+
+window.addEventListener('routerPageChanged', () => {
+    if (window.location.pathname.startsWith('/search')) {
+        // Reset state
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const searchResultsArea = document.getElementById('searchResultsArea');
+        const noResults = document.getElementById('noResults');
+        
+        if (loadingIndicator) loadingIndicator.style.display = 'flex';
+        if (searchResultsArea) searchResultsArea.style.display = 'none';
+        if (noResults) noResults.style.display = 'none';
+        
+        initSearchPage();
     }
 });
 
@@ -154,12 +175,14 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             topHtml = `
                 <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('${profileLink}')">
                     <img src="${avatar}" alt="Avatar" class="rounded-circle mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
-                    <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${name}</h2>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">${subtitle}</span>
+                    <div class="top-result-content">
+                        <h2 class="fw-bold text-white mb-2 top-result-title" style="letter-spacing: -0.5px;">${name}</h2>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">${subtitle}</span>
+                        </div>
                     </div>
                     
-                    <button class="btn ${followBtnClass} rounded-pill fw-bold position-absolute px-4 py-2" style="bottom: 24px; right: 24px; ${followBtnStyle}" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);">
+                    <button class="btn ${followBtnClass} rounded-pill fw-bold position-absolute px-4 py-2 top-result-btn" style="${followBtnStyle}" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);">
                         ${followBtnText}
                     </button>
                 </div>
@@ -170,12 +193,14 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             topHtml = `
                 <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('/song/?id=${topItem.id}')">
                     <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
-                    <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="text-muted-custom fw-semibold">${artistName}</span>
+                    <div class="top-result-content">
+                        <h2 class="fw-bold text-white mb-2 top-result-title" style="letter-spacing: -0.5px;">${topItem.title}</h2>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted-custom fw-semibold">${artistName}</span>
+                        </div>
                     </div>
                     
-                    <button class="btn-play-circle position-absolute" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); window.goToPage('/song/?id=${topItem.id}')">
+                    <button class="btn-play-circle position-absolute top-result-btn" onclick="event.stopPropagation(); window.goToPage('/song/?id=${topItem.id}')">
                         <i class="bi bi-play-fill fs-3" style="margin-left: 3px;"></i>
                     </button>
                 </div>
@@ -186,13 +211,15 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             topHtml = `
                 <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('/album/detail/?id=${topItem.id}')">
                     <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
-                    <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">Album</span>
-                        <span class="text-muted-custom fw-semibold">${artistName}</span>
+                    <div class="top-result-content">
+                        <h2 class="fw-bold text-white mb-2 top-result-title" style="letter-spacing: -0.5px;">${topItem.title}</h2>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">Album</span>
+                            <span class="text-muted-custom fw-semibold">${artistName}</span>
+                        </div>
                     </div>
                     
-                    <button class="btn-play-circle position-absolute" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); if(window.playAlbum) { window.playAlbum('${topItem.id}', '${topItem.title.replace(/'/g, "\\'")}'); }">
+                    <button class="btn-play-circle position-absolute top-result-btn" onclick="event.stopPropagation(); if(window.playAlbum) { window.playAlbum('${topItem.id}', '${topItem.title.replace(/'/g, "\\'")}'); }">
                         <i class="bi bi-play-fill fs-3" style="margin-left: 3px;"></i>
                     </button>
                 </div>
@@ -203,13 +230,15 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
             topHtml = `
                 <div class="top-result-card p-4 rounded-4 position-relative" style="background-color: var(--bg-card); cursor: pointer; transition: background 0.3s;" onclick="window.goToPage('/playlist/detail/?id=${topItem.id}')">
                     <img src="${img}" alt="Cover" class="rounded-2 mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
-                    <h2 class="fw-bold text-white mb-2" style="font-size: 2rem; letter-spacing: -0.5px;">${topItem.title}</h2>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">Playlist</span>
-                        <span class="text-muted-custom fw-semibold">${ownerName}</span>
+                    <div class="top-result-content">
+                        <h2 class="fw-bold text-white mb-2 top-result-title" style="letter-spacing: -0.5px;">${topItem.title}</h2>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge rounded-pill text-black" style="background-color: rgba(255,255,255,0.8); font-weight: 600;">Playlist</span>
+                            <span class="text-muted-custom fw-semibold">${ownerName}</span>
+                        </div>
                     </div>
                     
-                    <button class="btn-play-circle position-absolute" style="bottom: 24px; right: 24px;" onclick="event.stopPropagation(); if(window.playPlaylist) { window.playPlaylist('${topItem.id}', event, '${topItem.title.replace(/'/g, "\\'")}'); }">
+                    <button class="btn-play-circle position-absolute top-result-btn" onclick="event.stopPropagation(); if(window.playPlaylist) { window.playPlaylist('${topItem.id}', event, '${topItem.title.replace(/'/g, "\\'")}'); }">
                         <i class="bi bi-play-fill fs-3" style="margin-left: 3px;"></i>
                     </button>
                 </div>
@@ -233,19 +262,19 @@ function renderList(items, type) {
                 
                 html += `
                     <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('/song/?id=${item.id}')">
-                        <div class="d-flex align-items-center gap-3 w-100">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1" style="min-width: 0;">
                             <div class="song-cover-container">
                                 <img src="${img}" alt="cover" class="w-100 h-100 rounded" style="object-fit: cover;">
                                 <div class="play-icon-overlay">
                                     <i class="bi bi-play-fill"></i>
                                 </div>
                             </div>
-                            <div class="flex-grow-1 text-truncate pe-3">
+                            <div class="flex-grow-1 text-truncate pe-3" style="min-width: 0;">
                                 <div class="text-white fw-semibold text-truncate" style="font-size: 1rem;">${item.title}</div>
                                 <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">${artist}</div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3 flex-shrink-0">
                             <button class="btn btn-link text-muted-custom p-0 text-decoration-none" style="font-size: 1.2rem;" onclick="event.stopPropagation(); window.addToQueue('${item.id}', '${item.title.replace(/'/g, `\\'`)}', '${artist.replace(/'/g, `\\'`)}', '${img}', null, true); window.showToast('Đã thêm &quot;' + '${item.title.replace(/'/g, `\\'`)}' + '&quot; vào danh sách chờ', 'success');" title="Thêm vào danh sách chờ">
                                 <i class="bi bi-plus-circle"></i>
                             </button>
@@ -274,16 +303,16 @@ function renderList(items, type) {
                 
                 html += `
                     <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('${profileLink}')">
-                        <div class="d-flex align-items-center gap-3 w-100">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1" style="min-width: 0;">
                             <div style="width: 48px; height: 48px; flex-shrink: 0;">
                                 <img src="${avatar}" alt="Avatar" class="w-100 h-100 rounded-circle" style="object-fit: cover;">
                             </div>
-                            <div class="flex-grow-1 text-truncate pe-3">
+                            <div class="flex-grow-1 text-truncate pe-3" style="min-width: 0;">
                                 <div class="text-white fw-semibold text-truncate" style="font-size: 1rem;">${name}</div>
                                 <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">${subtitle}</div>
                             </div>
                         </div>
-                        <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3); ${followBtnStyle}">
+                        <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1 flex-shrink-0" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3); ${followBtnStyle}">
                             ${followBtnText}
                         </button>
                     </div>
@@ -293,16 +322,16 @@ function renderList(items, type) {
                 const ownerName = item.owner ? (item.owner.display_name || item.owner.username) : 'Người dùng';
                 html += `
                     <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('/playlist/detail/?id=${item.id}')">
-                        <div class="d-flex align-items-center gap-3" style="width: 45%;">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1" style="min-width: 0;">
                             <div class="song-cover-container">
                                 <img src="${img}" alt="Cover" class="rounded-2" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
-                            <div>
+                            <div class="flex-grow-1 text-truncate pe-3" style="min-width: 0;">
                                 <div class="text-white fw-semibold text-truncate" style="font-size: 1rem;">${item.title}</div>
                                 <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">${ownerName}</div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3 flex-shrink-0">
                             <div class="text-muted-custom hide-md" style="font-size: 0.9rem;">Playlist</div>
                             <button class="btn btn-link text-white p-0 text-decoration-none" style="font-size: 1.5rem;" onclick="event.stopPropagation(); if(window.playPlaylist) { window.playPlaylist('${item.id}', event, '${item.title.replace(/'/g, "\\'")}'); }">
                                 <i class="bi bi-play-circle"></i>
@@ -315,16 +344,16 @@ function renderList(items, type) {
                 const artistName = item.artist ? (item.artist.display_name || item.artist.username) : 'Nghệ sĩ';
                 html += `
                     <div class="song-row d-flex align-items-center justify-content-between p-2 rounded-3" style="cursor: pointer;" onclick="window.goToPage('/album/detail/?id=${item.id}')">
-                        <div class="d-flex align-items-center gap-3 w-100">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1" style="min-width: 0;">
                             <div style="width: 48px; height: 48px; flex-shrink: 0;">
                                 <img src="${img}" alt="cover" class="w-100 h-100 rounded" style="object-fit: cover;">
                             </div>
-                            <div class="flex-grow-1 text-truncate pe-3">
+                            <div class="flex-grow-1 text-truncate pe-3" style="min-width: 0;">
                                 <div class="text-white fw-semibold text-truncate" style="font-size: 1rem;">${item.title}</div>
                                 <div class="text-muted-custom text-truncate" style="font-size: 0.85rem;">Album • ${artistName}</div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3 flex-shrink-0">
                             <button class="btn btn-link text-white p-0 text-decoration-none" style="font-size: 1.5rem;" onclick="event.stopPropagation(); if(window.playAlbum) { window.playAlbum('${item.id}', '${item.title.replace(/'/g, "\\'")}'); }">
                                 <i class="bi bi-play-circle"></i>
                             </button>

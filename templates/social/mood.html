@@ -100,27 +100,29 @@
                                 <div style="border-top: 1px solid rgba(255,255,255,0.06); margin: 12px 0;"></div>
 
                                 <!-- Theme Color Picker -->
-                                <div class="d-flex align-items-center gap-3 mb-3">
-                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">Màu chủ đề:</div>
-                                    <div class="d-flex align-items-center gap-2" id="themeColorPicker">
+                                <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.85rem; min-width: 85px;">Màu chủ đề:</div>
+                                    <div class="d-flex align-items-center flex-wrap gap-2" id="themeColorPicker">
                                         <!-- Render by JS -->
                                     </div>
                                     <input type="hidden" id="theme_id_input" name="theme_id" value="">
                                 </div>
 
                                 <!-- Attached Song Preview -->
-                                <div id="songAttachmentArea" class="d-flex align-items-center gap-2 mb-3">
-                                    <div
-                                        style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 1.1rem; flex-shrink: 0;">
-                                        🎵</div>
-                                    <div style="flex:1; min-width:0;">
-                                        <div style="color: rgba(255,255,255,0.5); font-size: 0.88rem;">Chưa đính kèm bài
-                                            hát</div>
-                                        <div style="color: rgba(255,255,255,0.25); font-size: 0.78rem;">Bài hát sẽ hiển
-                                            thị cùng tâm trạng của bạn</div>
+                                <div id="songAttachmentArea" class="d-flex align-items-center flex-wrap gap-2 mb-3">
+                                    <div class="d-flex align-items-center gap-2" style="flex: 1 1 200px;">
+                                        <div
+                                            style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 1.1rem; flex-shrink: 0;">
+                                            🎵</div>
+                                        <div style="flex:1; min-width:0;">
+                                            <div style="color: rgba(255,255,255,0.5); font-size: 0.88rem;">Chưa đính kèm bài
+                                                hát</div>
+                                            <div style="color: rgba(255,255,255,0.25); font-size: 0.78rem;">Bài hát sẽ hiển
+                                                thị cùng tâm trạng của bạn</div>
+                                        </div>
                                     </div>
                                     <button type="button" data-bs-toggle="modal" data-bs-target="#searchMusicModal"
-                                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 50px; padding: 7px 18px; font-size: 0.82rem; cursor: pointer; transition: all .2s; white-space: nowrap;"
+                                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 50px; padding: 7px 18px; font-size: 0.82rem; cursor: pointer; transition: all .2s; white-space: nowrap; margin-left: auto;"
                                         onmouseover="this.style.background='linear-gradient(135deg, #667eea, #764ba2)'; this.style.borderColor='transparent'; this.style.color='#fff';"
                                         onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.6)';">
                                         <i class="bi bi-search me-1"></i> Tìm nhạc
@@ -172,8 +174,10 @@
                                       </div>
                                       <a href="#" id="seeAllSongs" class="section-more-btn" style="text-decoration: none;">Xem tất cả</a>
                                 </div>
-                                <div id="moodSongsContainer" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 15px; padding-bottom: 0.75rem;">
-                                    <!-- Sẽ được JS điền vào -->
+                                <div class="card-body bg-transparent">
+                                    <div id="moodSongsContainer" class="songs-grid-5" style="padding-bottom: 0.75rem;">
+                                        <!-- Sẽ được JS điền vào -->
+                                    </div>
                                 </div>
                             </div>
 
@@ -186,8 +190,10 @@
                                       </div>
                                       <a href="#" id="seeAllPlaylists" class="section-more-btn" style="text-decoration: none;">Xem tất cả</a>
                                 </div>
-                                <div id="moodPlaylistsContainer" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 15px; padding-bottom: 0.75rem;">
-                                    <!-- Sẽ được JS điền vào -->
+                                <div class="card-body bg-transparent">
+                                    <div id="moodPlaylistsContainer" class="songs-grid-5" style="padding-bottom: 0.75rem;">
+                                        <!-- Sẽ được JS điền vào -->
+                                    </div>
                                 </div>
                             </div>
 

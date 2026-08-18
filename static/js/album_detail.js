@@ -754,25 +754,17 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('similar-albums-wrapper').style.display = 'none';
             return;
         }
-        container.innerHTML = items.map(pl => {
+        const displayItems = items.slice(0, 5);
+        container.innerHTML = displayItems.map(pl => {
             const cover = pl.cover_image || DEFAULT_COVER_PL;
-            const owner = pl.owner ? pl.owner.display_name : '';
-            const count = pl.song_count != null ? ` &bull; ${pl.song_count} b&agrave;i` : '';
+            const owner = pl.owner ? pl.owner.display_name : 'Hệ thống';
             return `
-            <a href="/album/detail/?id=${pl.id}" class="pl-reco-card">
-                <div class="card-img-wrap">
+            <a href="/album/detail/?id=${pl.id}" class="playlist-card">
+                <div class="playlist-card-img-wrap">
                     <img src="${cover}" alt="${pl.title}" loading="lazy">
-                    <button onclick="event.preventDefault();event.stopPropagation();if(window.playAlbum)window.playAlbum('${pl.id}',event)"
-                        style="position:absolute;bottom:8px;right:8px;width:34px;height:34px;border-radius:50%;
-                               background:var(--accent-color,#2dd4bf);color:#000;border:none;
-                               display:flex;align-items:center;justify-content:center;
-                               opacity:0;transition:opacity .2s;font-size:.95rem;"
-                        onmouseover="this.style.opacity='1'" class="pl-play-inner">
-                        <i class="bi bi-play-fill"></i>
-                    </button>
                 </div>
-                <div class="card-title-text">${pl.title}</div>
-                <div class="card-sub-text">b&#7903;i ${owner}${count}</div>
+                <div class="playlist-card-title">${pl.title}</div>
+                <div class="playlist-card-sub">bởi ${owner}</div>
             </a>`;
         }).join('');
         // hover effect on play button via CSS handled; show on card hover
@@ -795,21 +787,18 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('recommended-songs-wrapper').style.display = 'none';
             return;
         }
-        container.innerHTML = items.map(songData => {
+        const displayItems = items.slice(0, 5);
+        container.innerHTML = displayItems.map(songData => {
             const song   = songData.song || songData;
             const cover  = song.cover_image || DEFAULT_COVER_SONG;
-            const artist = song.artist ? song.artist.display_name : 'Ngh&#7879; s&#297;';
+            const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
             return `
-            <div class="song-reco-card" onclick="window.goToPage('/song/?id=${song.id}')">
-                <div class="card-img-wrap">
-                    <img src="${cover}" alt="${song.title}" loading="lazy">
-                    <button class="play-overlay"
-                            onclick="event.stopPropagation();if(window.playSong)window.playSong('${song.id}',event)">
-                        <i class="bi bi-play-fill"></i>
-                    </button>
+            <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')">
+                <div class="music-card-img-wrap">
+                    <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy">
                 </div>
-                <div class="card-title-text">${song.title}</div>
-                <div class="card-sub-text">${artist}</div>
+                <div class="music-card-title">${song.title}</div>
+                <div class="music-card-artist">${artist}</div>
             </div>`;
         }).join('');
     }

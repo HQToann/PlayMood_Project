@@ -382,6 +382,7 @@
                 if (sc) sc.scrollTop = 0;
                 if (push) history.pushState({ url: url }, "", url);
                 updateActive(new URL(url, window.location.origin).pathname);
+                window.dispatchEvent(new Event('routerPageChanged'));
             })
             .catch(function (err) {
                 if (currMain) currMain.style.opacity = "1";

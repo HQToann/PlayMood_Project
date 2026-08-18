@@ -422,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         
         // Fetch Similar Songs Overview
-        fetch(`/api/v1/recommendations/similar/${songId}/?limit=5`)
+        fetch(`/api/v1/recommendations/similar/${songId}/?limit=6`)
             .then(response => response.json())
             .then(data => {
                 const overviewContainer = document.getElementById('overviewRecommendations');

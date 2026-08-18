@@ -98,6 +98,7 @@
             font-size: 1.5rem;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.2s;
+            flex-shrink: 0;
         }
 
         .btn-play-large:hover {
@@ -142,6 +143,28 @@
             white-space: pre-line;
         }
 
+        .lyrics-text-wrapper {
+            position: relative;
+            transition: max-height 0.3s ease;
+        }
+
+        .btn-toggle-lyrics {
+            width: 100%;
+            text-align: center;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 10px 0;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .btn-toggle-lyrics:hover {
+            color: var(--accent-color);
+        }
+
         .lyrics-text .active-line {
             color: var(--text-primary);
             font-weight: 600;
@@ -169,6 +192,84 @@
             height: 80px;
             border-radius: 50%;
             object-fit: cover;
+        }
+
+        @media (max-width: 767px) {
+            .song-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 1.5rem 1rem;
+                gap: 1.5rem;
+            }
+            .song-cover {
+                width: 200px;
+                height: 200px;
+            }
+            .song-info {
+                align-items: center;
+                width: 100%;
+            }
+            .song-title {
+                font-size: 1.5rem;
+                word-wrap: break-word;
+                white-space: normal;
+                width: 100%;
+            }
+            .meta-bullet {
+                display: inline;
+                margin: 0 0.1rem;
+            }
+            .song-meta {
+                flex-wrap: nowrap;
+                max-width: 100%;
+                white-space: nowrap;
+                font-size: clamp(0.6rem, 3vw, 0.875rem);
+                gap: 0.25rem;
+                justify-content: center;
+            }
+            .song-controls {
+                justify-content: center;
+            }
+            .lyrics-text-wrapper.is-collapsed {
+                max-height: 250px;
+                overflow: hidden;
+            }
+            .lyrics-text-wrapper.is-collapsed::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 80px;
+                background: linear-gradient(to bottom, transparent, #161e31);
+                pointer-events: none;
+            }
+            .btn-toggle-lyrics.d-block-mobile {
+                display: block !important;
+            }
+            #overviewRecommendations {
+                display: flex !important;
+                overflow-x: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                padding-bottom: 10px;
+                gap: 15px;
+            }
+            #overviewRecommendations::-webkit-scrollbar {
+                display: none;
+            }
+            #overviewRecommendations .playlist-card {
+                width: 130px !important;
+                min-width: 130px !important;
+                flex: 0 0 auto;
+            }
+        }
+
+        @media (min-width: 768px) {
+            #overviewRecommendations > .playlist-card:nth-child(6) {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -202,13 +303,13 @@
                                     src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80"
                                     alt="Artist" class="artist-img">
                                 <a href="#" class="creator" id="detail-artist-name">...</a>
-                                <span>•</span>
+                                <span class="meta-bullet">•</span>
                                 <span id="detail-year">...</span>
-                                <span>•</span>
+                                <span class="meta-bullet">•</span>
                                 <span id="detail-duration">...</span>
-                                <span>•</span>
+                                <span class="meta-bullet">•</span>
                                 <span id="detail-plays">... lượt nghe</span>
-                                <span>•</span>
+                                <span class="meta-bullet">•</span>
                                 <span id="detail-likes"><i class="bi bi-heart-fill" style="font-size:0.75rem;"></i>
                                     ...</span>
                             </div>
@@ -243,10 +344,13 @@
                     <!-- Lyrics Section -->
                     <div class="lyrics-container">
                         <div class="lyrics-title">Lời bài hát</div>
-                        <div class="lyrics-text" id="detail-lyrics"
-                            style="white-space: pre-wrap; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">
-                            Đang tải lời bài hát...
+                        <div class="lyrics-text-wrapper" id="lyrics-wrapper">
+                            <div class="lyrics-text" id="detail-lyrics"
+                                style="white-space: pre-wrap; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">
+                                Đang tải lời bài hát...
+                            </div>
                         </div>
+                        <button id="btn-toggle-lyrics" class="btn-toggle-lyrics" onclick="toggleLyrics()" style="display: none;">Xem thêm</button>
                         <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 text-secondary"
                             style="font-size: 0.8rem;">
                             Cung cấp bởi PlayMood
@@ -278,14 +382,14 @@
                         </div>
                         
                         <!-- Overview (5 items) -->
-                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="overviewRecommendations">
+                        <div class="songs-grid-5 mb-5" id="overviewRecommendations">
                             <div class="d-flex justify-content-center align-items-center w-100 py-4" style="grid-column: 1/-1;">
                                 <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                             </div>
                         </div>
                         
                         <!-- All items (infinite scroll) -->
-                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px; display: none;" id="allRecommendations">
+                        <div class="songs-grid-5 show-all-grid mb-5" style="display: none;" id="allRecommendations">
                         </div>
                     </div>
 
@@ -409,6 +513,41 @@
     <!-- Mobile Offcanvas Menu -->
     {% include 'includes/mobile_offcanvas.html' %}
 
+    <script>
+        function toggleLyrics() {
+            const wrapper = document.getElementById('lyrics-wrapper');
+            const btn = document.getElementById('btn-toggle-lyrics');
+            if (wrapper.classList.contains('is-collapsed')) {
+                wrapper.classList.remove('is-collapsed');
+                btn.textContent = 'Thu gọn';
+            } else {
+                wrapper.classList.add('is-collapsed');
+                btn.textContent = 'Xem thêm';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const lyricsEl = document.getElementById('detail-lyrics');
+            const wrapper = document.getElementById('lyrics-wrapper');
+            const btn = document.getElementById('btn-toggle-lyrics');
+            
+            // Wait for lyrics to load and check height
+            const observer = new MutationObserver(() => {
+                // If it's a mobile screen
+                if (window.innerWidth <= 767) {
+                    if (lyricsEl.scrollHeight > 300) {
+                        wrapper.classList.add('is-collapsed');
+                        btn.classList.add('d-block-mobile');
+                    } else {
+                        wrapper.classList.remove('is-collapsed');
+                        btn.classList.remove('d-block-mobile');
+                    }
+                }
+            });
+            
+            observer.observe(lyricsEl, { childList: true, characterData: true, subtree: true });
+        });
+    </script>
 </body>
 
 </html>
