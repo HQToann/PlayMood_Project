@@ -221,13 +221,13 @@ document.addEventListener("DOMContentLoaded", () => {
         overviewContainerId: 'albumsContainer',
         emptyMsg: 'Chưa có album nào',
         renderItem: album => `
-            <div class="playlist-card position-relative" style="width: 100%; min-width: 0; cursor: pointer;" onclick="window.goToPage('/album/detail/?id=${album.id}')">
+            <a href="/album/detail/?id=${album.id}" class="playlist-card position-relative text-decoration-none text-reset" style="width: 100%; min-width: 0; cursor: pointer; display:block;">
                 <div class="card-image-wrapper">
                     <img src="${album.cover_image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'}" alt="${album.title}">
                 </div>
                 <div class="card-title">${album.title}</div>
                 <div class="card-subtitle">${album.song_count} bài hát</div>
-            </div>`
+            </a>`
     });
 
     new ProfilePaginator({

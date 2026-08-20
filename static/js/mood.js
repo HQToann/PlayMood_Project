@@ -180,14 +180,14 @@ async function loadMoodRecommendations(moodTypeId, moodName, moodEmoji) {
                     const cover = song.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
-                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer; width: 100%; min-width: 0;">
+                                                <a href="/song/?id=${song.id}" class="music-card text-decoration-none text-reset" style="cursor:pointer; width: 100%; min-width: 0; display:block;">
                                                     <div class="music-card-img-wrap">
                                                         <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';">
 
                                                     </div>
                                                     <div class="music-card-title">${song.title}</div>
                                                     <div class="music-card-artist">${artist}</div>
-                                                </div>`;
+                                                </a>`;
                 }).join('');
             } else {
                 songsContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Chưa có bài hát nào phù hợp với tâm trạng này.</div>';
@@ -270,14 +270,14 @@ async function loadDefaultRecommendations() {
                     const cover = song.cover_image || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';
                     const artist = song.artist ? song.artist.display_name : 'Nghệ sĩ';
                     return `
-                                                <div class="music-card" onclick="window.goToPage('/song/?id=${song.id}')" style="cursor:pointer; width:100%; min-width: 0;">
+                                                <a href="/song/?id=${song.id}" class="music-card text-decoration-none text-reset" style="cursor:pointer; width:100%; min-width: 0; display:block;">
                                                     <div class="music-card-img-wrap">
                                                         <img src="${cover}" alt="${song.title}" class="music-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27300%27 height=%27300%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%232a2a35%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%27100%27 text-anchor=%27middle%27 dominant-baseline=%27middle%27 fill=%27%23555%27%3E%E2%99%AA%3C/text%3E%3C/svg%3E';">
 
                                                     </div>
                                                     <div class="music-card-title">${song.title}</div>
                                                     <div class="music-card-artist">${artist}</div>
-                                                </div>`;
+                                                </a>`;
                 }).join('');
             } else {
                 songsContainer.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.88rem;padding:1rem 0;">Chưa có gợi ý bài hát.</div>';

@@ -307,9 +307,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="playlist-grid playlist-grid-row py-2 px-3 rounded position-relative">
                     <div class="text-secondary text-center">${index + 1}</div>
                     <div class="d-flex align-items-center gap-3 text-truncate">
-                        <img src="${coverImg}" class="rounded flex-shrink-0" alt="cover" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;" onclick="window.goToPage('/song/?id=${song.id}')">
+                        <a href="/song/?id=${song.id}" class="text-decoration-none text-reset flex-shrink-0 d-block" style="cursor: pointer;">
+                            <img src="${coverImg}" class="rounded" alt="cover" style="width: 40px; height: 40px; object-fit: cover;">
+                        </a>
                         <div class="text-truncate">
-                            <div class="fw-semibold text-truncate text-white" style="cursor: pointer;" onclick="window.goToPage('/song/?id=${song.id}')">${song.title}</div>
+                            <a href="/song/?id=${song.id}" class="fw-semibold text-truncate text-white text-decoration-none d-block" style="cursor: pointer;">${song.title}</a>
                             <div class="small text-secondary text-truncate">${artistName}</div>
                         </div>
                     </div>

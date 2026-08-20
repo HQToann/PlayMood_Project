@@ -10,13 +10,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderSongCard(song) {
         var cover = song.cover_image || DEFAULT_COVER;
         var artist = song.artist ? song.artist.display_name : 'Nghệ sĩ ẩn danh';
-        return '<div class="music-card" onclick="window.goToPage(\'/song/?id=' + song.id + '\')" style="cursor:pointer;">' +
+        return '<a href="/song/?id=' + song.id + '" class="music-card text-decoration-none text-reset" style="cursor:pointer; display:block;">' +
             '<div class="music-card-img-wrap">' +
             '<img src="' + esc(cover) + '" alt="' + esc(song.title) + '" class="music-card-img" loading="lazy">' +
             '</div>' +
             '<div class="music-card-title">' + esc(song.title) + '</div>' +
             '<div class="music-card-artist">' + esc(artist) + '</div>' +
-            '</div>';
+            '</a>';
     }
 
     function renderPlaylistCard(pl) {

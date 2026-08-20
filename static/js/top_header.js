@@ -108,10 +108,10 @@
                             const displayHTML = text.replace(regex, '<span class="fw-bold text-white">$1</span>');
                             
                             html += `
-                                <div class="dropdown-item py-2 px-3 d-flex align-items-center gap-3" style="cursor: pointer; transition: background 0.2s;" onclick="window.goToPage('/search/?q=${encodeURIComponent(text)}')">
+                                <a href="/search/?q=${encodeURIComponent(text)}" class="dropdown-item py-2 px-3 d-flex align-items-center gap-3 text-decoration-none text-reset" style="cursor: pointer; transition: background 0.2s;">
                                     <i class="bi bi-search fs-5 text-muted-custom"></i>
                                     <span style="font-size: 1rem; color: var(--text-secondary);">${displayHTML}</span>
-                                </div>
+                                </a>
                             `;
                         });
                         
@@ -140,7 +140,7 @@
                                     }
                                     
                                     html += `
-                                        <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between" style="cursor: pointer; transition: background 0.2s;" onclick="window.goToPage('${profileLink}')">
+                                        <a href="${profileLink}" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between text-decoration-none text-reset" style="cursor: pointer; transition: background 0.2s;">
                                             <div class="d-flex align-items-center gap-3">
                                                 <div style="position: relative; width: 48px; height: 48px;">
                                                     <img src="${avatar}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
@@ -153,14 +153,14 @@
                                             <button class="btn ${followBtnClass} rounded-pill btn-sm fw-bold px-3 py-1" onclick="event.stopPropagation(); window.toggleFollowUser('${userId}', this);" style="font-size: 0.8rem; border-color: rgba(255,255,255,0.3); ${followBtnStyle}">
                                                 ${followBtnText}
                                             </button>
-                                        </div>
+                                        </a>
                                     `;
                                 } else if (item.song_count !== undefined) {
                                     // Đây là album
                                     const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                                     const artist = item.artist ? (item.artist.display_name || item.artist.username) : 'Nghệ sĩ';
                                     html += `
-                                        <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between" style="cursor: pointer; transition: background 0.2s;" onclick="window.goToPage('/album/detail/?id=${item.id}')">
+                                        <a href="/album/detail/?id=${item.id}" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between text-decoration-none text-reset" style="cursor: pointer; transition: background 0.2s;">
                                             <div class="d-flex align-items-center gap-3">
                                                 <div style="position: relative; width: 48px; height: 48px;">
                                                     <img src="${img}" alt="cover" style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover;">
@@ -173,14 +173,14 @@
                                             <button class="btn btn-link text-white p-0 text-decoration-none" onclick="event.stopPropagation(); if(window.playAlbum) { window.playAlbum('${item.id}', '${item.title.replace(/'/g, "\\'")}'); }" style="font-size: 1.5rem;">
                                                 <i class="bi bi-play-circle"></i>
                                             </button>
-                                        </div>
+                                        </a>
                                     `;
                                 } else if (item.is_public !== undefined) {
                                     // Đây là playlist
                                     const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                                     const owner = item.owner ? (item.owner.display_name || item.owner.username) : 'Người dùng';
                                     html += `
-                                        <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between" style="cursor: pointer; transition: background 0.2s;" onclick="window.goToPage('/playlist/detail/?id=${item.id}')">
+                                        <a href="/playlist/detail/?id=${item.id}" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between text-decoration-none text-reset" style="cursor: pointer; transition: background 0.2s;">
                                             <div class="d-flex align-items-center gap-3">
                                                 <div style="position: relative; width: 48px; height: 48px;">
                                                     <img src="${img}" alt="cover" style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover;">
@@ -193,14 +193,14 @@
                                             <button class="btn btn-link text-muted-custom p-0 text-decoration-none" onclick="event.stopPropagation(); if(window.playPlaylist) window.playPlaylist('${item.id}', event, '${item.title.replace(/'/g, `\\'`)}');" style="font-size: 1.5rem;" title="Phát playlist">
                                                 <i class="bi bi-play-circle"></i>
                                             </button>
-                                        </div>
+                                        </a>
                                     `;
                                 } else {
                                     // Đây là bài hát (Song)
                                     const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                                     const artist = item.artist ? item.artist.display_name : 'Nghệ sĩ';
                                     html += `
-                                        <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between" style="cursor: pointer; transition: background 0.2s;" onclick="window.goToPage('/song/?id=${item.id}')">
+                                        <a href="/song/?id=${item.id}" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between text-decoration-none text-reset" style="cursor: pointer; transition: background 0.2s;">
                                             <div class="d-flex align-items-center gap-3">
                                                 <div style="position: relative; width: 48px; height: 48px;">
                                                     <img src="${img}" alt="cover" style="width: 100%; height: 100%; border-radius: 4px; object-fit: cover;">
@@ -213,7 +213,7 @@
                                             <button class="btn btn-link text-muted-custom p-0 text-decoration-none" onclick="event.stopPropagation(); window.addToQueue('${item.id}', '${item.title.replace(/'/g, `\\'`)}', '${artist.replace(/'/g, `\\'`)}', '${img}', 'Từ tìm kiếm', true); window.showToast('Đã thêm &quot;' + '${item.title.replace(/'/g, `\\'`)}' + '&quot; vào danh sách chờ', 'success');" style="font-size: 1.5rem;" title="Thêm vào danh sách phát">
                                                 <i class="bi bi-plus-circle"></i>
                                             </button>
-                                        </div>
+                                        </a>
                                     `;
                                 }
                             });

@@ -379,14 +379,14 @@
                         {% for follow in target_user.followers.all %}
                         {% with u=follow.follower %}
                         <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="d-flex align-items-center gap-3" style="cursor: pointer;" data-url="{% url 'user_profile_page' u.id %}" onclick="window.location.href=this.dataset.url">
+                            <a href="{% url 'user_profile_page' u.id %}" class="d-flex align-items-center gap-3 text-decoration-none text-reset" style="cursor: pointer;">
                                 <img src="{% if u.avatar %}{{ u.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ u.username|urlencode }}&background=random{% endif %}"
                                     alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
                                 <div>
                                     <h6 class="mb-0 fw-bold">{{ u.get_display_name }}</h6>
                                     <small class="text-secondary">@{{ u.username }}</small>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         {% endwith %}
                         {% endfor %}
@@ -414,14 +414,14 @@
                         {% for follow in target_user.following.all %}
                         {% with u=follow.following %}
                         <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="d-flex align-items-center gap-3" style="cursor: pointer;" data-url="{% url 'user_profile_page' u.id %}" onclick="window.location.href=this.dataset.url">
+                            <a href="{% url 'user_profile_page' u.id %}" class="d-flex align-items-center gap-3 text-decoration-none text-reset" style="cursor: pointer;">
                                 <img src="{% if u.avatar %}{{ u.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ u.username|urlencode }}&background=random{% endif %}"
                                     alt="User" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
                                 <div>
                                     <h6 class="mb-0 fw-bold">{{ u.get_display_name }}</h6>
                                     <small class="text-secondary">@{{ u.username }}</small>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         {% endwith %}
                         {% endfor %}

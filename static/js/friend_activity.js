@@ -127,18 +127,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timeHtml = `<div class="friend-time mt-1 text-muted-custom" style="font-size:0.7rem;">${friend.timeText}</div>`;
 
                 html += `
-                <div class="friend-item ${opacityClass}" style="display:flex;align-items:center;padding:10px 0;cursor:pointer;" data-user-id="${friend.id}" onclick="window.goToPage('/profile/${friend.id}/')">
-                    <a href="/profile/${friend.id}/" class="friend-avatar text-decoration-none" style="width:40px;height:40px;position:relative;flex-shrink:0;margin-right:12px;" title="Xem hồ sơ" onclick="event.stopPropagation();">
+                <a href="/profile/${friend.id}/" class="friend-item ${opacityClass} text-decoration-none text-reset" style="display:flex;align-items:center;padding:10px 0;cursor:pointer;" data-user-id="${friend.id}">
+                    <div class="friend-avatar" style="width:40px;height:40px;position:relative;flex-shrink:0;margin-right:12px;" title="Xem hồ sơ">
                         <img src="${friend.avatar}" alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover ${grayscaleClass}">
                         ${dotHtml}
-                    </a>
+                    </div>
                     <div class="friend-info" style="flex-grow:1;overflow:hidden;">
                         <div class="d-flex justify-content-between align-items-center">
-                            <a href="/profile/${friend.id}/" class="friend-name fw-semibold text-white text-decoration-none" style="font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onclick="event.stopPropagation();">${friend.name}</a>
+                            <div class="friend-name fw-semibold text-white text-decoration-none" style="font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${friend.name}</div>
                         </div>
                         ${activityHtml}${timeHtml}
                     </div>
-                </div>`;
+                </a>`;
             });
         }
 
