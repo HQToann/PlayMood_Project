@@ -73,6 +73,36 @@ def _get_interaction_vector(user_id) -> dict:
     return weights
 
 
+def _get_batch_interaction_vectors(user_ids: list) -> dict:
+    """
+    Trả về dict: {user_id: {song_id: weight}} cho nhiều user một lúc để chống N+1.
+    """
+    vectors = {uid: {} for uid in user_ids}
+    if not user_ids:
+        return vectors
+
+    likes = Like.objects.filter(user_id__in=user_ids).values_list('user_id', 'song_id')
+    for uid, sid in likes:
+        vectors[uid][sid] = vectors[uid].get(sid, 0) + LIKE_WEIGHT
+
+    ratings = Rating.objects.filter(user_id__in=user_ids).values_list('user_id', 'song_id', 'score')
+    for uid, sid, score in ratings:
+        vectors[uid][sid] = vectors[uid].get(sid, 0) + score
+
+    listen_counts = (
+        ListenHistory.objects.filter(user_id__in=user_ids)
+        .values('user_id', 'song_id')
+        .annotate(cnt=Count('id'))
+    )
+    for row in listen_counts:
+        capped = min(row['cnt'], LISTEN_CAP)
+        uid = row['user_id']
+        sid = row['song_id']
+        vectors[uid][sid] = vectors[uid].get(sid, 0) + capped * LISTEN_WEIGHT
+
+    return vectors
+
+
 def _taste_profile(interaction_vector: dict) -> dict:
     """
     Quy đổi vector tương tác theo bài hát -> "gu nghe" theo genre/artist.
@@ -179,9 +209,14 @@ def _find_similar_users(user_id, my_vector: dict) -> list:
         .values_list('user_id', flat=True)[:SIMILAR_USER_CANDIDATE_LIMIT]
     )
 
+    if not other_user_ids:
+        return []
+
+    # Lấy vector tương tác của tất cả user ứng viên trong 3 queries (thay vì 600 queries)
+    other_vectors = _get_batch_interaction_vectors(list(other_user_ids))
+
     similarities = []
-    for other_id in other_user_ids:
-        other_vector = _get_interaction_vector(other_id)
+    for other_id, other_vector in other_vectors.items():
         sim = _cosine_similarity(my_vector, other_vector)
         if sim > 0:
             similarities.append((other_id, sim, other_vector))
