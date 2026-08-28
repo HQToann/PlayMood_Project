@@ -7,10 +7,6 @@ python-decouple==3.8
 # CORS
 django-cors-headers==4.4.0
 
-# Cloudinary — lưu trữ audio, ảnh bìa, avatar
-cloudinary==1.40.0
-django-cloudinary-storage==0.3.0
-
 # Input sanitization — chống XSS (Fix R12)
 bleach==6.1.0
 
@@ -28,8 +24,6 @@ mutagen==1.47.0
 
 django-anymail
 resend
-cloudinary
-django-cloudinary-storage
 dj-database-url
 gunicorn
 psycopg2-binary

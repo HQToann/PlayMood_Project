@@ -23,13 +23,8 @@ from django.conf import settings
 from django.utils.text import slugify
 from music_platform.utils import optimize_cloudinary_url
 
-# Determine storage for audio based on settings
-if 'cloudinary' in settings.STORAGES.get('default', {}).get('BACKEND', ''):
-    from cloudinary_storage.storage import VideoMediaCloudinaryStorage
-    audio_storage = VideoMediaCloudinaryStorage()
-else:
-    from django.core.files.storage import FileSystemStorage
-    audio_storage = FileSystemStorage()
+from django.core.files.storage import FileSystemStorage
+audio_storage = FileSystemStorage()
 
 class Genre(models.Model):
     """Thể loại âm nhạc - Admin quản lý, Public xem."""
@@ -145,10 +140,9 @@ class Song(models.Model):
         verbose_name='Thể loại',
     )
 
-    # FIle lưu trên Cloudinary qua DEFAULT_FILE_STORAGE
+    # FIle lưu trên Local VPS qua DEFAULT_FILE_STORAGE
     audio_file = models.FileField(
         upload_to='audio/',
-        storage=audio_storage,
         verbose_name='File audio',
     )
 

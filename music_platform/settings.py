@@ -36,8 +36,6 @@ INSTALLED_APPS = [
     # Third-party
     'corsheaders',
     'anymail',
-    'cloudinary',
-    'cloudinary_storage',
 
     # Ứng dụng nội bộ
     'accounts',
@@ -139,7 +137,7 @@ CLOUDINARY_STORAGE = {
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" if not DEBUG else "django.contrib.staticfiles.storage.StaticFilesStorage",

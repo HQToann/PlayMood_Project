@@ -119,7 +119,7 @@ def handler429(request):
 
 # URL Patterns
 def dummy_favicon(request):
-    return redirect('https://res.cloudinary.com/jibxercm/image/upload/v1786899540/music_platform/assets/favicon.svg')
+    return HttpResponse(status=204)
 
 urlpatterns = [
     path('favicon.ico', dummy_favicon),

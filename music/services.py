@@ -143,7 +143,7 @@ def delete_song(song: Song, artist) -> None:
     if str(song.artist_id) != str(artist.id):
         raise NotSongOwner()
     
-    #xoá file trên Cloudinary
+    #xoá file
     try:
         if song.audio_file:
             song.audio_file.delete(save=False)
