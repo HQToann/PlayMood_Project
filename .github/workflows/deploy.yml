@@ -1,0 +1,61 @@
+name: Deploy PlayMood to VPS
+
+on:
+  push:
+    branches:
+      - thanh_nhan
+# Cấp quyền cho GitHub Actions được phép lưu trữ Image
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Lấy code mới nhất mà bạn vừa đẩy lên
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Đăng nhập vào trạm trung chuyển GitHub (GHCR)
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. Đóng gói Image và tải lên trạm trung chuyển
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/thanhnhan959604/playmood-app:latest
+
+      # 4. Gửi file docker-compose.yml đã cập nhật lên VPS
+      - name: Copy docker-compose to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "~/"
+
+      # 5. Mở khóa vào VPS, tải bản cập nhật và khởi động lại
+      - name: Execute deployment on VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Đăng nhập trạm GHCR ngay trên VPS để lấy quyền tải file
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Kéo (pull) bản code mới nhất vừa đóng gói về
+            docker compose pull app
+            
+            # Khởi động lại hệ thống với code mới (sẽ mất khoảng vài giây)
+            docker compose up -d
