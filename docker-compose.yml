@@ -15,7 +15,7 @@ services:
     mem_limit: 256m
 
   app:
-    image: ghcr.io/playmood-app:test/playmood-app:latest
+    image: ghcr.io/hqtoann/playmood-app:latest
     restart: always
     env_file: .env
     depends_on:
