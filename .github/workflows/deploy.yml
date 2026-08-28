@@ -59,3 +59,6 @@ jobs:
             
             # Khởi động lại hệ thống với code mới (sẽ mất khoảng vài giây)
             docker compose up -d
+            sleep 3
+            # Ra lệnh cho VPS tự thu thập file tĩnh (lúc này đã có file .env)
+            docker compose exec app python manage.py collectstatic --noinput
