@@ -128,6 +128,40 @@ class MessageListView(View):
             return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Tham số phân trang không hợp lệ'}}, status=400)
         except Exception as e:
             return handle_exception(e)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadImageView(View):
+    """
+    POST /api/v1/chat/upload-image/
+    Upload ảnh lên server/cloudinary và trả về URL để gửi qua WebSockets.
+    """
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            image_file = request.FILES.get('image')
+            if not image_file:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Không có file ảnh'}}, status=400)
+                
+            # Kiểm tra định dạng
+            allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+            if image_file.content_type not in allowed_types:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Định dạng ảnh không hợp lệ'}}, status=400)
+                
+            # Upload dùng default_storage (sẽ tự động đẩy lên Cloudinary theo settings)
+            from django.core.files.storage import default_storage
+            import uuid
+            
+            ext = image_file.name.split('.')[-1]
+            filename = f"chat_images/{uuid.uuid4().hex}.{ext}"
+            file_path = default_storage.save(filename, image_file)
+            image_url = default_storage.url(file_path)
+            
+            return JsonResponse({'success': True, 'data': {'image_url': image_url}})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': {'code': 'INTERNAL_ERROR', 'message': str(e)}}, status=500)
 ```
 
 ---
@@ -147,6 +181,9 @@ urlpatterns = [
     
     # Lịch sử tin nhắn
     path('conversations/<uuid:conversation_id>/messages/', views.MessageListView.as_view(), name='message-list'),
+    
+    # API Tải ảnh lên
+    path('upload-image/', views.UploadImageView.as_view(), name='upload-image'),
 ]
 ```
 

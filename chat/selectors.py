@@ -31,11 +31,12 @@ def list_messages_in_conversation(conversation_id, user, page=1, page_size=20) -
     # Xác thực quyền truy cập trước
     conversation = get_conversation_by_id(conversation_id, user)
 
-    # Select related để lấy luôn thông tin người gửi và bài hát đính kèm (chống N+1 query)
+    # Select related để lấy luôn thông tin người gửi và các đính kèm (chống N+1 query)
     qs = conversation.messages.all().select_related(
-        'sender',
-        'shared_song',
-        'shared_song__artist',
+        'sender', 
+        'shared_song', 'shared_song__artist',
+        'shared_album', 'shared_album__artist',
+        'shared_playlist', 'shared_playlist__owner'
     ).order_by('-created_at')
 
     total = qs.count()

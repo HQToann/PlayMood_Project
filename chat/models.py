@@ -110,6 +110,22 @@ class Message(models.Model):
         verbose_name='Bài hát chia sẻ'
     )
 
+    shared_album = models.ForeignKey(
+        'music.Album',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Album chia sẻ'
+    )
+
+    shared_playlist = models.ForeignKey(
+        'playlists.Playlist',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Playlist chia sẻ'
+    )
+
     # Lưu danh sách thả cảm xúc dạng JSON dict
     reactions = models.JSONField(
         default=dict,
@@ -149,6 +165,8 @@ class Message(models.Model):
             'content': self.content,
             'image_url': optimize_cloudinary_url(self.image_url, 'image') if self.image_url else None,
             'shared_song': self.shared_song.to_dict() if self.shared_song else None,
+            'shared_album': self.shared_album.to_dict() if self.shared_album else None,
+            'shared_playlist': self.shared_playlist.to_dict(include_song_count=False) if self.shared_playlist else None,
             'reactions': self.reactions,
             'is_read': self.is_read,
             'created_at': self.created_at.isoformat(),

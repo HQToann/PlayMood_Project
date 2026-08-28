@@ -227,10 +227,13 @@ LOGGING = {
 # --- CHANNELS + WEBSOCKETS ---
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            # Giả định Redis đang chạy ở cổng mặc định 6379 trên máy tính của bạn
-            "hosts": [("127.0.0.1", 6379)],
-        },
+        # Đang dùng InMemoryChannelLayer để test ở Local tránh lỗi Timeout của Redis Docker trên Windows
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        
+        # Khi nào đưa lên Server thật (Production), hãy mở lại code Redis dưới đây:
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [("127.0.0.1", 6379)],
+        # },
     },
 }

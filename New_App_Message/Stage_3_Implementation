@@ -39,17 +39,18 @@ Tạo file `validators.py` để làm sạch và kiểm tra dữ liệu tin nh�
 
 ```python
 from accounts.exceptions import ValidationError
-from music.models import Song
+from music.models import Song, Album
+from playlists.models import Playlist
 
-def validate_message_content(content: str, image_url: str, shared_song_id: str):
+def validate_message_content(content: str, image_url: str, shared_song_id: str, shared_album_id: str = None, shared_playlist_id: str = None):
     """
     Kiểm tra tính hợp lệ của tin nhắn:
-    Phải có ít nhất 1 trong 3 thứ: text, hình ảnh, hoặc chia sẻ bài hát.
+    Phải có ít nhất 1 trong các thành phần: text, hình ảnh, hoặc chia sẻ (bài hát/album/playlist).
     """
-    if not content and not image_url and not shared_song_id:
+    if not content and not image_url and not shared_song_id and not shared_album_id and not shared_playlist_id:
         raise ValidationError(
             'Tin nhắn không hợp lệ', 
-            fields={'content': ['Tin nhắn phải có nội dung chữ, ảnh hoặc bài hát đính kèm']}
+            fields={'content': ['Tin nhắn phải có nội dung chữ, ảnh hoặc đính kèm']}
         )
     
     if shared_song_id:
@@ -58,6 +59,20 @@ def validate_message_content(content: str, image_url: str, shared_song_id: str):
             raise ValidationError(
                 'Bài hát không hợp lệ',
                 fields={'shared_song_id': ['Bài hát đính kèm không tồn tại hoặc đã bị xoá']}
+            )
+            
+    if shared_album_id:
+        if not Album.objects.filter(id=shared_album_id).exists():
+            raise ValidationError(
+                'Album không hợp lệ',
+                fields={'shared_album_id': ['Album đính kèm không tồn tại hoặc đã bị xoá']}
+            )
+            
+    if shared_playlist_id:
+        if not Playlist.objects.filter(id=shared_playlist_id).exists():
+            raise ValidationError(
+                'Playlist không hợp lệ',
+                fields={'shared_playlist_id': ['Playlist đính kèm không tồn tại hoặc đã bị xoá']}
             )
 ```
 
@@ -94,9 +109,9 @@ def list_messages_in_conversation(conversation_id, user, page=1, page_size=20) -
     # Xác thực quyền truy cập trước
     conversation = get_conversation_by_id(conversation_id, user)
     
-    # Select related để lấy luôn thông tin người gửi và bài hát đính kèm (chống N+1 query)
+    # Select related để lấy luôn thông tin người gửi và các đính kèm (chống N+1 query)
     qs = conversation.messages.all().select_related(
-        'sender', 'shared_song', 'shared_song__artist'
+        'sender', 'shared_song', 'shared_song__artist', 'shared_album', 'shared_playlist'
     ).order_by('-created_at')
     
     total = qs.count()
@@ -162,22 +177,24 @@ def get_or_create_direct_conversation(user, target_user) -> tuple[Conversation, 
     logger.info('Cuộc trò chuyện mới được tạo giữa %s và %s', user.username, target_user.username)
     return new_conv, True
 
-def create_message(sender, conversation_id, data: dict) -> Message:
+def create_message(sender: User, conversation_id: str, data: dict) -> Message:
     """Tạo tin nhắn mới và lưu vào cơ sở dữ liệu."""
     content = data.get('content', '')
     image_url = data.get('image_url', None)
     shared_song_id = data.get('shared_song_id', None)
+    shared_album_id = data.get('shared_album_id', None)
+    shared_playlist_id = data.get('shared_playlist_id', None)
     
     # 1. Validation
-    validate_message_content(content, image_url, shared_song_id)
+    validate_message_content(content, image_url, shared_song_id, shared_album_id, shared_playlist_id)
     
     # 2. Lấy conversation (đồng thời check quyền)
     conversation = get_conversation_by_id(conversation_id, sender)
     
-    # 3. Lấy Object Song nếu có
-    song_obj = None
-    if shared_song_id:
-        song_obj = Song.objects.get(id=shared_song_id)
+    # 3. Lấy Objects đính kèm nếu có
+    song_obj = Song.objects.get(id=shared_song_id) if shared_song_id else None
+    album_obj = Album.objects.get(id=shared_album_id) if shared_album_id else None
+    playlist_obj = Playlist.objects.get(id=shared_playlist_id) if shared_playlist_id else None
         
     # 4. Lưu tin nhắn mới
     message = Message.objects.create(
@@ -185,7 +202,9 @@ def create_message(sender, conversation_id, data: dict) -> Message:
         sender=sender,
         content=content,
         image_url=image_url,
-        shared_song=song_obj
+        shared_song=song_obj,
+        shared_album=album_obj,
+        shared_playlist=playlist_obj
     )
     
     # Cập nhật thời gian updated_at của Conversation để đẩy nó lên đầu danh sách chat

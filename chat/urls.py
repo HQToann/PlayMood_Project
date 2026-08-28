@@ -7,4 +7,7 @@ urlpatterns = [
     
     # Lịch sử tin nhắn
     path('conversations/<uuid:conversation_id>/messages/', views.MessageListView.as_view(), name='message-list'),
+    
+    # Upload ảnh
+    path('upload-image/', views.UploadImageView.as_view(), name='upload-image'),
 ]

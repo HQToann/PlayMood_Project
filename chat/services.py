@@ -46,17 +46,30 @@ def create_message(sender, conversation_id, data: dict) -> Message:
     content = data.get('content', '')
     image_url = data.get('image_url', None)
     shared_song_id = data.get('shared_song_id', None)
+    shared_album_id = data.get('shared_album_id', None)
+    shared_playlist_id = data.get('shared_playlist_id', None)
 
     # 1. Validation
-    validate_message_content(content, image_url, shared_song_id)
+    validate_message_content(content, image_url, shared_song_id, shared_album_id, shared_playlist_id)
 
     # 2. Lấy conversation (đồng thời kiểm tra quyền)
     conversation = get_conversation_by_id(conversation_id, sender)
 
-    # 3. Lấy Object Song nếu có
+    # 3. Lấy Object đính kèm nếu có
+    from music.models import Album
+    from playlists.models import Playlist
+    
     song_obj = None
     if shared_song_id:
         song_obj = Song.objects.get(id=shared_song_id)
+        
+    album_obj = None
+    if shared_album_id:
+        album_obj = Album.objects.get(id=shared_album_id)
+        
+    playlist_obj = None
+    if shared_playlist_id:
+        playlist_obj = Playlist.objects.get(id=shared_playlist_id)
 
     # 4. Lưu tin nhắn mới
     message = Message.objects.create(
@@ -64,7 +77,9 @@ def create_message(sender, conversation_id, data: dict) -> Message:
         sender=sender,
         content=content,
         image_url=image_url,
-        shared_song=song_obj
+        shared_song=song_obj,
+        shared_album=album_obj,
+        shared_playlist=playlist_obj
     )
 
     # Cập nhật thời gian updated_at của Conversation để đẩy nó lên đầu danh sách chat

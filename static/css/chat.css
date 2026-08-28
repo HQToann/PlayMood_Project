@@ -3,7 +3,7 @@
 /* Khung chat tổng (Floating) */
 .chat-widget {
     position: fixed;
-    bottom: 20px;
+    bottom: 100px; /* Đẩy lên cao để không bị thanh player che (player thường ~90px) */
     right: 320px; /* Nằm bên trái sidebar (độ rộng sidebar ~300px) */
     width: 340px;
     height: 480px;
@@ -13,7 +13,7 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    z-index: 1040;
+    z-index: 1060; /* Đặt cao hơn z-index của player */
     overflow: hidden;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -37,7 +37,7 @@
 @media (max-width: 768px) {
     .chat-widget {
         right: 10px;
-        bottom: 80px; /* Tránh bottom nav bar (player) */
+        bottom: 140px; /* Tránh bottom nav bar (player) trên mobile */
         width: calc(100vw - 20px);
     }
 }

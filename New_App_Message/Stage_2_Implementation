@@ -12,7 +12,8 @@ Bạn hãy mở file `chat/models.py` lên (xóa hết nội dung cũ mặc đ�
 import uuid
 from django.db import models
 from accounts.models import User
-from music.models import Song
+from music.models import Song, Album
+from playlists.models import Playlist
 from music_platform.utils import optimize_cloudinary_url
 
 class Conversation(models.Model):
@@ -81,13 +82,29 @@ class Message(models.Model):
     # URL ảnh được lưu trên Cloudinary
     image_url = models.URLField(blank=True, null=True, verbose_name='Ảnh đính kèm')
     
-    # Chia sẻ Bài hát (có thể tuỳ biến thêm Playlist nếu cần)
+    # Chia sẻ Bài hát, Album, Playlist
     shared_song = models.ForeignKey(
         Song, 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
         verbose_name='Bài hát chia sẻ'
+    )
+    shared_album = models.ForeignKey(
+        Album,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='shared_in_messages',
+        verbose_name='Album chia sẻ'
+    )
+    shared_playlist = models.ForeignKey(
+        Playlist,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='shared_in_messages',
+        verbose_name='Playlist chia sẻ'
     )
     
     # Lưu danh sách thả cảm xúc dưới dạng JSON dict (vd: {"user_id_1": "❤️", "user_id_2": "😂"})
@@ -109,17 +126,41 @@ class Message(models.Model):
 
     def to_dict(self):
         """Serialize Message thành dict cho API."""
-        return {
+        data = {
             'id': str(self.id),
             'conversation_id': str(self.conversation_id),
             'sender': self.sender.to_dict() if self.sender else None,
             'content': self.content,
             'image_url': optimize_cloudinary_url(self.image_url, 'image') if self.image_url else None,
-            'shared_song': self.shared_song.to_dict() if self.shared_song else None,
             'reactions': self.reactions,
             'is_read': self.is_read,
             'created_at': self.created_at.isoformat(),
         }
+        
+        # Gắn dữ liệu bài hát, album, playlist nếu có
+        if self.shared_song:
+            data['shared_song'] = {
+                'id': str(self.shared_song.id),
+                'title': self.shared_song.title,
+                'cover_image': optimize_cloudinary_url(self.shared_song.cover_image, 'image') if self.shared_song.cover_image else None,
+                'artist_name': self.shared_song.artist.display_name if getattr(self.shared_song, 'artist', None) else None,
+            }
+        
+        if self.shared_album:
+            data['shared_album'] = {
+                'id': str(self.shared_album.id),
+                'title': self.shared_album.title,
+                'cover_image': optimize_cloudinary_url(self.shared_album.cover_image, 'image') if self.shared_album.cover_image else None,
+            }
+            
+        if self.shared_playlist:
+            data['shared_playlist'] = {
+                'id': str(self.shared_playlist.id),
+                'title': self.shared_playlist.title,
+                'cover_image': optimize_cloudinary_url(self.shared_playlist.cover_image, 'image') if self.shared_playlist.cover_image else None,
+            }
+
+        return data
 ```
 
 ## Bước 2: Đăng ký vào Admin Panel

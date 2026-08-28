@@ -110,3 +110,43 @@ class MessageListView(View):
             return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Tham số phân trang không hợp lệ'}}, status=400)
         except Exception as e:
             return handle_exception(e)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadImageView(View):
+    """
+    POST /api/v1/chat/upload-image/
+    Upload ảnh lên server/cloudinary và trả về URL để gửi qua WebSockets.
+    """
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            image_file = request.FILES.get('image')
+            if not image_file:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Không có file ảnh'}}, status=400)
+                
+            # Kiểm tra định dạng
+            allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+            if image_file.content_type not in allowed_types:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Định dạng ảnh không hợp lệ'}}, status=400)
+                
+            # Upload dùng default_storage (sẽ tự động đẩy lên Cloudinary theo settings)
+            from django.core.files.storage import default_storage
+            import uuid
+            
+            ext = image_file.name.split('.')[-1]
+            filename = f"chat_images/{uuid.uuid4()}.{ext}"
+            path = default_storage.save(filename, image_file)
+            url = default_storage.url(path)
+            
+            # Đảm bảo dùng HTTPS cho Cloudinary URL nếu có thể (nhưng default_storage thường tự lo)
+            return JsonResponse({
+                'success': True, 
+                'data': {
+                    'image_url': url
+                }
+            })
+            
+        except Exception as e:
+            return handle_exception(e)

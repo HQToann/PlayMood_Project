@@ -88,14 +88,17 @@ ASGI_APPLICATION = 'music_platform.asgi.application'
 Cuộn xuống **dưới cùng** của file `settings.py` và thêm đoạn cấu hình này vào. Nó giúp Server sử dụng Redis để luân chuyển tin nhắn.
 
 ```python
-# --- CHANNELS & WEBSOCKETS ---
+# Cấu hình Channels Layer
+# LƯU Ý: Đối với môi trường Windows, Redis đôi khi gặp lỗi Timeout do thư viện asyncio/redis xung đột.
+# Do đó, trong môi trường Dev, chúng ta nên dùng InMemoryChannelLayer để đảm bảo tính ổn định.
+# Khi đưa lên Server thật (Linux), hãy dùng RedisChannelLayer (như dòng bị comment bên dưới).
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            # Giả định Redis đang chạy ở cổng mặc định 6379 trên máy tính của bạn
-            "hosts": [("127.0.0.1", 6379)],
-        },
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [("127.0.0.1", 6379)],
+        # },
     },
 }
 ```

@@ -186,9 +186,9 @@
         window.LOGIN_URL = "/auth/login/";
     </script>
     {% if request.user.is_authenticated %}
-    <link href="{% static 'css/chat.css' %}?v=1.0" rel="stylesheet">
+    <link href="{% static 'css/chat.css' %}?v=1.1" rel="stylesheet">
     <script src="{% static 'js/friend_activity.js' %}?v=2.7"></script>
-    <script src="{% static 'js/chat.js' %}?v=1.0"></script>
+    <script src="{% static 'js/chat.js' %}?v=1.3"></script>
     <script>
     // Fallback: tải mood badge nếu friend_activity.js chưa gọi (ví dụ: CURRENT_USER_ID falsy)
     window._moodBadgeLoaded = false;

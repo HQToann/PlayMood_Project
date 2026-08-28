@@ -38,19 +38,23 @@
     <div class="chat-footer">
         <!-- Chỗ chứa preview hình ảnh / bài hát nếu có -->
         <div id="chatAttachmentPreview" class="d-none align-items-center justify-content-between mb-2 p-2 rounded" style="background: rgba(255,255,255,0.05);">
-            <div class="d-flex align-items-center gap-2 overflow-hidden">
-                <i class="bi bi-music-note-beamed text-info"></i>
-                <span id="chatAttachmentName" class="text-truncate" style="font-size: 0.85rem; color: #fff;">Tên bài hát...</span>
+            <div class="d-flex align-items-center gap-2 overflow-hidden" id="chatAttachmentPreviewContent">
+                <!-- Nội dung preview sẽ được render bằng JS -->
             </div>
-            <button id="chatRemoveAttachmentBtn" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-x-circle-fill"></i></button>
+            <button type="button" id="chatRemoveAttachmentBtn" class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-x-circle-fill fs-5"></i></button>
         </div>
 
         <form id="chatForm" class="d-flex align-items-end gap-2 m-0">
-            <!-- Nút gửi hình ảnh (ẩn input file đi) -->
+            <!-- Nút gửi hình ảnh -->
             <label for="chatImageInput" class="btn btn-link text-muted-custom p-1 m-0" title="Gửi ảnh">
                 <i class="bi bi-image" style="font-size: 1.2rem;"></i>
             </label>
             <input type="file" id="chatImageInput" class="d-none" accept="image/*">
+            
+            <!-- Nút gửi nhạc/album/playlist -->
+            <button type="button" class="btn btn-link text-muted-custom p-1 m-0" title="Gửi nhạc" data-bs-toggle="modal" data-bs-target="#chatShareMusicModal">
+                <i class="bi bi-music-note-beamed" style="font-size: 1.2rem;"></i>
+            </button>
 
             <!-- Ô nhập chữ -->
             <textarea id="chatInput" class="form-control chat-input" placeholder="Aa" rows="1"></textarea>
@@ -60,5 +64,30 @@
                 <i class="bi bi-send-fill" style="font-size: 1.2rem;"></i>
             </button>
         </form>
+    </div>
+</div>
+
+<!-- Modal Chọn Nhạc để Gửi -->
+<div class="modal fade" id="chatShareMusicModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content text-white" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h6 class="modal-title fw-bold">Chia sẻ Nhạc</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="search-bar mb-3 w-100" style="padding: 10px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.05);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 1rem;"></i>
+                    <input type="text" id="chatMusicSearchInput" placeholder="Tìm kiếm bài hát..." style="font-size: 0.95rem; background: none; border: none; color: white; outline: none; width: 85%; margin-left: 10px;">
+                </div>
+                
+                <h6 id="chatShareMusicTitle" class="fw-bold text-muted-custom mb-3" style="font-size: 0.85rem;">GỢI Ý CHO BẠN</h6>
+                <div id="chatShareMusicResults" class="d-flex flex-column gap-2">
+                    <div class="text-center text-muted-custom py-4">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
