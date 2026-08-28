@@ -35,7 +35,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-      - ./certbot/conf:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - app
     mem_limit: 100m
