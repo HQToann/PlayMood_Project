@@ -58,25 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'music_platform.settings.ExceptionDebugMiddleware',
 ]
-
-import traceback
-from django.http import JsonResponse
-class ExceptionDebugMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-    def __call__(self, request):
-        return self.get_response(request)
-    def process_exception(self, request, exception):
-        return JsonResponse({
-            'success': False, 
-            'error': {
-                'code': 'DEBUG_SERVER_ERROR', 
-                'mesage': str(exception), 
-                'traceback': traceback.format_exc()
-            }
-        }, status=500)
 
 ROOT_URLCONF = 'music_platform.urls'
 
