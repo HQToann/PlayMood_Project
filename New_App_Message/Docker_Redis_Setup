@@ -1,0 +1,82 @@
+# Hướng dẫn chi tiết Cách 2: Cài đặt Docker và chạy Redis trên Windows
+
+Phần này sẽ hướng dẫn bạn từng bước (step-by-step) cách thiết lập môi trường Docker trên Windows để có thể chạy được máy chủ Redis chuẩn Production.
+
+---
+
+## Bước 1: Chuẩn bị môi trường (Bật WSL 2)
+Docker trên Windows chạy tốt nhất thông qua nhân Linux (WSL 2).
+1. Bấm phím **Windows** trên bàn phím, gõ `PowerShell`.
+2. Click chuột phải vào **Windows PowerShell** và chọn **Run as Administrator** (Chạy với quyền Quản trị).
+3. Gõ lệnh sau và nhấn Enter:
+   ```bash
+   wsl --install
+   ```
+4. Nếu hệ thống yêu cầu khởi động lại máy, hãy **Restart** lại máy tính của bạn.
+
+---
+
+## Bước 2: Tải và cài đặt Docker Desktop
+1. Truy cập trang chủ Docker: [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+2. Bấm vào nút **Download for Windows** để tải file cài đặt `.exe`.
+3. Chạy file vừa tải về. 
+4. Cứ nhấn **Next/OK** để cài đặt (nhớ tích chọn mục *Use WSL 2 instead of Hyper-V* nếu nó hiện ra).
+5. Cài xong, Docker có thể yêu cầu bạn Log out (Đăng xuất) khỏi Windows hoặc Restart máy. Hãy làm theo.
+
+---
+
+## Bước 3: Khởi động Docker Desktop
+1. Mở menu Windows, tìm và mở ứng dụng **Docker Desktop**.
+2. Khi ứng dụng yêu cầu Accept (Chấp nhận) điều khoản, hãy bấm Accept.
+3. Chờ một chút, khi bạn thấy biểu tượng con cá voi ở góc dưới cùng bên phải màn hình (khay hệ thống) có màu xanh lá, hoặc ở góc dưới cùng bên trái của cửa sổ Docker Desktop hiện chữ **"Engine running"** thì tức là Docker đã sẵn sàng.
+
+---
+
+## Bước 4: Chạy cỗ máy Redis
+Bây giờ máy tính của bạn đã có năng lực chạy bất kỳ máy chủ nào. Chúng ta sẽ kéo Redis về.
+
+1. Bật Terminal (hoặc PowerShell / CMD) lên.
+2. Copy và gõ dòng lệnh sau vào, rồi nhấn Enter:
+   ```bash
+   docker run --name my-redis -p 6379:6379 -d redis
+   ```
+   *Giải thích lệnh:*
+   - `--name my-redis`: Đặt tên cho cỗ máy này là my-redis cho dễ nhớ.
+   - `-p 6379:6379`: Nối cổng mạng 6379 của máy ảo ra cổng 6379 của máy thật (Windows). Do đó app Django mới kết nối được.
+   - `-d redis`: Chạy ngầm dưới nền và sử dụng hình ảnh (image) chính thức tên là `redis`.
+
+3. Docker sẽ tự động tải file từ Internet về và chạy ngầm. 
+
+---
+
+## Bước 5: Kiểm tra thành quả
+Để chắc chắn Redis đang chạy tốt:
+1. Gõ lệnh: `docker ps`
+2. Nếu bạn thấy có một dòng hiện chữ `redis` và trạng thái `Up`, kèm theo port `0.0.0.0:6379`, vậy là **Xin chúc mừng! Máy tính của bạn đã có Redis xịn chuẩn Production!**
+
+Bây giờ bạn quay lại VS Code, chạy thử `python manage.py runserver`, ứng dụng Chat sẽ kết nối mượt mà vào địa chỉ `127.0.0.1:6379`.
+
+---
+
+## Phụ lục: Vai trò của Docker và Redis trong App Chat
+
+**Tại sao chúng ta lại cần cài đặt Docker và chạy Redis?**
+
+### 1. Redis là gì?
+Redis là một cơ sở dữ liệu lưu trữ trên bộ nhớ RAM (In-memory Database). Khác với cơ sở dữ liệu chính của dự án (SQLite/PostgreSQL) lưu trên ổ cứng, Redis lưu trên RAM nên tốc độ đọc/ghi của nó **nhanh như chớp**.
+
+### 2. Hai nhiệm vụ cốt lõi của Redis trong App Chat:
+**Nhiệm vụ A: Làm "Trạm bưu điện" trung chuyển tin nhắn (Channel Layer)**
+- Bản thân framework Django mặc định chỉ xử lý các request HTTP truyền thống (người dùng tải trang). Để làm tính năng nhắn tin theo thời gian thực (WebSockets), chúng ta đã cài đặt thư viện **Django Channels**.
+- Khi User A gửi một tin nhắn cho User B, tin nhắn đó không được gửi thẳng sang B, mà được đẩy vào **Redis**.
+- Redis ngay lập tức tìm xem User B đang kết nối qua ống WebSocket nào và "phát sóng" (broadcast) tin nhắn đó đến màn hình của User B. Quá trình này diễn ra chỉ trong vài mili-giây, tạo ra trải nghiệm Real-time.
+
+**Nhiệm vụ B: Lưu trữ trạng thái Online/Offline (Caching)**
+- Cứ mỗi giây trôi qua, trình duyệt của người dùng sẽ gửi một "nhịp tim" (heartbeat) báo rằng "Tôi còn online".
+- Thay vì ghi thông tin này vào Database chính (sẽ làm sập hệ thống nếu có hàng ngàn user), chúng ta lưu nó vào **Redis Cache** với thời hạn tự động huỷ sau 60 giây (`timeout=60`).
+- Khi cần kiểm tra xem ai đó có đang online hay không, hệ thống chỉ việc chọc vào RAM của Redis lấy thông tin ra ngay lập tức.
+
+### 3. Tại sao lại dùng Docker để chạy Redis?
+- Redis được thiết kế tối ưu nhất cho Linux. Cài trực tiếp trên Windows rất phức tạp và không ổn định.
+- **Docker** tạo ra một môi trường "ảo" (container) chứa sẵn hệ điều hành Linux thu nhỏ. Chỉ với 1 dòng lệnh `docker run ... redis`, bạn đã dựng xong một con server Redis cấu hình chuẩn quốc tế ngay trong máy tính cá nhân.
+- Khi không làm việc nữa, bạn chỉ cần bấm nút "Stop" trong Docker Desktop là máy tính của bạn lại sạch sẽ như bình thường. Không cần cài đặt rác vào hệ thống!

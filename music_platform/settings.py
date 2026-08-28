@@ -26,6 +26,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # --- ỨNG DỤNG ---
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'anymail',
     'cloudinary',
     'cloudinary_storage',
+    'channels',
 
     # Ứng dụng nội bộ
     'accounts',
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     'notifications',
     'search',
     'recommendations',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -81,6 +84,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'music_platform.wsgi.application'
+
+# Cấu hình WebSocket (Thay thế WSGI mặc định)
+ASGI_APPLICATION = 'music_platform.asgi.application'
 
 # --- DATABASE ---
 DATABASES = {
@@ -214,6 +220,17 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
+        },
+    },
+}
+
+# --- CHANNELS + WEBSOCKETS ---
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            # Giả định Redis đang chạy ở cổng mặc định 6379 trên máy tính của bạn
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }

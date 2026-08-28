@@ -1,0 +1,109 @@
+# Danh sách chi tiết API và WebSocket Events (App Chat)
+
+Tài liệu này liệt kê toàn bộ các "đầu mối giao tiếp" (Endpoints) giữa Frontend và Backend dành riêng cho ứng dụng nhắn tin, **đảm bảo bao phủ 100% các tính năng** (từ cơ bản, mở rộng đến đặc thù âm nhạc) đã được định nghĩa.
+
+---
+
+## Phần 1: HTTP APIs (Sử dụng Django View thuần)
+*Sử dụng cho các tác vụ tải dữ liệu nặng, upload file hoặc khởi tạo.*
+
+### 1.1 Lấy danh sách cuộc trò chuyện (Hỗ trợ: Unread Badges)
+- **Endpoint**: `GET /api/v1/chat/conversations/`
+- **Chức năng**: Lấy danh sách chat ở thanh bên trái và phục vụ tính toán số chấm đỏ (Huy hiệu thông báo).
+- **Dữ liệu trả về**: 
+  - `unread_count`: Số tin nhắn chưa đọc của cuộc trò chuyện này.
+  - `last_message`: Thông tin tin nhắn cuối cùng để hiển thị preview.
+
+### 1.2 Tạo / Mở một cuộc trò chuyện (Hỗ trợ: Chat 1-1)
+- **Endpoint**: `POST /api/v1/chat/conversations/`
+- **Body**: `{ "target_user_id": "<uuid>" }`
+- **Logic**: Kiểm tra quyền bạn bè (follow 2 chiều). Tạo hoặc trả về cuộc trò chuyện cũ.
+
+### 1.3 Lấy lịch sử tin nhắn (Hỗ trợ: Chat History & Pagination)
+- **Endpoint**: `GET /api/v1/chat/conversations/<conversation_id>/messages/`
+- **Params**: `?page=1&page_size=30`
+- **Chức năng**: Phục vụ tính năng cuộn ngược lên (Infinite scroll) để lấy tin cũ.
+- **Dữ liệu trả về**: Chứa toàn bộ Text, `image_url`, `shared_song` (thông tin render Card bài hát), `reactions` và trạng thái `is_read`.
+
+### 1.4 Tải lên Hình ảnh (Hỗ trợ: Chia sẻ Hình ảnh/Media)
+- **Endpoint**: `POST /api/v1/chat/upload-image/`
+- **Body**: `multipart/form-data` chứa file ảnh.
+- **Chức năng**: Do WebSocket không tối ưu để truyền file nhị phân lớn, client sẽ gọi API HTTP này để upload ảnh lên Cloudinary trước.
+- **Dữ liệu trả về**: URL của ảnh trên Cloudinary. Sau khi có URL này, client mới gửi kèm vào sự kiện `send_message` qua WebSocket.
+
+### 1.5 Lấy trạng thái hoạt động ban đầu (Hỗ trợ: Online Status & Đang nghe gì)
+- **Endpoint**: `GET /api/v1/chat/friends-status/`
+- **Chức năng**: Khi vừa load trang, lấy danh sách các bạn bè đang Online (đọc từ Redis) và bài hát gần nhất họ đang nghe (đọc từ `FriendActivity` của app Social).
+
+---
+
+## Phần 2: WebSocket Events (Sử dụng Django Channels)
+*Kết nối duy trì qua: `ws://<domain>/ws/chat/conversation/<conversation_id>/` (cho chat cụ thể) hoặc `ws://<domain>/ws/chat/global/` (cho thông báo toàn cục).*
+
+### 2.1 Gửi tin nhắn mới (Hỗ trợ: Real-time Chat & Music Sharing)
+- **JSON Client gửi**:
+  ```json
+  {
+      "type": "send_message",
+      "content": "Nghe thử bài này đi bạn!",
+      "image_url": "https://res.cloudinary.com/...", 
+      "shared_song_id": "<uuid-bai-hat>",
+      "shared_playlist_id": "<uuid-playlist>"
+  }
+  ```
+- **Chức năng**: Xử lý một tin nhắn có thể chứa chữ, ảnh (link từ API 1.4), hoặc ID bài hát/playlist. Backend lưu DB và phát sóng tới người nhận. (Frontend nhận được sẽ tự động render ra UI tương ứng, vd: Card phát nhạc mini).
+
+### 2.2 Đang gõ phím (Hỗ trợ: Typing Indicator)
+- **JSON Client gửi**:
+  ```json
+  {
+      "type": "typing_status",
+      "is_typing": true 
+  }
+  ```
+
+### 2.3 Thả cảm xúc vào tin nhắn (Hỗ trợ: Message Reactions)
+- **JSON Client gửi**:
+  ```json
+  {
+      "type": "react_message",
+      "message_id": "<uuid-tin-nhan>",
+      "reaction": "❤️"
+  }
+  ```
+- **Logic**: Cập nhật field `reactions` của tin nhắn đó dưới dạng JSON Dictionary `{"user_id": "❤️"}`. Broadcast sự thay đổi để Frontend hiện tim bay lượn.
+
+### 2.4 Quản lý trạng thái "Đã Xem" (Hỗ trợ: Read Receipts)
+- **JSON Client gửi**:
+  ```json
+  {
+      "type": "mark_read",
+      "message_id": "<uuid-tin-nhan>"
+  }
+  ```
+- **Chức năng**: Gửi thông điệp xác nhận người nhận đã mở đọc. Người gửi sẽ hiển thị chữ "Đã xem" và thời gian xem.
+
+### 2.5 Broadcast Trạng thái Hoạt động (Hỗ trợ: Online/Offline Status)
+- **Sự kiện do Server tự động gửi xuống Client**:
+  ```json
+  {
+      "type": "presence_update",
+      "user_id": "<uuid>",
+      "status": "online" // hoặc "offline"
+  }
+  ```
+- **Logic**: Khi một người dùng mở/đóng kết nối WebSocket (chạy hàm `connect` hoặc `disconnect` trong Consumer), Server sẽ tự động thêm/xoá họ khỏi Redis và broadcast event `presence_update` này cho tất cả bạn bè của họ biết.
+
+### 2.6 Broadcast Trạng thái "Đang nghe gì" (Hỗ trợ: Music Context Integration)
+- **Sự kiện do Server tự động gửi xuống Client**:
+  ```json
+  {
+      "type": "playing_status_update",
+      "user_id": "<uuid>",
+      "song": {
+          "title": "Tên bài hát",
+          "artist": "Tên ca sĩ"
+      }
+  }
+  ```
+- **Logic**: Backend có thể móc nối (signal) với API phát nhạc (hoặc app Social). Khi user play 1 bài, server phát event này qua socket chat để bên dưới tên họ trong khung chat cập nhật ngay lập tức trạng thái "Đang nghe: ...".

@@ -1,0 +1,37 @@
+# Lộ trình Triển khai Ứng dụng Chat (Cầm tay chỉ việc)
+
+Chào mừng đến với giai đoạn Triển khai (Implementation)! Vì bạn muốn tự tay gõ lại code để thực sự hiểu rõ luồng đi của dữ liệu, chúng ta sẽ áp dụng quy trình làm việc như sau cho mỗi bước:
+1. Tôi sẽ giải thích mục đích của bước hiện tại.
+2. Tôi xuất code hoàn chỉnh của file đó ra một tài liệu `.md` riêng.
+3. Bạn tự gõ/copy code vào IDE của bạn.
+4. Nếu có gì không hiểu, bạn cứ hỏi để tôi giải thích. Nếu mọi thứ chạy tốt, bạn báo "OK, tiếp tục" để sang bước tiếp theo.
+
+Dưới đây là Lộ trình chi tiết (Roadmap) chúng ta sẽ đi qua. (Tôi sẽ dùng danh sách này để đánh dấu `[x]` sau mỗi bước bạn đã hoàn thành).
+
+---
+
+## Giai đoạn 1: Thiết lập Môi trường & Core
+- `[x]` **Bước 1. Cài đặt thư viện & Cấu hình `settings.py`**: Cài `channels`, `daphne`, `channels-redis`. Đổi `WSGI` thành `ASGI` và cài đặt `CHANNEL_LAYERS` (Redis).
+- `[x]` **Bước 2. Cấu hình `asgi.py` ban đầu**: Sửa file `asgi.py` ở thư mục gốc để Daphne có thể khởi động thay thế cho server mặc định của Django.
+
+## Giai đoạn 2: Cơ sở dữ liệu (Database Layer)
+- `[x]` **Bước 3. Khởi tạo App & Định nghĩa `models.py`**: Tạo thư mục app `chat`. Định nghĩa bảng `Conversation` và `Message` (có `image_url`, `shared_song`, `reactions`...).
+- `[x]` **Bước 4. Đăng ký `admin.py` & Chạy Migration**: Đưa Model lên trang quản trị và tạo bảng trong Database.
+
+## Giai đoạn 3: Nghiệp vụ (Business Logic Layer)
+- `[x]` **Bước 5. Định nghĩa `exceptions.py` & `validators.py`**: Tạo các class lỗi tuỳ chỉnh (vd: `NotYourFriendException`) và các hàm kiểm tra dữ liệu đầu vào.
+- `[x]` **Bước 6. Viết `selectors.py` (Đọc dữ liệu)**: Các hàm query lấy danh sách hội thoại, phân trang lấy lịch sử tin nhắn.
+- `[x]` **Bước 7. Viết `services.py` (Ghi dữ liệu)**: Các hàm tạo cuộc trò chuyện mới, lưu tin nhắn mới, đánh dấu đã đọc.
+
+## Giai đoạn 4: HTTP APIs (Controller Layer)
+- `[ ]` **Bước 8. Viết REST API (`views.py`)**: Xử lý HTTP Request, hứng lỗi từ services/selectors và trả về `JsonResponse`.
+- `[ ]` **Bước 9. Định tuyến HTTP (`urls.py`)**: Đăng ký các endpoints API và móc vào `music_platform/urls.py` tổng.
+
+## Giai đoạn 5: WebSocket & Real-time (Thời gian thực)
+- `[ ]` **Bước 10. Định tuyến WebSocket (`routing.py`)**: Xác định đường dẫn `ws://` cho chat. Cập nhật lại `asgi.py` để bổ sung Middleware phân quyền (Auth Middleware).
+- `[ ]` **Bước 11. Viết `consumers.py` (Phần 1 - Khởi tạo)**: Hàm `connect()` (Xác thực, phân phòng Redis) và `disconnect()`.
+- `[ ]` **Bước 12. Viết `consumers.py` (Phần 2 - Gửi/Nhận)**: Hàm `receive()` xử lý các JSON sự kiện (`send_message`, `typing_status`, `react_message`, `mark_read`).
+
+## Giai đoạn 6: Hoàn thiện
+- `[ ]` **Bước 13. Tích hợp Online Status (Hiện trạng hoạt động)**: Bổ sung logic lắng nghe ai đang online vào Consumer và broadcast.
+- `[ ]` **Bước 14. Kiểm tra tổng thể (Testing)**: Chạy thử toàn bộ luồng từ gửi tin, nhận tin, báo đã xem. Mọi thứ đã hoàn tất!

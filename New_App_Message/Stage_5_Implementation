@@ -1,0 +1,208 @@
+# Hướng dẫn Triển khai Giai đoạn 5: WebSocket & Real-time (Thời gian thực)
+
+Giai đoạn này giúp hệ thống gửi và nhận dữ liệu ngay lập tức mà không cần F5 trình duyệt. Chúng ta sẽ dùng Django Channels và Redis.
+
+---
+
+## Bước 10: Định tuyến WebSocket (`routing.py`) & Cập nhật `asgi.py`
+
+### 10.1 Tạo file `chat/routing.py`
+Tương tự như `urls.py`, `routing.py` dùng để phân luồng các kết nối bắt đầu bằng `ws://`. Bạn tạo file mới và gõ đoạn code sau:
+
+```python
+from django.urls import path
+from . import consumers
+
+websocket_urlpatterns = [
+    # Kết nối vào một cuộc trò chuyện cụ thể
+    path('ws/chat/conversation/<uuid:conversation_id>/', consumers.ChatConsumer.as_asgi()),
+]
+```
+
+### 10.2 Cập nhật file `music_platform/asgi.py`
+Mở file `music_platform/asgi.py` (mà bạn đã sửa ở Giai đoạn 1). 
+Thay thế phần `URLRouter([])` trống bằng `websocket_urlpatterns` của app `chat`:
+
+```python
+import os
+from django.core.asgi import get_asgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'music_platform.settings')
+
+django_asgi_app = get_asgi_application()
+
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+import chat.routing # IMPORT FILE ROUTING VỪA TẠO
+
+application = ProtocolTypeRouter({
+    "http": django_asgi_app,
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            chat.routing.websocket_urlpatterns # ĐƯA ROUTING VÀO ĐÂY
+        )
+    ),
+})
+```
+
+---
+
+## Bước 11: Viết `consumers.py` (Phần 1 - Khởi tạo)
+
+Tạo file `chat/consumers.py`. Đây là nơi xử lý các kết nối WebSocket (đóng vai trò giống views nhưng là real-time).
+Chú ý: Chúng ta phải dùng `@database_sync_to_async` khi gọi các hàm Query DB (từ `services.py` hoặc `selectors.py`).
+
+```python
+import json
+from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+
+from . import services
+from . import selectors
+from .exceptions import ConversationNotFoundError
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        """Khi có một Client kết nối tới ws://..."""
+        self.user = self.scope["user"]
+        self.conversation_id = self.scope['url_route']['kwargs']['conversation_id']
+        
+        # 1. Kiểm tra đăng nhập
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+            
+        # 2. Kiểm tra quyền truy cập (Dùng database_sync_to_async vì có query DB)
+        try:
+            await self.check_conversation_access(self.conversation_id, self.user)
+        except ConversationNotFoundError:
+            await self.close()
+            return
+            
+        # 3. Tạo tên nhóm (Room) cho Redis
+        self.room_group_name = f'chat_{self.conversation_id}'
+        
+        # 4. Tham gia nhóm
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        """Khi Client ngắt kết nối"""
+        # Rời khỏi nhóm
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+
+    @database_sync_to_async
+    def check_conversation_access(self, conversation_id, user):
+        return selectors.get_conversation_by_id(conversation_id, user)
+```
+
+---
+
+## Bước 12: Viết `consumers.py` (Phần 2 - Gửi/Nhận Sự kiện)
+
+Tiếp tục mở file `chat/consumers.py` và viết bổ sung vào bên trong class `ChatConsumer`. 
+Giai đoạn này ta sẽ bắt các chuỗi JSON từ Client gửi lên (qua hàm `receive`), phân tích loại sự kiện (`type`) và phát sóng lại (`broadcast`) cho người còn lại.
+
+```python
+    # ... (code phần 1 ở trên) ...
+
+    async def receive(self, text_data):
+        """Nhận dữ liệu từ Client gửi lên"""
+        try:
+            data = json.loads(text_data)
+            event_type = data.get('type')
+            
+            if event_type == 'send_message':
+                await self.handle_send_message(data)
+            elif event_type == 'typing_status':
+                await self.handle_typing_status(data)
+            elif event_type == 'react_message':
+                await self.handle_react_message(data)
+            elif event_type == 'mark_read':
+                await self.handle_mark_read(data)
+                
+        except Exception as e:
+            await self.send(text_data=json.dumps({'error': str(e)}))
+
+    # --- CÁC HÀM XỬ LÝ (HANDLERS) ---
+    
+    async def handle_send_message(self, data):
+        """Lưu tin nhắn vào DB, sau đó broadcast cho nhóm"""
+        message = await self.create_message_db(data)
+        
+        # Phát sóng (Broadcast) sự kiện tới tất cả người trong nhóm
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message', # Tên hàm sẽ được gọi để nhận event này
+                'message_data': message
+            }
+        )
+        
+    async def handle_typing_status(self, data):
+        """Trạng thái đang gõ (Không lưu DB)"""
+        is_typing = data.get('is_typing', False)
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'typing_indicator',
+                'user_id': str(self.user.id),
+                'is_typing': is_typing
+            }
+        )
+        
+    async def handle_mark_read(self, data):
+        """Cập nhật đã xem"""
+        updated_count = await self.mark_read_db()
+        if updated_count > 0:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'read_receipt',
+                    'user_id': str(self.user.id)
+                }
+            )
+
+    # --- CÁC HÀM NHẬN BROADCAST TỪ REDIS VÀ GỬI XUỐNG CLIENT ---
+    
+    async def chat_message(self, event):
+        """Nhận message từ group và gửi cho WebSocket client"""
+        await self.send(text_data=json.dumps({
+            'type': 'new_message',
+            'data': event['message_data']
+        }))
+        
+    async def typing_indicator(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'typing_status',
+            'user_id': event['user_id'],
+            'is_typing': event['is_typing']
+        }))
+        
+    async def read_receipt(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'read_receipt',
+            'user_id': event['user_id']
+        }))
+
+    # --- WRAPPER GỌI DATABASE (SYNC TO ASYNC) ---
+    
+    @database_sync_to_async
+    def create_message_db(self, data):
+        msg = services.create_message(self.user, self.conversation_id, data)
+        return msg.to_dict()
+        
+    @database_sync_to_async
+    def mark_read_db(self):
+        return services.mark_messages_as_read(self.conversation_id, self.user)
+```
+
+**Bạn hãy gõ các đoạn code này vào nhé.** Lớp `ChatConsumer` này hoàn thành nhiệm vụ Nhắn tin, Hiện trạng thái đang gõ, và Báo đã xem! Phản hồi lại mình sau khi gõ xong.

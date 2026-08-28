@@ -1,0 +1,128 @@
+# Hướng dẫn Triển khai Giai đoạn 6: Hoàn thiện (Trạng thái hoạt động)
+
+Đây là bước cuối cùng để hệ thống Chat trở nên hoàn hảo: Hiện dấu chấm xanh (Online/Offline) của bạn bè trên toàn hệ thống.
+Chúng ta sẽ tạo một `GlobalConsumer` chuyên xử lý các trạng thái chung này thay vì gắn liền với một đoạn chat cụ thể.
+
+---
+
+## Bước 13: Tích hợp Online Status
+
+### 13.1 Định tuyến thêm Global Consumer (`chat/routing.py`)
+Mở file `chat/routing.py` và thêm đường dẫn `global` vào:
+
+```python
+from django.urls import path
+from . import consumers
+
+websocket_urlpatterns = [
+    # Kết nối vào thông báo toàn cục (Online status, Notification)
+    path('ws/chat/global/', consumers.GlobalConsumer.as_asgi()),
+    
+    # Kết nối vào cuộc trò chuyện cụ thể (Code cũ)
+    path('ws/chat/conversation/<uuid:conversation_id>/', consumers.ChatConsumer.as_asgi()),
+]
+```
+
+### 13.2 Viết logic cho `GlobalConsumer` (`chat/consumers.py`)
+Thêm class `GlobalConsumer` vào file `chat/consumers.py`. Chúng ta sẽ dùng Redis cache để lưu xem User có đang online hay không.
+
+Hãy import thêm thư viện cache ở trên cùng của file `chat/consumers.py`:
+```python
+from django.core.cache import cache
+```
+
+Sau đó dán đoạn code class mới này xuống **dưới cùng** của file `chat/consumers.py`:
+
+```python
+class GlobalConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        """Kết nối toàn cục khi User vừa mở web/app"""
+        self.user = self.scope["user"]
+        
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+            
+        # 1. Đặt trạng thái Online vào Redis Cache (Sống 60 giây)
+        # Client sẽ phải gửi heartbeat liên tục để giữ cache không bị hết hạn
+        self.cache_key = f'user_online_{self.user.id}'
+        cache.set(self.cache_key, 'online', timeout=60)
+        
+        # 2. Lấy danh sách bạn bè để thông báo mình vừa Online
+        friends = await self.get_friends_list(self.user)
+        
+        # 3. Join vào group cá nhân của chính mình (để nhận notifications)
+        self.personal_group = f'user_global_{self.user.id}'
+        await self.channel_layer.group_add(self.personal_group, self.channel_name)
+        
+        # 4. Bắn sự kiện online cho group của từng người bạn
+        for friend_id in friends:
+            await self.channel_layer.group_send(
+                f'user_global_{friend_id}',
+                {
+                    'type': 'presence_update',
+                    'user_id': str(self.user.id),
+                    'status': 'online'
+                }
+            )
+            
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        """Khi User tắt web"""
+        if hasattr(self, 'user') and self.user.is_authenticated:
+            # Xoá cache Online
+            cache.delete(self.cache_key)
+            
+            # Thông báo cho bạn bè mình đã Offline
+            friends = await self.get_friends_list(self.user)
+            for friend_id in friends:
+                await self.channel_layer.group_send(
+                    f'user_global_{friend_id}',
+                    {
+                        'type': 'presence_update',
+                        'user_id': str(self.user.id),
+                        'status': 'offline'
+                    }
+                )
+                
+            await self.channel_layer.group_discard(self.personal_group, self.channel_name)
+
+    async def receive(self, text_data):
+        """Nhận Heartbeat từ Client để gia hạn thời gian Online"""
+        try:
+            data = json.loads(text_data)
+            if data.get('type') == 'heartbeat':
+                # Gia hạn thêm 60 giây
+                cache.set(self.cache_key, 'online', timeout=60)
+        except Exception:
+            pass
+
+    async def presence_update(self, event):
+        """Nhận event từ bạn bè và đẩy xuống Client"""
+        await self.send(text_data=json.dumps({
+            'type': 'presence_update',
+            'user_id': event['user_id'],
+            'status': event['status']
+        }))
+
+    @database_sync_to_async
+    def get_friends_list(self, user):
+        """Lấy danh sách ID bạn bè từ Follow model"""
+        from social.models import Follow
+        # Những người mà user đang follow VÀ họ cũng follow lại user
+        following_ids = Follow.objects.filter(follower=user).values_list('following_id', flat=True)
+        friends_ids = Follow.objects.filter(follower_id__in=following_ids, following=user).values_list('follower_id', flat=True)
+        return list(friends_ids)
+```
+
+---
+
+## Bước 14: Kiểm tra tổng thể (Testing)
+
+Chúc mừng bạn! Nếu bạn đã gõ xong tất cả các đoạn code từ Giai đoạn 1 đến Giai đoạn 6, backend của tính năng Chat Thời gian thực đã hoàn thiện 100%.
+
+Hãy khởi động lại Redis và Django server (`python manage.py runserver`).
+Bạn có thể dùng Postman hoặc 1 công cụ test WebSocket (như WebSocket King, wscat) để kết nối thử vào `ws://127.0.0.1:8000/ws/chat/global/` (nhớ đính kèm session cookie của tài khoản đã đăng nhập). 
+
+Bạn đã hoàn tất xuất sắc Lộ trình xây dựng Backend Ứng dụng Chat! Nếu có bất kỳ câu hỏi nào về luồng hoạt động hay code, bạn cứ tự nhiên hỏi nhé.

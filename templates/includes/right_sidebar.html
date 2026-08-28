@@ -131,6 +131,9 @@
                 
             </aside>
 
+    <!-- Chat Widget (Floating) -->
+    {% include 'includes/chat_widget.html' %}
+
     <!-- Logout Confirmation Modal -->
     <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -183,7 +186,9 @@
         window.LOGIN_URL = "/auth/login/";
     </script>
     {% if request.user.is_authenticated %}
-    <script src="{% static 'js/friend_activity.js' %}?v=2.6"></script>
+    <link href="{% static 'css/chat.css' %}?v=1.0" rel="stylesheet">
+    <script src="{% static 'js/friend_activity.js' %}?v=2.7"></script>
+    <script src="{% static 'js/chat.js' %}?v=1.0"></script>
     <script>
     // Fallback: tải mood badge nếu friend_activity.js chưa gọi (ví dụ: CURRENT_USER_ID falsy)
     window._moodBadgeLoaded = false;

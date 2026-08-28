@@ -389,4 +389,4 @@ class PasswordResetToken(models.Model):
     def is_expired(self) -> bool:
         """Kiểm tra token đã hết hạn chưa."""
         expiry = self.created_at + timedelta(hours=self.EXPIRE_HOURS)
-        return timezone.now() > expiry
+        return timezone.now() > expiry

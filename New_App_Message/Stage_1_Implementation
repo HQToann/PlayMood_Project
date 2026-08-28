@@ -1,0 +1,143 @@
+# Hướng dẫn Triển khai Giai đoạn 1: Thiết lập Môi trường & Core
+
+Giai đoạn này giúp dự án của bạn chuyển từ việc chỉ hiểu các request HTTP (đồng bộ) sang hiểu thêm các kết nối WebSockets (bất đồng bộ) thông qua ASGI.
+
+Vui lòng làm theo từng bước bên dưới. Sau khi hoàn tất và không có lỗi, hãy báo lại cho tôi.
+
+---
+
+## Bước 1: Cài đặt Thư viện mới
+
+Mở Terminal (Command Prompt / PowerShell) trong thư mục gốc của dự án (cùng cấp với file `manage.py`) và gõ lệnh sau để cài đặt các thư viện phục vụ WebSocket:
+
+```bash
+pip install channels==4.0.0 daphne==4.0.0 channels-redis==4.1.0
+```
+
+Sau khi cài xong, bạn hãy mở file `requirements.txt` và thêm 3 dòng thư viện này vào để sau này deploy không bị quên:
+
+**File: `requirements.txt` (Thêm vào cuối file)**
+```text
+channels==4.0.0
+daphne==4.0.0
+channels-redis==4.1.0
+```
+
+*(Mẹo: Bạn cũng cần đảm bảo máy tính đã cài đặt và chạy Redis server. Nếu chưa cài Redis cục bộ, tính năng chat sẽ báo lỗi kết nối).*
+
+---
+
+## Bước 2: Khởi tạo App `chat`
+
+Cũng ở cửa sổ Terminal, chạy lệnh sau để tạo một app Django mới tên là `chat`:
+
+```bash
+python manage.py startapp chat
+```
+Lệnh này sẽ sinh ra thư mục `chat` với các file cơ bản (views, models, ...).
+
+---
+
+## Bước 3: Cấu hình `settings.py`
+
+Mở file `music_platform/settings.py` và thực hiện 3 thay đổi cực kỳ quan trọng sau:
+
+### 3.1 Cập nhật `INSTALLED_APPS`
+Bạn phải đưa `daphne` lên **trên cùng** của danh sách, và thêm `channels` cũng như app `chat` vừa tạo vào. 
+
+**TÌM VÀ SỬA ĐOẠN NÀY:**
+```python
+INSTALLED_APPS = [
+    'daphne',  # BẮT BUỘC ĐỨNG ĐẦU TIÊN
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    # Third-party
+    'corsheaders',
+    'anymail',
+    'cloudinary',
+    'cloudinary_storage',
+    'channels', # THÊM VÀO ĐÂY
+
+    # Ứng dụng nội bộ
+    'accounts',
+    'music',
+    'playlists',
+    'artists',
+    'social',
+    'notifications',
+    'search',
+    'recommendations',
+    'chat', # APP MỚI CỦA CHÚNG TA
+]
+```
+
+### 3.2 Khai báo ASGI thay cho WSGI
+Tìm dòng có biến `WSGI_APPLICATION = 'music_platform.wsgi.application'` (khoảng dòng 83) và thêm đoạn này ngay bên dưới nó:
+
+```python
+# Cấu hình cho WebSocket (Thay thế WSGI mặc định)
+ASGI_APPLICATION = 'music_platform.asgi.application'
+```
+
+### 3.3 Thêm cấu hình Channel Layers (Kết nối Redis)
+Cuộn xuống **dưới cùng** của file `settings.py` và thêm đoạn cấu hình này vào. Nó giúp Server sử dụng Redis để luân chuyển tin nhắn.
+
+```python
+# --- CHANNELS & WEBSOCKETS ---
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            # Giả định Redis đang chạy ở cổng mặc định 6379 trên máy tính của bạn
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+```
+
+---
+
+## Bước 4: Sửa đổi file `asgi.py`
+
+Mặc định, Django sinh ra file `asgi.py` chỉ để xử lý HTTP. Bây giờ chúng ta phải sửa nó để nó biết cách chuyển hướng các link `ws://` cho hệ thống Channels.
+
+Mở file **`music_platform/asgi.py`**, xóa toàn bộ nội dung cũ và chép đoạn code này vào:
+
+```python
+import os
+from django.core.asgi import get_asgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'music_platform.settings')
+
+# Khởi tạo Django (phải gọi trước khi import các thư viện routing)
+django_asgi_app = get_asgi_application()
+
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+
+# Tạm thời để URLRouter rỗng. Ở Giai đoạn 5 chúng ta sẽ đưa file routing.py của app chat vào đây.
+application = ProtocolTypeRouter({
+    "http": django_asgi_app,
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            [] 
+        )
+    ),
+})
+```
+
+---
+
+## 👉 Xác nhận hoàn thành
+Để kiểm tra xem bạn đã làm đúng hay chưa, hãy gõ lệnh chạy server:
+```bash
+python manage.py runserver
+```
+**Dấu hiệu thành công:** Trong log terminal sẽ in ra dòng chữ báo hiệu Server đang chạy bằng **Daphne/ASGI** (thay vì WSGI mặc định) và không có lỗi (Error) màu đỏ nào báo lên. 
+
+Hãy thực hiện gõ và cấu hình. Gặp lỗi chỗ nào hãy copy lỗi đó cho tôi xem. Nếu thành công, hãy phản hồi **"Giai đoạn 1 OK"** nhé!

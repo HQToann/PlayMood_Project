@@ -1,0 +1,45 @@
+# Các Kỹ Thuật Xử Lý Trong Quá Trình Xây Dựng Code (Chat App)
+
+Để xây dựng ứng dụng Chat hoạt động mượt mà, dễ bảo trì và bám sát kiến trúc 100% Django thuần của dự án `PlayMood`, chúng ta sẽ áp dụng các kỹ thuật lập trình (techniques) và mẫu thiết kế (design patterns) cốt lõi sau đây trong quá trình viết code.
+
+---
+
+## 1. Mẫu thiết kế Service Layer (Phân tầng nghiệp vụ)
+**Kỹ thuật:** Tách biệt hoàn toàn logic ra khỏi `views.py` và `models.py`. Phân chia thành `selectors.py` và `services.py`.
+- **Chức năng:** 
+  - **`selectors.py`**: Chỉ chứa các hàm đọc dữ liệu (Querying/GET). Trả về QuerySet hoặc Object. Kỹ thuật này giúp tái sử dụng các câu query phức tạp ở nhiều nơi (vd: lấy lịch sử tin nhắn).
+  - **`services.py`**: Chỉ chứa các hàm thay đổi dữ liệu (Mutations - INSERT/UPDATE/DELETE). Bất cứ khi nào cần lưu tin nhắn mới, cập nhật trạng thái đã xem, đều phải gọi qua service. Điều này giúp `views.py` và `consumers.py` vô cùng mỏng và sạch sẽ.
+
+## 2. Kỹ thuật Lập trình Bất đồng bộ (Async Programming)
+**Kỹ thuật:** Sử dụng `async/await` kết hợp với class `AsyncWebsocketConsumer` của Django Channels.
+- **Chức năng:** Khác với request HTTP (chạy đồng bộ/đồng thời), WebSockets giữ kết nối mở hàng giờ liền. Nếu dùng code đồng bộ (sync), server sẽ bị "treo" chờ (blocking). Việc dùng `async` giúp Daphne (ASGI Server) có thể xử lý hàng ngàn kết nối WebSocket đồng thời bằng một luồng duy nhất mà không bị quá tải.
+
+## 3. Kỹ thuật Cầu nối Async-Sync (`database_sync_to_async`)
+**Kỹ thuật:** Sử dụng hàm bọc (decorator) `database_sync_to_async` của thư viện `channels.db`.
+- **Chức năng:** ORM (Truy vấn CSDL) của Django mặc định là đồng bộ (Synchronous). Nếu bạn gọi lệnh `Message.objects.create()` trực tiếp trong một hàm `async` của Consumer, hệ thống sẽ báo lỗi hoặc treo. Kỹ thuật này tạo ra một "cầu nối" an toàn để chạy các hàm từ `services.py` và `selectors.py` (vốn là code sync) bên trong môi trường bất đồng bộ của WebSocket.
+
+## 4. Kỹ thuật Bắt lỗi Tập trung (Centralized Exception Handling)
+**Kỹ thuật:** Định nghĩa các Custom Exceptions (ví dụ: `ConversationNotFound`, `NotYourFriendException`) trong file `exceptions.py` và bắt chúng tại tầng `views.py`.
+- **Chức năng:** Tầng `services.py` không cần bận tâm về việc trả về HTTP Status Code (như 400, 404, 403). Nó chỉ việc `raise Exception`. Kỹ thuật này đảm bảo mọi API HTTP đều có một chuẩn đầu ra lỗi (JSON) đồng nhất và không bao giờ bị lộ mã lỗi hệ thống (Internal Server Error) ra ngoài frontend.
+
+## 5. Kỹ thuật Tuần tự hoá thủ công (Manual JSON Serialization)
+**Kỹ thuật:** Xây dựng hàm `def to_dict(self)` bên trong mỗi Model (như `Conversation`, `Message`) thay vì dùng thư viện ngoài (như DRF Serializers).
+- **Chức năng:** Đáp ứng yêu cầu 100% Django thuần. Hàm này sẽ chuyển đổi (map) một Object (gồm cả ForeignKey của User, ảnh Avatar từ Cloudinary) thành cấu trúc Dictionary chuẩn. Cuối cùng, `JsonResponse` chỉ việc biến Dictionary này thành chuỗi JSON trả về cho Client.
+
+## 6. Kỹ thuật Nhóm Kênh (Channel Groups) & Broadcasting
+**Kỹ thuật:** Sử dụng hàm `self.channel_layer.group_add()` và `group_send()` trong Consumers.
+- **Chức năng:** Thay vì phải tự quản lý danh sách các user đang online, Channels cho phép ta "nhét" các kết nối (connections) vào một cái tên nhóm (ví dụ: `chat_12345`). Khi user A gửi tin, ta dùng `group_send` bắn tin nhắn vào nhóm `chat_12345`. Redis sẽ tự động phát sóng (broadcast) tin nhắn này tới máy của user B một cách tức thời.
+
+## 7. Cấu trúc JSON Event-Driven (Hướng sự kiện) qua WebSocket
+**Kỹ thuật:** Quy ước một cấu trúc JSON chung cho mọi luồng giao tiếp qua lại giữa Client - Server trên WebSockets.
+- **Chức năng:** Mọi tin nhắn gửi qua Socket đều phải có trường `"type"`. 
+  - Ví dụ: `{"type": "chat_message", "content": "Hello"}` hoặc `{"type": "typing_status", "is_typing": true}`.
+  - Từ khóa `"type"` này giúp hàm `receive_json()` phân loại sự kiện (Event) để kích hoạt đúng logic (Lưu tin nhắn hay hiển thị dấu ba chấm).
+
+## 8. Kỹ thuật Phân trang Dữ liệu (Pagination - Limit/Offset)
+**Kỹ thuật:** Sử dụng phân trang ở tầng API lấy lịch sử tin nhắn (truyền tham số `page` và `page_size` trên URL).
+- **Chức năng:** Tránh tình trạng Server sập hoặc Client bị đơ máy khi truy vấn một cuộc trò chuyện có 10.000 tin nhắn cũ. Dữ liệu sẽ được load thành từng cụm nhỏ (ví dụ 50 tin nhắn mỗi lần cuộn chuột).
+
+## 9. Middleware Xác thực WebSocket (WebSocket Authentication Middleware)
+**Kỹ thuật:** Viết hoặc sử dụng `AuthMiddlewareStack` bao bọc bên ngoài `URLRouter` trong file `asgi.py`.
+- **Chức năng:** HTTP API có thể tự động nhận dạng User thông qua `request.user` (nhờ cookie/session). Nhưng WebSocket thì phức tạp hơn. Middleware này có chức năng tự động phân tích Headers, Cookie của luồng khởi tạo Socket ban đầu (Handshake) để gán đúng đối tượng User vào biến `self.scope['user']`, đảm bảo tính bảo mật (Chỉ user đăng nhập mới được chat).

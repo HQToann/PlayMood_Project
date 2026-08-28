@@ -1,0 +1,146 @@
+# Phân tích & Thiết kế Ứng dụng Chat (Nhắn tin thời gian thực)
+
+Tài liệu này hướng dẫn chi tiết cách phát triển ứng dụng `chat` trong backend, sử dụng **WebSockets** (Django Channels) để phục vụ tính năng nhắn tin giữa các người dùng (bạn bè) theo thời gian thực. 
+
+Thiết kế này tuân thủ **100% kiến trúc** (Architecture) hiện hành của dự án (như `social`, `accounts`), và hoàn toàn sử dụng **Django thuần** (không dùng Django Rest Framework).
+
+---
+
+## 1. Danh sách tính năng (Features Scope)
+
+Hệ thống được thiết kế để mang lại trải nghiệm tương tự Meta Messenger, nhưng tích hợp sâu với bối cảnh của PlayMood:
+
+* **Core Messaging**: Nhắn tin 1-1 thời gian thực (chỉ dành cho bạn bè), phân trang lịch sử tin nhắn (infinite scroll).
+* **Trạng thái & Tương tác**: 
+  * "Đang gõ phím..." (Typing Indicator).
+  * Đã nhận/Đã xem (Read Receipts).
+  * Trạng thái Online/Offline (kết hợp với Redis để track kết nối).
+* **Media & Cảm xúc**: 
+  * Gửi hình ảnh đính kèm (Lưu qua Cloudinary).
+  * Thả cảm xúc vào tin nhắn (Reactions: ❤️, 😂, 😮,...).
+* **Tích hợp Âm nhạc (Đặc thù PlayMood)**:
+  * Chia sẻ trực tiếp Bài hát/Playlist vào khung chat. Tin nhắn sẽ đính kèm ID bài hát để Frontend render UI thành một trình phát nhạc mini (Card có nút Play).
+  * Hiển thị trạng thái "Đang nghe gì" ngay dưới tên bạn bè trong khung chat.
+
+---
+
+## 2. Cấu trúc thư mục (File Structure)
+
+App mới tên là `chat`. Cấu trúc bên trong áp dụng Service Layer Pattern:
+
+```text
+chat/
+├── __init__.py
+├── apps.py           # Đăng ký app
+├── admin.py          # Đăng ký Models cho trang Admin
+├── models.py         # Định nghĩa Database Schema (Conversation, Message)
+├── selectors.py      # Chứa 100% logic Truy vấn (Read/Query) dữ liệu
+├── services.py       # Chứa 100% logic Nghiệp vụ & Ghi (Write/Mutation) dữ liệu
+├── views.py          # Chứa các HTTP API endpoint (View thuần của Django)
+├── urls.py           # Định tuyến cho các HTTP API
+├── validators.py     # Input Validation
+├── exceptions.py     # Custom Exceptions (ConversationNotFound, NotFriends...)
+├── consumers.py      # [MỚI] Xử lý WebSocket theo thời gian thực
+├── routing.py        # [MỚI] Định tuyến WebSocket (ws://)
+└── tests.py
+```
+
+---
+
+## 3. Ràng buộc và Nguyên lý giao tiếp giữa các file
+
+- **Sử dụng Django Thuần (Không DRF)**: Không sử dụng Serializers hay Viewsets. Tuần tự hoá dữ liệu thông qua hàm `to_dict()` được định nghĩa bên trong Model.
+- **Models**: Khoá chính luôn là `UUIDField(default=uuid.uuid4, editable=False)`.
+- **Dịch vụ (Services/Selectors)**: TUYỆT ĐỐI KHÔNG chứa `request` hay `JsonResponse`. Chỉ nhận tham số cơ bản hoặc object `User`. Nếu lỗi, `raise` lỗi từ `exceptions.py`.
+- **Views**: Kế thừa từ `django.views.View`. Là nơi duy nhất đọc `request.body` (qua hàm `parse_json_body(request)` tự viết), bắt `try-except`, và trả về `JsonResponse` với định dạng `{ 'success': ..., 'data': ..., 'error': ... }`. Sử dụng `handle_exception(e)` ở dùng chung để chuyển lỗi nghiệp vụ thành HTTP Status.
+- **Quyền hạn**: Phải là **bạn bè** (follow 2 chiều thông qua app `social`) mới có thể tạo cuộc trò chuyện.
+
+---
+
+## 4. Danh sách HTTP APIs (Xử lý bởi `views.py`)
+
+1. **Lấy danh sách các cuộc trò chuyện**
+   - **Endpoint**: `GET /api/v1/chat/conversations/`
+   - **Logic**: Gọi `selectors.list_user_conversations(request.user)`. Trả về list các đoạn chat, kèm theo `last_message` và đếm số tin nhắn chưa đọc (Unread badge).
+
+2. **Lấy lịch sử tin nhắn**
+   - **Endpoint**: `GET /api/v1/chat/conversations/<conversation_id>/messages/`
+   - **Logic**: Cuộn lên tải thêm (Phân trang bằng page/page_size). Trả về list tin nhắn, bao gồm thông tin đính kèm (ảnh, bài hát, reactions).
+
+3. **Tạo / Mở một cuộc trò chuyện mới**
+   - **Endpoint**: `POST /api/v1/chat/conversations/`
+   - **Body**: `{ "target_user_id": "<uuid>" }`
+   - **Logic**: Kiểm tra bạn bè (validation). Gọi `services.get_or_create_direct_conversation(user, target_user)`.
+
+---
+
+## 5. WebSocket Events (Xử lý bởi `consumers.py`)
+
+- **Công nghệ**: Django Channels + Redis.
+- **Endpoint**: `ws/chat/<conversation_id>/`
+- **Giao thức (JSON)**:
+  - **Gửi tin nhắn**: `{"type": "send_message", "content": "Nghe thử bài này nhé", "song_id": "<uuid>", "image_url": "..."}` -> Consumer gọi service lưu vào DB -> Broadcast tới user kia.
+  - **Trạng thái Gõ phím**: `{"type": "typing_status", "is_typing": true}` -> Broadcast trực tiếp, không lưu DB.
+  - **Đánh dấu Đã đọc**: `{"type": "mark_read"}` -> Update cờ `is_read=True` cho các tin nhắn trước đó -> Broadcast trạng thái "Seen" cho người gửi.
+  - **Thả cảm xúc**: `{"type": "react_message", "message_id": "<uuid>", "reaction": "❤️"}` -> Cập nhật DB -> Broadcast.
+
+---
+
+## 6. Thiết kế Cơ sở dữ liệu (Database Design)
+
+```python
+import uuid
+from django.db import models
+from accounts.models import User
+from music.models import Song
+
+class Conversation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    participants = models.ManyToManyField(User, related_name='conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'chat_conversation'
+        ordering = ['-updated_at']
+
+    # def to_dict(self, viewer=None): ...
+
+class Message(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    
+    # Text content (có thể rỗng nếu chỉ gửi ảnh/bài hát)
+    content = models.TextField(blank=True, default='')
+    
+    # Đính kèm ảnh (Chứa URL từ Cloudinary)
+    image_url = models.URLField(blank=True, null=True)
+    
+    # Chia sẻ Bài hát/Playlist (Liên kết trực tiếp tới models của hệ thống)
+    shared_song = models.ForeignKey(Song, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Thả cảm xúc (Lưu dưới dạng JSON: {"<user_id>": "❤️"})
+    reactions = models.JSONField(default=dict, blank=True)
+    
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = 'chat_message'
+        ordering = ['created_at']
+
+    # def to_dict(self): ...
+```
+
+---
+
+## 7. Cấu hình Server (Settings.py)
+
+Bổ sung WebSockets yêu cầu đổi Server từ thuần WSGI sang ASGI:
+
+1. **Thư viện (`requirements.txt`)**: Cần cài `channels`, `daphne`, `channels-redis`.
+2. **Settings**:
+   - Khai báo `daphne` vào đầu `INSTALLED_APPS`.
+   - Bật: `ASGI_APPLICATION = 'music_platform.asgi.application'`
+   - Bật Channel Layers kết nối với **Redis** (`127.0.0.1:6379`) để xử lý việc truyền tin nhắn qua lại giữa các Websocket connections của nhiều User.

@@ -35,3 +35,8 @@ gunicorn
 psycopg2-binary
 psycopg[binary]
 whitenoise
+
+# Message with friend
+channels==4.0.0
+daphne==4.0.0
+channels-redis==4.1.0

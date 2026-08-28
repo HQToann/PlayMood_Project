@@ -179,6 +179,9 @@ urlpatterns = [
     # recommendations
     path('api/v1/recommendations/', include('recommendations.urls')),
 
+    # Tuần 6 - chat
+    path('api/v1/chat/', include('chat.urls')),
+
 ]
 
 # Phục vụ media files trong môi trường development

@@ -1,0 +1,218 @@
+# Hướng dẫn Triển khai Giai đoạn 3: Logic Nghiệp vụ & Truy vấn (Services & Selectors)
+
+Giai đoạn này tuân thủ chặt chẽ kiến trúc của các app đã có (`music`, `social`, `accounts`):
+- Kế thừa `AppException` và `ValidationError` từ `accounts.exceptions` để đồng bộ hoá việc trả lỗi ra API.
+- Tách biệt rõ ràng **truy vấn đọc (selectors)** và **truy vấn ghi (services)**.
+- Các `selectors` trả về `dict` với format chuẩn `items` và `pagination` có tính toán số trang (`math.ceil`).
+- Có Type hints (`-> dict`, `-> list`) và Logging đầy đủ trong `services`.
+
+Vui lòng tạo các file trong thư mục `chat/` và gõ từng đoạn code dưới đây.
+
+---
+
+## Bước 5: Định nghĩa Bắt lỗi (`exceptions.py`) & Kiểm tra dữ liệu (`validators.py`)
+
+### 5.1. File `chat/exceptions.py`
+Tạo file `exceptions.py` để định nghĩa các lỗi đặc thù cho chức năng Chat, đảm bảo trả về đúng HTTP Status (VD: 403, 404).
+
+```python
+from accounts.exceptions import AppException
+
+class ChatException(AppException):
+    """Lỗi cơ bản cho module Chat - HTTP 400"""
+    def __init__(self, message='Lỗi ứng dụng chat', error_code='CHAT_ERROR'):
+        super().__init__(message, error_code=error_code)
+
+class NotFriendsError(AppException):
+    """Bắn ra khi 2 người chưa phải là bạn bè (chưa follow 2 chiều) - HTTP 403"""
+    def __init__(self, message='Chỉ có thể nhắn tin với bạn bè (yêu cầu follow 2 chiều).'):
+        super().__init__(message, error_code='NOT_FRIENDS')
+
+class ConversationNotFoundError(AppException):
+    """Bắn ra khi không tìm thấy cuộc trò chuyện hoặc không có quyền truy cập - HTTP 404"""
+    def __init__(self, message='Không tìm thấy cuộc trò chuyện hoặc bạn không có quyền xem.'):
+        super().__init__(message, error_code='NOT_FOUND')
+```
+
+### 5.2. File `chat/validators.py`
+Tạo file `validators.py` để làm sạch và kiểm tra dữ liệu tin nhắn trước khi lưu vào Database.
+
+```python
+from accounts.exceptions import ValidationError
+from music.models import Song
+
+def validate_message_content(content: str, image_url: str, shared_song_id: str):
+    """
+    Kiểm tra tính hợp lệ của tin nhắn:
+    Phải có ít nhất 1 trong 3 thứ: text, hình ảnh, hoặc chia sẻ bài hát.
+    """
+    if not content and not image_url and not shared_song_id:
+        raise ValidationError(
+            'Tin nhắn không hợp lệ', 
+            fields={'content': ['Tin nhắn phải có nội dung chữ, ảnh hoặc bài hát đính kèm']}
+        )
+    
+    if shared_song_id:
+        # Kiểm tra xem bài hát có tồn tại không
+        if not Song.objects.filter(id=shared_song_id).exists():
+            raise ValidationError(
+                'Bài hát không hợp lệ',
+                fields={'shared_song_id': ['Bài hát đính kèm không tồn tại hoặc đã bị xoá']}
+            )
+```
+
+---
+
+## Bước 6: Định nghĩa `selectors.py` (Đọc dữ liệu)
+
+Tạo file `chat/selectors.py`. Đây là nơi chứa toàn bộ các hàm `GET` dữ liệu. Format trả về hoàn toàn đồng nhất với các app khác.
+
+```python
+import math
+from django.db.models import Prefetch
+from .models import Conversation, Message
+from .exceptions import ConversationNotFoundError
+
+def list_user_conversations(user) -> list:
+    """Lấy danh sách các cuộc trò chuyện của user."""
+    # prefetch_participants để giảm thiểu N+1 queries khi gọi to_dict
+    conversations = Conversation.objects.filter(
+        participants=user
+    ).prefetch_related('participants').order_by('-updated_at')
+    
+    return [c.to_dict(viewer=user) for c in conversations]
+
+def get_conversation_by_id(conversation_id, user) -> Conversation:
+    """Tìm một cuộc trò chuyện bằng ID và đảm bảo user hiện tại là một người tham gia."""
+    try:
+        return Conversation.objects.get(id=conversation_id, participants=user)
+    except Conversation.DoesNotExist:
+        raise ConversationNotFoundError()
+
+def list_messages_in_conversation(conversation_id, user, page=1, page_size=20) -> dict:
+    """Lấy lịch sử tin nhắn của cuộc trò chuyện có phân trang chuẩn."""
+    # Xác thực quyền truy cập trước
+    conversation = get_conversation_by_id(conversation_id, user)
+    
+    # Select related để lấy luôn thông tin người gửi và bài hát đính kèm (chống N+1 query)
+    qs = conversation.messages.all().select_related(
+        'sender', 'shared_song', 'shared_song__artist'
+    ).order_by('-created_at')
+    
+    total = qs.count()
+    start = (page - 1) * page_size
+    
+    messages = qs[start:start + page_size]
+    items = [m.to_dict() for m in messages]
+    
+    # Đảo ngược mảng để render trên UI dễ hơn (tin cũ xếp trên, tin mới xếp dưới)
+    items.reverse()
+    
+    return {
+        'items': items,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'total_pages': math.ceil(total / page_size) if total > 0 else 1,
+        }
+    }
+```
+
+---
+
+## Bước 7: Định nghĩa `services.py` (Ghi dữ liệu)
+
+Tạo file `chat/services.py`. Nơi chứa các hàm `POST`, `PUT`, `DELETE`. Mọi logic phức tạp về business rule (luật nghiệp vụ) đều đặt ở đây.
+
+```python
+import logging
+from social.models import Follow
+from music.models import Song
+from .models import Conversation, Message
+from .exceptions import NotFriendsError
+from .validators import validate_message_content
+from .selectors import get_conversation_by_id
+
+logger = logging.getLogger(__name__)
+
+def check_is_friend(user, target_user) -> bool:
+    """Kiểm tra xem 2 người có follow chéo nhau không (bạn bè)."""
+    user_follows_target = Follow.objects.filter(follower=user, following=target_user).exists()
+    target_follows_user = Follow.objects.filter(follower=target_user, following=user).exists()
+    return user_follows_target and target_follows_user
+
+def get_or_create_direct_conversation(user, target_user) -> tuple[Conversation, bool]:
+    """Tạo hoặc lấy ra cuộc trò chuyện 1-1. Trả về (Conversation, created_flag)."""
+    # Ràng buộc nghiệp vụ: Chỉ bạn bè mới được chat với nhau
+    if not check_is_friend(user, target_user):
+        raise NotFriendsError()
+    
+    # Lấy các đoạn chat có user tham gia
+    conversations = Conversation.objects.filter(participants=user).filter(participants=target_user)
+    
+    # Tìm đoạn chat 1-1 (chỉ có 2 người)
+    for conv in conversations:
+        if conv.participants.count() == 2:
+            return conv, False
+            
+    # Nếu chưa có, tạo mới
+    new_conv = Conversation.objects.create()
+    new_conv.participants.add(user, target_user)
+    logger.info('Cuộc trò chuyện mới được tạo giữa %s và %s', user.username, target_user.username)
+    return new_conv, True
+
+def create_message(sender, conversation_id, data: dict) -> Message:
+    """Tạo tin nhắn mới và lưu vào cơ sở dữ liệu."""
+    content = data.get('content', '')
+    image_url = data.get('image_url', None)
+    shared_song_id = data.get('shared_song_id', None)
+    
+    # 1. Validation
+    validate_message_content(content, image_url, shared_song_id)
+    
+    # 2. Lấy conversation (đồng thời check quyền)
+    conversation = get_conversation_by_id(conversation_id, sender)
+    
+    # 3. Lấy Object Song nếu có
+    song_obj = None
+    if shared_song_id:
+        song_obj = Song.objects.get(id=shared_song_id)
+        
+    # 4. Lưu tin nhắn mới
+    message = Message.objects.create(
+        conversation=conversation,
+        sender=sender,
+        content=content,
+        image_url=image_url,
+        shared_song=song_obj
+    )
+    
+    # Cập nhật thời gian updated_at của Conversation để đẩy nó lên đầu danh sách chat
+    conversation.save() 
+    
+    logger.info('Tin nhắn mới được gửi bởi %s trong cuộc trò chuyện %s', sender.username, conversation_id)
+    return message
+
+def mark_messages_as_read(conversation_id, user) -> int:
+    """Đánh dấu toàn bộ tin nhắn của đối phương trong cuộc trò chuyện này là đã đọc."""
+    conversation = get_conversation_by_id(conversation_id, user)
+    
+    # Chỉ update những tin nhắn do người khác gửi và chưa đọc
+    unread_messages = conversation.messages.exclude(sender=user).filter(is_read=False)
+    updated_count = unread_messages.update(is_read=True)
+    
+    if updated_count > 0:
+        logger.info('%s đã đọc %d tin nhắn trong cuộc trò chuyện %s', user.username, updated_count, conversation_id)
+        
+    return updated_count
+```
+
+---
+
+## 👉 Xác nhận hoàn thành
+
+Bạn hãy tự tay gõ lại 4 file trên vào thư mục `chat/`.
+Trong quá trình gõ, nếu có bất kỳ thắc mắc nào về `select_related`, `prefetch_related` (chống N+1 Query), hoặc tại sao lại tách `selectors` và `services`, hãy hỏi mình nhé. 
+
+Nếu hoàn thành và code không báo lỗi đỏ, hãy phản hồi: **"Giai đoạn 3 OK, chuẩn bị API (Giai đoạn 4)"**. Mình sẽ xuất tiếp file hướng dẫn Giai đoạn 4 cho bạn!
