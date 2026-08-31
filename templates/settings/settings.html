@@ -498,7 +498,42 @@
             </div>
         </div>
     </div>
+    </div>
 
+    <!-- Artist Register Modal -->
+    <div class="modal fade pm-modal" id="artistRegisterModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: #1e1e1e; color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Đăng ký Nghệ sĩ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="artistRegisterForm">
+                        <div class="mb-3">
+                            <label for="real_name" class="form-label text-secondary small text-uppercase fw-bold">Tên thật (Theo CCCD/CMND)</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="real_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label text-secondary small text-uppercase fw-bold">Ghi chú thêm (Tùy chọn)</label>
+                            <textarea class="form-control bg-dark text-white border-secondary" id="note" rows="2" placeholder="Link Facebook, SoundCloud, Spotify..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_card_image" class="form-label text-secondary small text-uppercase fw-bold">Ảnh chụp CMND/CCCD (Mặt trước)</label>
+                            <input class="form-control bg-dark text-white border-secondary" type="file" id="id_card_image" accept="image/*" required>
+                        </div>
+                        <div id="id_card_preview_container" class="mb-3 d-none text-center">
+                            <img id="id_card_preview" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary fw-bold rounded-pill px-4" style="background-color: #8CE1B2; color: #000; border: none;" onclick="handleArtistRegistration()">Gửi yêu cầu</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="{% static 'js/main.js' %}?v=24.2"></script>
     <script src="{% static 'js/settings.js' %}?v=24.7"></script>
