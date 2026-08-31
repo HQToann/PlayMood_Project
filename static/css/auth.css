@@ -240,7 +240,7 @@
 /* Invert password reveal icon color in Edge/Chrome */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
-    filter: invert(100%);
+    display: none;
 }
 
 
