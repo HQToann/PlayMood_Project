@@ -1,0 +1,194 @@
+# Hướng dẫn Triển khai Giai đoạn 2: Tầng Logic Lõi (Core Logic)
+
+Giai đoạn này tập trung vào việc xử lý dữ liệu và truy vấn Database. Chúng ta tuyệt đối không làm việc này ở views (API) để giữ cho code dễ bảo trì.
+
+Vui lòng tạo 4 file mới trong thư mục `posts/` và làm theo hướng dẫn.
+
+---
+
+## Bước 1: Xử lý Lỗi (`exceptions.py`)
+
+Tạo file `posts/exceptions.py` để định nghĩa các ngoại lệ tuỳ chỉnh. Việc kế thừa `AppException` giúp API tự động trả về đúng mã lỗi (404, 400).
+
+```python
+from accounts.exceptions import AppException
+
+class PostException(AppException):
+    """Ngoại lệ chung cho ứng dụng Posts."""
+    pass
+
+class PostNotFound(PostException):
+    status_code = 404
+    default_detail = 'Không tìm thấy bài viết này hoặc bài viết đã bị xóa.'
+    default_code = 'POST_NOT_FOUND'
+
+class CommentNotFound(PostException):
+    status_code = 404
+    default_detail = 'Không tìm thấy bình luận này.'
+    default_code = 'COMMENT_NOT_FOUND'
+
+class PostPermissionDenied(PostException):
+    status_code = 403
+    default_detail = 'Bạn không có quyền thực hiện hành động này.'
+    default_code = 'PERMISSION_DENIED'
+```
+
+---
+
+## Bước 2: Kiểm tra dữ liệu (`validators.py`)
+
+Tạo file `posts/validators.py`. Đây là cửa khẩu kiểm tra an ninh trước khi dữ liệu được lưu vào Database.
+
+```python
+from accounts.exceptions import ValidationError
+from .models import PostReaction
+
+def validate_post_creation(content: str, has_media: bool):
+    """Bài viết phải có chữ hoặc ảnh. Không được để trống hoàn toàn."""
+    if not content.strip() and not has_media:
+        raise ValidationError(
+            'Dữ liệu không hợp lệ',
+            fields={'content': ['Vui lòng nhập nội dung hoặc đính kèm hình ảnh/video.']}
+        )
+
+def validate_reaction_type(reaction: str):
+    """Đảm bảo cảm xúc gửi lên nằm trong 6 loại cho phép."""
+    valid_types = [choice[0] for choice in PostReaction.REACTION_CHOICES]
+    if reaction not in valid_types:
+        raise ValidationError(
+            'Cảm xúc không hợp lệ',
+            fields={'reaction_type': [f'Cảm xúc phải là một trong {valid_types}']}
+        )
+```
+
+---
+
+## Bước 3: Truy vấn Cập nhật dữ liệu (`services.py`)
+
+Tạo file `posts/services.py`. Chứa các hàm Insert/Update/Delete (Write).
+
+```python
+from django.db import transaction
+from accounts.models import User
+from .models import Post, PostMedia, PostReaction, Comment
+from .exceptions import PostNotFound
+from .validators import validate_post_creation, validate_reaction_type
+
+def create_post(user: User, data: dict, media_urls: list) -> Post:
+    """Tạo bài viết mới kèm hình ảnh."""
+    content = data.get('content', '')
+    visibility = data.get('visibility', 'PUBLIC')
+    
+    validate_post_creation(content, bool(media_urls))
+    
+    with transaction.atomic():
+        post = Post.objects.create(
+            author=user,
+            content=content,
+            visibility=visibility
+        )
+        
+        # Lưu danh sách URL ảnh vào bảng PostMedia
+        for index, url in enumerate(media_urls):
+            PostMedia.objects.create(
+                post=post,
+                file_url=url,
+                media_type='image',
+                order=index
+            )
+            
+    return post
+
+def toggle_reaction(user: User, post_id: str, reaction_type: str) -> dict:
+    """Xử lý Thả / Đổi / Hủy cảm xúc."""
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:
+        raise PostNotFound()
+        
+    validate_reaction_type(reaction_type)
+    
+    # Tìm xem User đã thả cảm xúc bài này chưa
+    reaction = PostReaction.objects.filter(post=post, user=user).first()
+    
+    if not reaction:
+        # 1. Chưa thả -> Tạo mới
+        PostReaction.objects.create(post=post, user=user, reaction_type=reaction_type)
+        return {"action": "added", "reaction": reaction_type}
+    
+    if reaction.reaction_type == reaction_type:
+        # 2. Đã thả cùng icon đó -> Xóa (Unlike)
+        reaction.delete()
+        return {"action": "removed", "reaction": None}
+        
+    # 3. Đã thả nhưng chọn icon khác -> Cập nhật
+    reaction.reaction_type = reaction_type
+    reaction.save()
+    return {"action": "updated", "reaction": reaction_type}
+
+def create_comment(user: User, post_id: str, content: str, parent_id: str = None) -> Comment:
+    """Gửi bình luận hoặc trả lời."""
+    if not content.strip():
+        raise ValueError("Nội dung không được để trống")
+        
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:
+        raise PostNotFound()
+        
+    parent_comment = None
+    if parent_id:
+        try:
+            parent_comment = Comment.objects.get(id=parent_id, post=post)
+        except Comment.DoesNotExist:
+            pass # Nếu truyền parent_id bậy, ta cứ cho thành bình luận gốc
+            
+    return Comment.objects.create(
+        post=post,
+        author=user,
+        content=content,
+        parent=parent_comment
+    )
+```
+
+---
+
+## Bước 4: Tối ưu Truy vấn Đọc (`selectors.py`)
+
+Tạo file `posts/selectors.py`. Chứa logic lấy News Feed, dùng `select_related` và `prefetch_related` để chống N+1.
+
+```python
+from django.db.models import Count, Prefetch
+from accounts.models import User
+from social.models import Follow
+from .models import Post, PostMedia, PostReaction, Comment
+
+def get_news_feed_queryset(user: User):
+    """
+    Lấy danh sách bài viết mà User được phép xem:
+    - Bài của chính mình
+    - Bài Public hoặc Friends của những người mình đang Follow
+    """
+    following_ids = Follow.objects.filter(follower=user).values_list('following_id', flat=True)
+    
+    return Post.objects.filter(
+        # Hoặc là tác giả
+        models.Q(author=user) | 
+        # Hoặc là bạn bè đăng Public/Friends
+        (models.Q(author__in=following_ids) & models.Q(visibility__in=['PUBLIC', 'FRIENDS']))
+    ).select_related(
+        'author', 'shared_post', 'shared_post__author'
+    ).prefetch_related(
+        'media',
+        'reactions',
+        'comments'
+    ).order_by('-created_at').distinct()
+
+```
+
+*(Ghi chú: Hàm phân trang và bóc tách dữ liệu JSON sẽ được xử lý ở Giai đoạn 3: API Views).*
+
+---
+
+## 👉 Xác nhận hoàn thành
+Nếu đã copy xong 4 file trên vào thư mục `posts/`, hãy báo: **"Giai đoạn 2 OK, cho tôi Giai đoạn 3"**!

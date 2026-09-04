@@ -292,6 +292,18 @@ function appendMessageToUI(msg) {
             </a>
         `;
     }
+    if (msg.shared_post) {
+        const post = msg.shared_post;
+        contentHtml += `
+            <a href="/feed/" target="_blank" class="msg-song-card text-decoration-none" style="padding: 10px; flex-direction: column; align-items: flex-start; max-width: 200px;">
+                <div class="overflow-hidden mb-2">
+                    <div class="text-truncate fw-bold text-white" style="font-size:0.85rem;">${post.author}</div>
+                    <div class="text-truncate text-white-50" style="font-size:0.75rem;"><i class="bi bi-file-post text-accent"></i> Bài viết</div>
+                </div>
+                <div class="text-truncate text-white" style="font-size:0.85rem; max-width: 100%; white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${post.content}</div>
+            </a>
+        `;
+    }
     if (!contentHtml) return;
 
     let avatarHtml = '';

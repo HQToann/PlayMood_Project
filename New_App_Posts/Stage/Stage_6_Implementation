@@ -1,0 +1,171 @@
+# Hướng dẫn Triển khai Giai đoạn 6: Tích hợp Giao tiếp Xuyên Ứng dụng (Chia sẻ qua Chat)
+
+Đây là giai đoạn thú vị nhất! Chúng ta sẽ nâng cấp ứng dụng `chat` cũ để nó có thể "chuyên chở" một Bài viết (từ ứng dụng `posts` mới tạo) gửi thẳng vào hộp thoại tin nhắn (Messenger).
+
+---
+
+## Bước 1: Nâng cấp Model của App Chat
+
+Mở file `chat/models.py`. Bạn cần thêm trường `shared_post` vào bảng `Message`. Vì chúng ta đang ở trong app `chat`, ta phải import lười (lazy load) hoặc dùng string `posts.Post` để tránh lỗi vòng lặp import (Circular Import).
+
+**File: `chat/models.py`**
+```python
+# (Giữ nguyên các import cũ của bạn)
+
+class Message(models.Model):
+    # Các trường dữ liệu cũ giữ nguyên...
+    conversation = models.ForeignKey(Conversation, ...)
+    sender = models.ForeignKey(User, ...)
+    text_content = models.TextField(...)
+    
+    # ... (Các trường chia sẻ nhạc cũ) ...
+    shared_song = models.ForeignKey('music.Song', ...)
+    
+    # 🌟 TRƯỜNG MỚI THÊM VÀO ĐỂ HỖ TRỢ CHIA SẺ BÀI VIẾT 🌟
+    shared_post = models.ForeignKey(
+        'posts.Post', # Trỏ sang app posts
+        on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name='shared_in_messages',
+        verbose_name='Bài viết được chia sẻ'
+    )
+```
+
+Sau khi sửa xong, **BẮT BUỘC** phải chạy lại lệnh cập nhật Database:
+```bash
+python manage.py makemigrations chat
+python manage.py migrate
+```
+
+---
+
+## Bước 2: Nâng cấp Logic Tạo Tin nhắn (`chat/services.py`)
+
+Mở file `chat/services.py` và tìm hàm tạo tin nhắn (thường là `create_message` hoặc `save_message`). Bạn cần cho phép nó nhận thêm tham số `shared_post_id`.
+
+**File: `chat/services.py`**
+```python
+# (Tìm hàm tạo tin nhắn hiện tại của bạn và bổ sung)
+
+def create_message(conversation_id, sender, text_content, ... , shared_post_id=None):
+    
+    # Code kiểm tra quyền cũ...
+    
+    msg = Message(
+        conversation_id=conversation_id,
+        sender=sender,
+        text_content=text_content
+    )
+    
+    # ... (Gắn file đính kèm cũ)
+    
+    # 🌟 LOGIC MỚI: Gắn Bài viết vào tin nhắn
+    if shared_post_id:
+        from posts.models import Post # Import cục bộ
+        try:
+            post = Post.objects.get(id=shared_post_id)
+            msg.shared_post = post
+        except Post.DoesNotExist:
+            pass # Bỏ qua nếu không tìm thấy bài
+            
+    msg.save()
+    return msg
+```
+
+---
+
+## Bước 3: Nâng cấp HTML Chat Widget (Giao diện Tin nhắn)
+
+Mở file HTML hiển thị khung chat (`chat_widget.html` hoặc tương tự). Khi một Message có chứa `shared_post`, ta phải vẽ một khung nhỏ (Card) hiển thị bài viết đó ra.
+
+**File: `templates/includes/chat_widget.html` (Hoặc nơi bạn render tin nhắn)**
+```html
+<!-- Bên trong vòng lặp hiển thị tin nhắn -->
+{% if message.shared_post %}
+    <div class="shared-post-attachment mt-2 p-2 rounded bg-dark border border-secondary" style="width: 250px;">
+        <div class="d-flex align-items-center mb-1">
+            <!-- Avatar Tác giả bài viết -->
+            <img src="{{ message.shared_post.author.avatar.url }}" width="24" height="24" class="rounded-circle me-2">
+            <span class="small fw-bold text-white">{{ message.shared_post.author.display_name }}</span>
+        </div>
+        <!-- Nội dung rút gọn -->
+        <p class="small text-muted-custom mb-1 text-truncate">{{ message.shared_post.content }}</p>
+        
+        <!-- Nếu bài viết có ảnh, hiển thị ảnh đầu tiên làm Cover -->
+        {% with first_image=message.shared_post.media.first %}
+        {% if first_image %}
+            <img src="{{ first_image.file_url }}" class="img-fluid rounded mt-1" style="max-height: 120px; object-fit: cover; width: 100%;">
+        {% endif %}
+        {% endwith %}
+        
+        <a href="/posts/{{ message.shared_post.id }}/" class="btn btn-sm btn-outline-light w-100 mt-2" style="font-size: 0.75rem;">Xem bài viết</a>
+    </div>
+{% endif %}
+```
+
+---
+
+## Bước 4: Xử lý Modal 2 Lớp (Javascript)
+
+Cuối cùng, trong file `posts.js`, ta viết đoạn mã điều khiển Modal Chia sẻ. Khi bấm "Gửi", ta bắn tín hiệu WebSocket sang hệ thống Chat.
+
+```javascript
+// (Đặt code này trong posts.js)
+
+// Biến lưu trữ ID bài viết đang muốn chia sẻ
+let currentSharePostId = null; 
+
+// Khi bấm nút "Chia sẻ" trên 1 bài viết -> Lưu ID lại
+document.body.addEventListener('click', (e) => {
+    if (e.target.closest('.btn-share')) {
+        const postCard = e.target.closest('.post-card');
+        currentSharePostId = postCard.dataset.postId;
+        
+        // Chuyển Modal về Lớp 1 (Danh sách bạn bè)
+        document.getElementById('shareModalLayer1').style.display = 'block';
+        document.getElementById('shareModalLayer2').style.display = 'none';
+    }
+});
+
+// Khi chọn 1 người bạn (Từ Lớp 1)
+document.body.addEventListener('click', (e) => {
+    const friendItem = e.target.closest('.share-friend-item');
+    if (friendItem) {
+        const conversationId = friendItem.dataset.conversationId;
+        
+        // Lưu thông tin người nhận vào nút Gửi ở Lớp 2
+        document.getElementById('btnConfirmShare').dataset.conversationId = conversationId;
+        
+        // Hiệu ứng chuyển từ Lớp 1 -> Lớp 2 (Slide qua)
+        document.getElementById('shareModalLayer1').style.display = 'none';
+        document.getElementById('shareModalLayer2').style.display = 'block';
+    }
+});
+
+// Khi bấm nút "Gửi" cuối cùng (Ở Lớp 2)
+document.getElementById('btnConfirmShare').addEventListener('click', function() {
+    const conversationId = this.dataset.conversationId;
+    const optionalMessage = document.getElementById('shareOptionalMessage').value;
+    
+    // GỬI QUA WEBSOCKET (Sử dụng lại chatSocket đã có của dự án)
+    if (window.chatSocket && window.chatSocket.readyState === WebSocket.OPEN) {
+        window.chatSocket.send(JSON.stringify({
+            'action': 'send_message',
+            'conversation_id': conversationId,
+            'message': optionalMessage,
+            'shared_post_id': currentSharePostId // 🌟 Biến mới cực quan trọng
+        }));
+        
+        // Đóng Modal, thông báo thành công
+        const modal = bootstrap.Modal.getInstance(document.getElementById('sharePostModal'));
+        modal.hide();
+        alert('Đã gửi bài viết qua tin nhắn!');
+        document.getElementById('shareOptionalMessage').value = ''; // Reset ô nhập
+    } else {
+        alert('Kết nối chat bị gián đoạn!');
+    }
+});
+```
+
+---
+🎉 **CHÚC MỪNG BẠN!** Bạn đã sở hữu trọn bộ 6 "Bí kíp võ công" để xây dựng tính năng Mạng xã hội chuyên nghiệp. Bạn hoàn toàn có thể tự tin tải bộ code này về nhánh chính và lắp ráp chúng!

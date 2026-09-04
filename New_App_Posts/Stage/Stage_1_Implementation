@@ -1,0 +1,199 @@
+# Hướng dẫn Triển khai Giai đoạn 1: Khởi tạo App và Thiết kế Database (Models)
+
+Giai đoạn này giúp dự án của bạn khởi tạo ứng dụng `posts` và xây dựng cấu trúc Cơ sở dữ liệu (Database) để lưu trữ bài viết, ảnh đính kèm, cảm xúc và bình luận.
+
+Vui lòng làm theo từng bước bên dưới một cách cẩn thận.
+
+---
+
+## Bước 1: Khởi tạo Ứng dụng mới
+
+Mở Terminal (Command Prompt / PowerShell) trong thư mục gốc của dự án (cùng cấp với file `manage.py`) và chạy lệnh sau để tạo app mới tên là `posts`:
+
+```bash
+python manage.py startapp posts
+```
+
+Sau khi chạy lệnh, một thư mục mới tên là `posts` sẽ xuất hiện trong dự án của bạn.
+
+---
+
+## Bước 2: Đăng ký App vào Cấu hình Dự án
+
+Mở file `music_platform/settings.py`, tìm đến phần `INSTALLED_APPS` và thêm `'posts',` vào cuối danh sách.
+
+**File: `music_platform/settings.py`**
+```python
+INSTALLED_APPS = [
+    # Các app mặc định của Django...
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.humanize', # Bắt buộc phải có để hiển thị thời gian "5 phút trước"
+
+    # Các thư viện bên thứ 3...
+    'corsheaders',
+    'cloudinary',
+    'cloudinary_storage',
+    'channels',
+
+    # Các app tự viết...
+    'accounts',
+    'music',
+    'playlists',
+    'social',
+    'recommendations',
+    'search',
+    'notifications',
+    'chat',
+    
+    # APP MỚI: Ứng dụng Bài viết (Mạng xã hội)
+    'posts',
+]
+```
+
+---
+
+## Bước 3: Thiết kế Database (Models)
+
+Mở file `posts/models.py` (xóa hết nội dung cũ) và dán toàn bộ đoạn code dưới đây vào. Đoạn code này định nghĩa 4 bảng dữ liệu cốt lõi.
+
+**File: `posts/models.py`**
+```python
+import uuid
+from django.db import models
+from accounts.models import User
+from music_platform.utils import optimize_cloudinary_url
+
+class Post(models.Model):
+    """Bảng lưu trữ Bài viết."""
+    VISIBILITY_CHOICES = (
+        ('PUBLIC', 'Công khai'),
+        ('FRIENDS', 'Bạn bè'),
+        ('PRIVATE', 'Chỉ mình tôi'),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', verbose_name='Người đăng')
+    content = models.TextField(blank=True, verbose_name='Nội dung bài viết')
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='PUBLIC', verbose_name='Phạm vi hiển thị')
+    
+    # Hỗ trợ chức năng chia sẻ bài viết (share)
+    shared_post = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='shares', verbose_name='Bài viết được chia sẻ')
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày đăng')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Cập nhật lần cuối')
+
+    class Meta:
+        db_table = 'posts_post'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Post by {self.author.username} at {self.created_at}"
+
+class PostMedia(models.Model):
+    """Bảng lưu trữ Hình ảnh/Video đính kèm bài viết."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='media', verbose_name='Bài viết')
+    file_url = models.URLField(max_length=500, verbose_name='URL File (Cloudinary)')
+    media_type = models.CharField(max_length=10, default='image', verbose_name='Loại (image/video)')
+    order = models.IntegerField(default=0, verbose_name='Thứ tự hiển thị')
+
+    class Meta:
+        db_table = 'posts_media'
+        ordering = ['order']
+
+class PostReaction(models.Model):
+    """Bảng lưu trữ Cảm xúc (Thả tim, Like, Haha...)."""
+    REACTION_CHOICES = (
+        ('LIKE', 'Thích'),
+        ('LOVE', 'Yêu thích'),
+        ('HAHA', 'Haha'),
+        ('WOW', 'Wow'),
+        ('SAD', 'Buồn'),
+        ('ANGRY', 'Phẫn nộ'),
+    )
+    
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_reactions')
+    reaction_type = models.CharField(max_length=10, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'posts_reaction'
+        # Ràng buộc dữ liệu: 1 người dùng chỉ được thả 1 cảm xúc trên 1 bài viết
+        unique_together = ['post', 'user']
+
+class Comment(models.Model):
+    """Bảng lưu trữ Bình luận và Trả lời bình luận."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_comments')
+    content = models.TextField(verbose_name='Nội dung bình luận')
+    
+    # Khóa ngoại tự chiếu: Nếu null là bình luận gốc, nếu có ID thì là trả lời (reply)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'posts_comment'
+        ordering = ['created_at'] # Bình luận cũ xếp trên, mới xếp dưới
+```
+
+---
+
+## Bước 4: Chạy Lệnh Tạo Bảng (Migrations)
+
+Sau khi code xong, hãy yêu cầu Django chuyển dịch code Python thành các bảng SQL thực tế.
+Mở Terminal và gõ lần lượt 2 lệnh sau:
+
+```bash
+python manage.py makemigrations posts
+python manage.py migrate
+```
+
+Nếu thành công, bạn sẽ thấy dòng chữ `Applying posts.0001_initial... OK`.
+
+---
+
+## Bước 5: Đăng ký vào Trang Quản trị (Admin)
+
+Để bạn có thể dễ dàng quản lý bài viết từ trang `/admin`, hãy mở file `posts/admin.py` và dán code sau:
+
+**File: `posts/admin.py`**
+```python
+from django.contrib import admin
+from .models import Post, PostMedia, PostReaction, Comment
+
+class PostMediaInline(admin.TabularInline):
+    model = PostMedia
+    extra = 1
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ('author', 'visibility', 'created_at')
+    list_filter = ('visibility', 'created_at')
+    search_fields = ('author__username', 'content')
+    inlines = [PostMediaInline]
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post', 'created_at', 'parent')
+    search_fields = ('author__username', 'content')
+
+@admin.register(PostReaction)
+class PostReactionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'post', 'reaction_type', 'created_at')
+    list_filter = ('reaction_type',)
+```
+
+---
+
+## 👉 Xác nhận hoàn thành
+
+Bạn hãy thực hiện theo đúng 5 bước trên. Nếu không gặp bất kỳ lỗi màu đỏ nào ở Terminal, hãy phản hồi lại cho tôi: **"Giai đoạn 1 OK, cho tôi Giai đoạn 2"**!

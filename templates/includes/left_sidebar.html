@@ -13,6 +13,9 @@
             <a href="/" class="nav-link-custom {% if active_page == 'home' %}active{% endif %}">
                 <i class="bi bi-house-door"></i> Trang chủ
             </a>
+            <a href="/feed/" class="nav-link-custom {% if active_page == 'feed' %}active{% endif %}">
+                <i class="bi bi-file-post"></i> Bảng tin
+            </a>
             <a href="{% url 'explore_page' %}" class="nav-link-custom {% if active_page == 'explore' %}active{% endif %}">
                 <i class="bi bi-search"></i> Khám phá
             </a>

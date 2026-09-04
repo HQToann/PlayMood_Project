@@ -1,0 +1,66 @@
+# Thiết kế UI/UX Ứng dụng Posts (Bài viết, Bình luận, Cảm xúc)
+
+Tài liệu này ghi lại chi tiết các thảo luận về thiết kế giao diện (UI) và trải nghiệm người dùng (UX) cho tính năng Bảng tin (News Feed). Việc bám sát tài liệu này sẽ giúp ứng dụng đạt được mức độ hoàn thiện tương đương Facebook Web.
+
+---
+
+## 1. Cấu trúc một Bài viết (Post Card)
+
+Mỗi bài viết sẽ được đặt trong một khối có viền hoặc đổ bóng nhẹ, phân chia thành 3 phần rõ rệt:
+
+### Header (Tiêu đề)
+- Avatar (Hình đại diện) của người đăng dạng hình tròn.
+- Tên người đăng in đậm.
+- Thời gian đăng bài (hiển thị dạng tương đối: "Vừa xong", "5 phút trước", "2 ngày trước").
+- Nút Tùy chọn (Dấu 3 chấm) ở góc phải trên cùng.
+
+### Body (Nội dung)
+- **Văn bản:** Nội dung bài đăng. Nếu quá dài sẽ bị cắt bớt và hiển thị nút "Xem thêm...".
+- **Hình ảnh đính kèm (Grid Layout):**
+  - **1 Ảnh:** Full chiều rộng.
+  - **2 Ảnh:** Chia đôi theo chiều dọc.
+  - **3 Ảnh:** 1 ảnh lớn ở trên, 2 ảnh nhỏ ở dưới.
+  - **4 Ảnh:** Chia thành lưới 2x2.
+  - **Trên 4 Ảnh:** Lưới 2x2 nhưng ở tấm ảnh cuối cùng (góc dưới phải) sẽ phủ một lớp mờ màu đen và hiển thị chữ trắng `+Số lượng ảnh còn lại` (Ví dụ: `+3`).
+
+### Footer (Tương tác)
+- Dòng đếm thống kê: Hiển thị 3 biểu tượng cảm xúc được bấm nhiều nhất và tổng số lượt (Ví dụ: `👍❤️😆 1.2k`). Ở góc đối diện là số lượng bình luận và chia sẻ.
+- Đường gạch ngang phân cách.
+- **Thanh hành động (Action Bar):** Gồm 3 nút Thích, Bình luận, Chia sẻ.
+
+---
+
+## 2. Trải nghiệm Thả cảm xúc (Reactions UX)
+
+- **Nút "Thích" mặc định:** Có icon ngón tay cái màu xám.
+- **Hiệu ứng Hover:** Khi người dùng rê chuột (hoặc nhấn giữ trên mobile) vào nút Thích khoảng `0.5s`, một popover dạng viên nang sẽ trượt lên mượt mà (sử dụng CSS `transition: transform 0.3s`). Popover này chứa 6 icon động: Thích, Yêu thích, Haha, Wow, Buồn, Phẫn nộ.
+- **Tương tác Click:**
+  - Nếu chọn icon "Yêu thích", nút Thích mặc định sẽ đổi icon thành trái tim và đổi màu thành màu Đỏ.
+  - Click lần 2 vào chính nút đó sẽ gỡ bỏ cảm xúc (Unlike), nút quay về dạng xám mặc định.
+- Mọi tương tác diễn ra tức thì thông qua AJAX, không reload trang.
+
+---
+
+## 3. Trải nghiệm Bình luận (Comments UX)
+
+- **Ô Nhập liệu (Input):** Khung nhập bình luận (textarea) bo góc tròn, nằm dưới cùng của bài viết, tích hợp tính năng tự động giãn dòng khi gõ dài. Bên cạnh có nút đính kèm ảnh và nút Gửi (Mũi tên giấy).
+- **Phân cấp Bình luận (Nested Comments):**
+  - **Bình luận gốc:** Hiển thị trong khối nền xám nhạt, bên dưới là nút "Thích" và "Phản hồi".
+  - **Trả lời bình luận (Reply):** Khi bấm "Phản hồi", thanh cuộn sẽ tự động trượt xuống ô nhập liệu. Ô nhập liệu sẽ hiển thị nhãn (badge) báo hiệu *"Đang trả lời @Tên_Người_Dùng"* (có nút [X] để hủy). 
+  - Khi đăng thành công, bình luận Reply sẽ hiển thị ngay bên dưới bình luận gốc nhưng bị **thụt lề trái (margin-left: 40px)**. Một đường kẻ dọc mờ sẽ kết nối các reply với nhau, tạo thành cấu trúc cây.
+- **Rút gọn thông minh (Load More):** Khởi điểm chỉ hiển thị 2 bình luận mới nhất/nổi bật nhất. Sẽ có dòng *"Xem thêm X bình luận"* để tải ngầm thêm dữ liệu.
+
+---
+
+## 4. Modal Chia sẻ bài viết qua Tin nhắn (Share Modal)
+
+Chức năng chia sẻ sẽ kích hoạt một Modal 2 lớp để hỗ trợ luồng gửi qua Messenger cực kỳ tự nhiên:
+
+- **Lớp 1 (Chọn đối tượng):** 
+  - Modal mở ra danh sách Bạn bè và Các đoạn chat gần đây. Thanh tìm kiếm nằm ở trên cùng.
+  - Các Avatar được xếp theo dạng danh sách hoặc lưới (như hình Facebook mẫu).
+- **Lớp 2 (Soạn tin & Gửi):**
+  - Khi click vào một Avatar ở Lớp 1, Modal sẽ chuyển cảnh (slide-in). Lớp 1 mờ đi hoặc biến mất, nhường chỗ cho Lớp 2.
+  - Giao diện hiển thị rõ Avatar người được chọn kèm một dấu check (✔️).
+  - Một ô input *"Thêm tin nhắn tại đây (không bắt buộc)..."* xuất hiện.
+  - Nút **"Gửi"** to, rõ màu xanh nổi bật ở dưới cùng. Khi bấm Gửi, hệ thống sẽ chèn bài viết vào cuộc hội thoại Chat thông qua API.

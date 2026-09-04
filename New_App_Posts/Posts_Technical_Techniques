@@ -1,0 +1,49 @@
+# Các Kỹ Thuật Trọng Tâm Áp Dụng Trong App Posts
+
+Để đảm bảo hiệu suất (Performance), tính nhất quán dữ liệu (Data Integrity) và trải nghiệm mượt mà (Smooth UX), chúng ta sẽ áp dụng các kỹ thuật chuyên sâu dưới đây trong quá trình phát triển tính năng Bảng tin (News Feed).
+
+---
+
+## 1. Kỹ thuật Tối ưu Hóa Truy vấn (N+1 Query Prevention)
+**- Chức năng áp dụng:** Lấy danh sách Bảng tin (`get_news_feed`) và Lấy bình luận.
+**- Kỹ thuật sử dụng:** `select_related()` và `prefetch_related()` của Django ORM.
+**- Mô tả:** 
+Khi tải 1 bài viết, ta cần thông tin của người đăng (Author), tất cả hình ảnh đính kèm (Media), toàn bộ danh sách Cảm xúc (Reactions) và Bình luận. Nếu gọi tuần tự bằng vòng lặp `for`, hệ thống sẽ gặp lỗi N+1 Query, đẩy số lượng lệnh SQL lên hàng trăm, gây sập server.
+Kỹ thuật này sẽ gộp lệnh lại, gọi Database đúng 1 hoặc 2 lần duy nhất cho toàn bộ dữ liệu, giúp Bảng tin tải nhanh như chớp.
+
+## 2. Ràng buộc Dữ liệu Duy nhất (Unique Constraints)
+**- Chức năng áp dụng:** Thả cảm xúc (Reactions).
+**- Kỹ thuật sử dụng:** Thuộc tính `unique_together` trong class `Meta` của Model.
+**- Mô tả:** 
+Để đảm bảo một người không thể lạm dụng (spam) "Thích" 10 lần vào cùng 1 bài viết, ta đặt `unique_together = ['post', 'user']`. Cơ sở dữ liệu sẽ khóa chặt (lock) ràng buộc này, ngay cả khi API nhận hàng loạt request cùng lúc (Race condition), hệ thống vẫn chỉ ghi nhận 1 lượt cảm xúc duy nhất.
+
+## 3. Khóa Ngoại Tự Chiếu (Self-referential Foreign Key)
+**- Chức năng áp dụng:** Trả lời bình luận (Nested Comments / Replies).
+**- Kỹ thuật sử dụng:** Cấp khóa ngoại tham chiếu chính bảng của nó (`models.ForeignKey('self')`).
+**- Mô tả:** 
+Thay vì tạo bảng `Reply` rườm rà, ta thêm cột `parent` vào ngay bảng `Comment`. Nếu `parent` trống, đó là bình luận gốc. Nếu `parent` có giá trị, đó là câu trả lời. Kỹ thuật này giúp việc xây dựng "cây bình luận" trở nên cực kỳ gọn nhẹ và đệ quy dễ dàng.
+
+## 4. Tương tác Bất Đồng Bộ (Asynchronous JavaScript & XML - AJAX)
+**- Chức năng áp dụng:** Gửi/Hủy cảm xúc, Đăng bình luận, Chia sẻ.
+**- Kỹ thuật sử dụng:** Hàm `fetch()` kết hợp `async/await` của Javascript thuần, kèm xử lý `X-CSRFToken`.
+**- Mô tả:** 
+Cho phép trao đổi dữ liệu ngầm với Server mà không cần F5 (tải lại trang). Giao diện người dùng sẽ được cập nhật bằng cách chèn HTML vào DOM ngay lập tức. Đây là yếu tố sống còn để tạo ra một ứng dụng "chuẩn App" chứ không phải Web tĩnh cổ điển.
+
+## 5. CSS Grid Layout & Transitions
+**- Chức năng áp dụng:** Bố cục hình ảnh (Grid Images) và Hiệu ứng thanh Cảm xúc (Reaction Popover).
+**- Kỹ thuật sử dụng:** CSS `display: grid` và `transition`.
+**- Mô tả:** 
+  - **Grid:** Thay vì tính toán Flexbox thủ công, CSS Grid giúp chia layout hình ảnh thành các ô vuông bằng nhau hoặc tỷ lệ 2x2, 1x2 cực kỳ khoa học và responsive cho cả Mobile.
+  - **Transitions:** Giúp dải 6 icon cảm xúc "trượt lên" nhẹ nhàng (hover state) và bong bóng chữ "+3" hiện lên thanh thoát trên tấm ảnh cuối cùng.
+
+## 6. Lưu Trữ Khối Dữ Liệu Lớn (Multipart & Cloud Computing)
+**- Chức năng áp dụng:** Đăng bài viết đính kèm hình ảnh.
+**- Kỹ thuật sử dụng:** Nhận Form-Data, Parse dữ liệu qua DRF/Django, đẩy trực tiếp qua API của Cloudinary.
+**- Mô tả:** 
+Thay vì lưu ảnh ở ổ cứng máy chủ (gây tràn ổ đĩa), kỹ thuật này sẽ đọc chuỗi file nhị phân (binary stream) từ người dùng, ném thẳng nó lên đám mây Cloudinary và chỉ lưu lại đường dẫn URL (nhỏ gọn) vào Database.
+
+## 7. Giao Tiếp Xuyên Ứng Dụng (Cross-App Integration)
+**- Chức năng áp dụng:** Chia sẻ bài viết qua Messenger (Chat).
+**- Kỹ thuật sử dụng:** Gọi các hàm Services chéo (Cross-services call) và WebSocket Protocol.
+**- Mô tả:** 
+Khi click "Gửi" ở Modal chia sẻ, Frontend sẽ gọi một API lai ghép. API này sẽ sử dụng Services của App `posts` để lấy dữ liệu bài, sau đó gọi hàm Services của App `chat` (đã xây ở Giai đoạn trước) để chèn nội dung vào DB `chat.Message`, và kích hoạt Consumer để bắn WebSocket tới người nhận theo thời gian thực (Real-time).

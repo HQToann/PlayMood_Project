@@ -1,0 +1,99 @@
+# Kế hoạch Triển khai App `posts` (Mạng xã hội Mini)
+
+Dựa trên yêu cầu của bạn, chúng ta sẽ phát triển một ứng dụng mới (tạm gọi là `posts`) để phục vụ chức năng đăng bài viết, bình luận, thả cảm xúc và chia sẻ, mô phỏng theo cấu trúc của Facebook Web.
+Ứng dụng này sẽ tuân thủ nghiêm ngặt **100%** các tiêu chuẩn kiến trúc như đã áp dụng cho app Chat (Tách biệt Selector/Service, dùng Exception tuỳ chỉnh, chống N+1 queries, v.v.).
+
+## 1. Thiết kế Cơ sở dữ liệu (Models)
+
+Chúng ta sẽ tạo các bảng sau trong `posts/models.py`:
+
+- **`Post`**: Lưu trữ bài viết.
+  - `id`: UUID
+  - `author`: ForeignKey tới `User`
+  - `content`: Nội dung chữ (có thể rỗng nếu chỉ chia sẻ ảnh).
+  - `visibility`: Chế độ hiển thị (Công khai, Bạn bè, Chỉ mình tôi).
+  - `shared_post`: ForeignKey tới chính `Post` (Để hỗ trợ tính năng Chia sẻ lại bài viết của người khác).
+  - `created_at`, `updated_at`.
+
+- **`PostMedia`**: Lưu trữ hình ảnh/video đính kèm (hỗ trợ hiển thị dạng lưới nhiều ảnh như hình mẫu).
+  - `id`: UUID
+  - `post`: ForeignKey tới `Post`
+  - `file_url`: Đường dẫn ảnh lưu trên Cloudinary.
+  - `media_type`: 'image' hoặc 'video'.
+  - `order`: Số thứ tự để sắp xếp ảnh.
+
+- **`PostReaction`**: Quản lý thả cảm xúc.
+  - `post`: ForeignKey tới `Post`
+  - `user`: ForeignKey tới `User`
+  - `reaction_type`: Loại cảm xúc (LIKE, LOVE, HAHA, WOW, SAD, ANGRY).
+  - `created_at`.
+  - **Cơ chế hoạt động:** Sử dụng `unique_together = ['post', 'user']`. Mỗi người dùng chỉ có 1 cảm xúc duy nhất trên 1 bài. Nếu họ bấm lại cảm xúc cũ -> Hủy (Xóa). Nếu chọn cảm xúc mới -> Cập nhật.
+
+- **`Comment`**: Quản lý bình luận.
+  - `id`: UUID
+  - `post`: ForeignKey tới `Post`
+  - `author`: ForeignKey tới `User`
+  - `content`: Nội dung bình luận.
+  - `parent`: ForeignKey tới `Comment` (Cực kỳ quan trọng: Dùng để **trả lời bình luận (Reply)** của người khác giống như Facebook). Nếu `parent` là rỗng (null) thì đó là bình luận gốc.
+  - `created_at`, `updated_at`.
+
+## 2. Kiến trúc Logic & Truy vấn (Tuân thủ chuẩn)
+
+- **`exceptions.py`**: Khai báo `PostException`, `PostNotFound`, `CommentNotFound` kế thừa từ `AppException`.
+- **`validators.py`**: Các hàm kiểm tra tính hợp lệ: `validate_post_creation` (bắt buộc có chữ hoặc ảnh), `validate_reaction_type`, v.v.
+- **`services.py` (Write)**:
+  - `create_post(user, data, files)`
+  - `react_to_post(user, post_id, reaction_type)`
+  - `create_comment(user, post_id, data)`
+  - `share_post(user, original_post_id, content)`
+- **`selectors.py` (Read - Tối ưu N+1)**:
+  - `get_news_feed(user, page, page_size)`: Lấy danh sách bài viết hiển thị trên tường. **Thuật toán News Feed sẽ đảm bảo:**
+    - Bạn sẽ nhìn thấy bài viết của những **người bạn theo dõi (bạn bè)** nếu họ đăng ở chế độ *Công khai* hoặc *Bạn bè*.
+    - Bạn sẽ **không** nhìn thấy nếu họ đăng ở chế độ *Chỉ mình tôi* (Private).
+    - Lấy cả bài viết của chính bạn.
+    - Truy vấn sẽ kết hợp `select_related('author', 'shared_post')` và `prefetch_related('media', 'reactions', 'comments')` để tránh làm chậm hệ thống.
+  - `get_post_comments(post_id, page, page_size)`: Lấy danh sách bình luận.
+
+## 3. API Endpoints (Controller)
+
+Trong `views.py` và `urls.py`, chúng ta sẽ mở các cổng giao tiếp chuẩn JSON:
+- `GET /api/v1/posts/` - Lấy News Feed.
+- `POST /api/v1/posts/` - Tạo bài viết mới (hỗ trợ multipart/form-data để upload ảnh).
+- `POST /api/v1/posts/<id>/react/` - Thả/Hủy cảm xúc bài viết.
+- `POST /api/v1/posts/<id>/share/` - Chia sẻ bài viết công khai lên tường nhà mình.
+- `GET /api/v1/posts/<id>/comments/` - Lấy bình luận.
+- `POST /api/v1/posts/<id>/comments/` - Gửi bình luận.
+
+## 4. Tích hợp tính năng Gửi bài viết qua Tin nhắn (Messenger)
+
+Dựa trên hình mẫu thiết kế của bạn, khi người dùng bấm "Chia sẻ", chúng ta sẽ có một Modal 2 lớp:
+1. **Lớp 1 (Chọn người nhận):** Hiển thị danh sách bạn bè / người theo dõi.
+2. **Lớp 2 (Soạn tin nhắn):** Khi chọn 1 người, Modal sẽ chuyển giao diện hiển thị người nhận đó cùng một ô text "Thêm tin nhắn tại đây (không bắt buộc)" và nút **Gửi**.
+
+Để làm được điều này, chúng ta cần **nâng cấp app `chat` cũ**:
+- Bổ sung trường `shared_post` (ForeignKey tới `posts.Post`) vào model `chat.Message`.
+- Cập nhật logic websocket / api để khi bấm gửi từ Modal chia sẻ, hệ thống sẽ tạo một tin nhắn chat (chứa text và `shared_post_id`) gửi thẳng tới cuộc trò chuyện của người bạn đó.
+
+## 5. Frontend (UI/UX)
+
+- Thiết kế một file HTML/CSS độc lập hoặc tích hợp vào trang Home (News Feed).
+- Giao diện bài viết sẽ bao gồm:
+  - Header: Avatar, Tên, Thời gian.
+  - Body: Nội dung chữ, Grid hình ảnh (hiển thị bố cục +99 nếu quá 4 ảnh như hình Facebook mẫu).
+  - Footer: 
+    - Hiển thị danh sách biểu tượng cảm xúc nổi bật (Top 3) và tổng số lượt cảm xúc.
+    - Nút Thích (khi rê chuột vào sẽ hiện ra dải 6 icon cảm xúc để lựa chọn).
+    - Vùng hiển thị Bình luận (phân cấp rõ ràng giữa Bình luận gốc và Trả lời bình luận, thụt lề cho phần trả lời).
+    - Nút Chia sẻ (Mở Modal 2 lớp để gửi Messenger).
+- Xử lý Javascript gọi API mượt mà, render lại bài viết khi có cảm xúc mới hoặc bình luận mới (cập nhật UI ngay lập tức bằng AJAX, không cần tải lại trang).
+
+## 5. Kế hoạch Thực thi (Các bước tiến hành)
+
+1. **Khởi tạo App**: Chạy `startapp posts` và cấu hình vào hệ thống.
+2. **Backend - Database**: Xây dựng Model và migrate.
+3. **Backend - Core Logic**: Viết Services, Selectors, Validators, và test qua.
+4. **Backend - API**: Mở các endpoint và test bằng Postman/Script.
+5. **Frontend**: Xây dựng giao diện News Feed và kết nối với API.
+
+> [!IMPORTANT]
+> Đây là một tính năng cốt lõi rất lớn. Vui lòng bấm **Proceed** nếu bạn đồng ý với thiết kế kiến trúc này. Chúng ta sẽ bắt đầu thực thi từ Bước 1 ngay sau khi bạn đồng ý!

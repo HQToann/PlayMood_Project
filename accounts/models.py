@@ -182,7 +182,7 @@ class User(AbstractUser):
             'id': str(self.id),
             'username': self.username,
             'display_name': self.get_display_name(),
-            'avatar': optimize_cloudinary_url(self.avatar.url, 'image') if self.avatar else None,
+            'avatar': optimize_cloudinary_url(self.avatar.url, 'image') if self.avatar and self.avatar.name else None,
             'bio': self.bio,
             'role': self.role,
             'is_private': self.is_private,

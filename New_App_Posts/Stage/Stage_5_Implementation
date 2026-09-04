@@ -1,0 +1,133 @@
+# Hướng dẫn Triển khai Giai đoạn 5: Tương tác Động (Javascript AJAX)
+
+Giai đoạn này là linh hồn của tính năng. JS sẽ bắt các sự kiện (Click) từ HTML mà bạn vừa tạo ở Giai đoạn 4, sau đó gọi ngầm API (Giai đoạn 3) và thay đổi màu sắc nút bấm mà không cần tải lại trang web.
+
+---
+
+## Bước 1: Khởi tạo File và Lấy CSRF Token
+
+Tạo file `static/js/posts.js`. Vì API sử dụng phương thức `POST`, chúng ta phải luôn gửi kèm mã bảo mật CSRF Token.
+
+```javascript
+// File: static/js/posts.js
+
+// Hàm tiện ích lấy CSRF token từ Cookie (Chuẩn của Django)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+```
+
+---
+
+## Bước 2: Xử lý Thả Cảm xúc (Reactions)
+
+Chúng ta sẽ lắng nghe sự kiện click vào 6 icon nhỏ bên trong Popover. Khi gọi API thành công, ta sẽ đổi màu cái nút Thích to nhất ở bên ngoài.
+
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Lắng nghe sự kiện click trên toàn bộ Document (Event Delegation)
+    document.body.addEventListener('click', async (e) => {
+        
+        // --- 1. XỬ LÝ CLICK ICON CẢM XÚC ---
+        const reactBtn = e.target.closest('.react-icon');
+        if (reactBtn) {
+            e.preventDefault();
+            const postCard = reactBtn.closest('.post-card');
+            const postId = postCard.dataset.postId;
+            const reactionType = reactBtn.dataset.type; // LIKE, LOVE, HAHA...
+            
+            try {
+                // Gọi API ngầm
+                const response = await fetch(`/api/v1/posts/${postId}/react/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ reaction_type: reactionType })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // Gọi hàm cập nhật Giao diện ngay lập tức
+                    updateReactionUI(postCard, data.data);
+                } else {
+                    console.error('Lỗi thả tim:', data.error);
+                }
+            } catch (error) {
+                console.error('Lỗi mạng:', error);
+            }
+        }
+        
+    });
+});
+```
+
+---
+
+## Bước 3: Hàm Cập nhật UI (Đổi màu & Icon nút Thích)
+
+Hàm này được gọi ngay sau khi API trả về thành công ở Bước 2.
+
+```javascript
+function updateReactionUI(postCard, resultData) {
+    const mainActionBtn = postCard.querySelector('.btn-like');
+    
+    // Xóa toàn bộ class màu cũ (đã định nghĩa trong posts.css)
+    mainActionBtn.classList.remove('reacted-like', 'reacted-love', 'reacted-haha', 'reacted-wow', 'reacted-sad', 'reacted-angry');
+    
+    if (resultData.action === 'removed') {
+        // Hủy cảm xúc -> Trả về mặc định
+        mainActionBtn.innerHTML = '<i class="bi bi-hand-thumbs-up fs-5"></i> Thích';
+        
+    } else {
+        // Có cảm xúc -> Đổi icon và thêm class màu
+        const type = resultData.reaction; // Ví dụ: 'LOVE'
+        mainActionBtn.classList.add(`reacted-${type.toLowerCase()}`);
+        
+        let iconHtml = '';
+        let text = '';
+        
+        switch(type) {
+            case 'LIKE': iconHtml = '<i class="bi bi-hand-thumbs-up-fill fs-5"></i>'; text = 'Thích'; break;
+            case 'LOVE': iconHtml = '<i class="bi bi-heart-fill fs-5"></i>'; text = 'Yêu thích'; break;
+            case 'HAHA': iconHtml = '<i class="bi bi-emoji-laughing-fill fs-5"></i>'; text = 'Haha'; break;
+            case 'WOW': iconHtml = '<i class="bi bi-emoji-surprise-fill fs-5"></i>'; text = 'Wow'; break;
+            case 'SAD': iconHtml = '<i class="bi bi-emoji-frown-fill fs-5"></i>'; text = 'Buồn'; break;
+            case 'ANGRY': iconHtml = '<i class="bi bi-emoji-angry-fill fs-5"></i>'; text = 'Phẫn nộ'; break;
+        }
+        
+        mainActionBtn.innerHTML = `${iconHtml} ${text}`;
+    }
+    
+    // (Phần đếm tổng số Reaction sẽ cập nhật ở đây nếu bạn muốn làm kỹ hơn)
+}
+```
+
+---
+
+## Bước 4: Nhúng JS vào Template
+
+Đừng quên thêm thẻ `<script>` gọi file này ở phía cuối file `base.html` (hoặc ở template News Feed):
+
+```html
+<script src="/static/js/posts.js?v=1.0"></script>
+```
+
+---
+
+## 👉 Xác nhận hoàn thành
+Với file JS này, nút Thích của bạn đã có "linh hồn". Hãy tạo file và báo cho mình: **"Giai đoạn 5 OK, cho tôi Giai đoạn cuối cùng (Chat)!"**

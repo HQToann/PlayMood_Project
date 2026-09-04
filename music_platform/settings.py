@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'search',
     'recommendations',
     'chat',
+    'posts',
 ]
 
 MIDDLEWARE = [

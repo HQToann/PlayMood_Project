@@ -1,0 +1,140 @@
+# Tài liệu Thiết kế API (Posts App)
+
+Tài liệu này liệt kê đầy đủ các API sẽ được sử dụng để tương tác với các Bài viết (Posts), Bình luận (Comments) và Cảm xúc (Reactions). Tất cả API đều yêu cầu người dùng phải đăng nhập (Authentication Required) và trả về dữ liệu dưới định dạng JSON tiêu chuẩn.
+
+## Định dạng Phản hồi Chung (Standard Response Format)
+```json
+{
+    "success": true,
+    "data": {},
+    "error": null
+}
+```
+
+---
+
+## Bảng Tổng hợp API
+
+| Endpoint API | Phương thức | Chức năng (Feature) | Mô tả ngắn gọn |
+| :--- | :--- | :--- | :--- |
+| `/api/v1/posts/` | `GET` | Bảng tin (News Feed) | Lấy danh sách các bài viết để hiển thị ở trang chủ, có phân trang. Đã lọc theo quyền riêng tư. |
+| `/api/v1/posts/` | `POST` | Đăng bài viết | Tạo một bài viết mới (kèm text, ảnh/video, chế độ hiển thị). |
+| `/api/v1/posts/<id>/react/` | `POST` | Thả Cảm xúc | Cập nhật, Thêm mới, hoặc Hủy bỏ cảm xúc (Like, Love, Haha...) cho một bài viết. |
+| `/api/v1/posts/<id>/comments/` | `GET` | Xem Bình luận | Lấy danh sách các bình luận gốc của một bài viết (có phân trang). |
+| `/api/v1/posts/<id>/comments/` | `POST` | Viết Bình luận / Trả lời | Gửi một bình luận mới. Nếu truyền `parent_id` thì sẽ được tính là Trả lời (Reply). |
+| `/api/v1/posts/<id>/share/` | `POST` | Chia sẻ lên Tường | Đăng lại một bài viết của người khác lên trang cá nhân của mình. |
+| `/api/v1/chat/messages/` | `POST` | Chia sẻ qua Messenger | (Tận dụng API của Chat). Gửi bài viết dưới dạng tin nhắn cho một người bạn. |
+
+---
+
+## 1. Bài viết (Posts)
+
+### 1.1. Lấy danh sách Bài viết (News Feed)
+- **Endpoint:** `GET /api/v1/posts/`
+- **Mô tả:** Lấy danh sách bài viết để hiển thị trên Bảng tin (News Feed), có phân trang.
+- **Query Parameters:**
+  - `page` (int, default=1): Số trang.
+  - `page_size` (int, default=10): Số lượng bài viết mỗi trang.
+- **Response Data:**
+  ```json
+  {
+      "items": [
+          {
+              "id": "uuid",
+              "author": { "id": 1, "username": "user", "avatar": "url" },
+              "content": "Nội dung bài viết",
+              "visibility": "PUBLIC",
+              "created_at": "2026-08-29T10:00:00Z",
+              "media": [{"url": "...", "type": "image"}],
+              "reactions_count": 12,
+              "top_reactions": ["LOVE", "HAHA", "LIKE"],
+              "comments_count": 5,
+              "user_reaction": "LOVE", // Cảm xúc hiện tại của user đang xem
+              "shared_post": null // Thông tin bài chia sẻ nếu có
+          }
+      ],
+      "pagination": { "current_page": 1, "total_pages": 5, "has_next": true }
+  }
+  ```
+
+### 1.2. Tạo Bài viết mới
+- **Endpoint:** `POST /api/v1/posts/`
+- **Mô tả:** Đăng một bài viết mới kèm hình ảnh/video.
+- **Headers:** `Content-Type: multipart/form-data`
+- **Body Data (Form-Data):**
+  - `content` (string, tuỳ chọn): Nội dung chữ.
+  - `visibility` (string): 'PUBLIC', 'FRIENDS', 'PRIVATE'.
+  - `images` (file list, tuỳ chọn): Danh sách các file ảnh đính kèm.
+- **Response Data:** Chi tiết bài viết vừa tạo.
+
+---
+
+## 2. Cảm xúc (Reactions)
+
+### 2.1. Thả/Cập nhật/Hủy Cảm xúc
+- **Endpoint:** `POST /api/v1/posts/<post_id>/react/`
+- **Mô tả:** Xử lý toàn bộ logic thả tim. Bấm lần 1 để thả, bấm lại icon đó để hủy, chọn icon khác để cập nhật.
+- **Headers:** `Content-Type: application/json`
+- **Body Data (JSON):**
+  - `reaction_type` (string): 'LIKE', 'LOVE', 'HAHA', 'WOW', 'SAD', 'ANGRY'
+- **Response Data:**
+  ```json
+  {
+      "action": "added", // hoặc "updated", "removed"
+      "current_reaction": "LOVE", // hoặc null nếu bị xóa
+      "reactions_count": 13,
+      "top_reactions": ["LOVE", "LIKE", "HAHA"]
+  }
+  ```
+
+---
+
+## 3. Bình luận (Comments)
+
+### 3.1. Lấy danh sách Bình luận của Bài viết
+- **Endpoint:** `GET /api/v1/posts/<post_id>/comments/`
+- **Mô tả:** Lấy danh sách bình luận, hỗ trợ phân trang. Chỉ lấy các bình luận gốc (top-level).
+- **Query Parameters:** `page`, `page_size`
+- **Response Data:**
+  ```json
+  {
+      "items": [
+          {
+              "id": "uuid",
+              "author": { "id": 2, "username": "friend", "avatar": "url" },
+              "content": "Bình luận hay quá!",
+              "created_at": "...",
+              "replies": [] // Danh sách các trả lời cho bình luận này
+          }
+      ],
+      "pagination": { ... }
+  }
+  ```
+
+### 3.2. Đăng Bình luận mới (hoặc Trả lời bình luận)
+- **Endpoint:** `POST /api/v1/posts/<post_id>/comments/`
+- **Mô tả:** Gửi bình luận. Nếu có `parent_id`, đó là câu trả lời (reply).
+- **Headers:** `Content-Type: application/json`
+- **Body Data (JSON):**
+  - `content` (string): Nội dung bình luận.
+  - `parent_id` (uuid, tuỳ chọn): ID của bình luận gốc muốn trả lời.
+- **Response Data:** Dữ liệu chi tiết của bình luận vừa đăng.
+
+---
+
+## 4. Chia sẻ (Sharing)
+
+### 4.1. Gửi Bài viết qua Tin nhắn (Chat App)
+- **Endpoint:** `POST /api/v1/chat/messages/` *(Sử dụng lại API của hệ thống Chat)*
+- **Mô tả:** Chức năng chia sẻ bài viết cho một người bạn qua cửa sổ Chat.
+- **Body Data (JSON):**
+  - `conversation_id` (uuid): ID cuộc trò chuyện.
+  - `shared_post_id` (uuid): ID bài viết muốn chia sẻ.
+  - `content` (string, tuỳ chọn): Tin nhắn gửi kèm.
+
+### 4.2. Chia sẻ Bài viết lên Tường cá nhân (Tùy chọn)
+- **Endpoint:** `POST /api/v1/posts/<post_id>/share/`
+- **Mô tả:** Đăng lại bài viết của người khác lên Bảng tin của mình.
+- **Body Data (JSON):**
+  - `content` (string, tuỳ chọn): Lời bình luận khi chia sẻ.
+  - `visibility` (string): Chế độ hiển thị.

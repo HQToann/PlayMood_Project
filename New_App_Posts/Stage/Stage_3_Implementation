@@ -1,0 +1,180 @@
+# Hướng dẫn Triển khai Giai đoạn 3: API Endpoints (Controller)
+
+Giai đoạn này chúng ta sẽ mở các đường dẫn (URL) và tạo các Class-based Views (API) để giao tiếp giữa Frontend và tầng Logic Lõi.
+Mọi dữ liệu trả về đều phải bọc trong chuẩn JSON `{ "success": ..., "data": ..., "error": ... }`.
+
+---
+
+## Bước 1: Viết API Views (`views.py`)
+
+Tạo file `posts/views.py` và dán toàn bộ mã nguồn xử lý Request/Response sau:
+
+```python
+import json
+import math
+from django.views import View
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+from accounts.exceptions import AppException
+from . import services, selectors
+
+def handle_exception(e):
+    """Hàm tiện ích xử lý lỗi chung."""
+    if isinstance(e, AppException):
+        return JsonResponse({'success': False, 'error': e.to_dict()}, status=e.status_code)
+    return JsonResponse({'success': False, 'error': {'code': 'INTERNAL_ERROR', 'message': str(e)}}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PostListView(View):
+    """API lấy Bảng tin và Đăng bài viết mới."""
+    
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            page = int(request.GET.get('page', 1))
+            page_size = int(request.GET.get('page_size', 10))
+            
+            # Sử dụng Selector chống N+1
+            qs = selectors.get_news_feed_queryset(request.user)
+            
+            total = qs.count()
+            total_pages = math.ceil(total / page_size) if total > 0 else 1
+            
+            start = (page - 1) * page_size
+            end = start + page_size
+            
+            # Serialize dữ liệu
+            items = []
+            for post in qs[start:end]:
+                # Chuyển đổi thủ công thay vì to_dict() quá phức tạp ở đây
+                # (Bạn có thể tách hàm serialize_post ra riêng)
+                post_data = {
+                    'id': str(post.id),
+                    'author': {
+                        'id': post.author.id,
+                        'username': post.author.username,
+                        'display_name': post.author.display_name,
+                        'avatar': post.author.avatar.url if post.author.avatar else None,
+                    },
+                    'content': post.content,
+                    'created_at': post.created_at.isoformat(),
+                    'reactions_count': post.reactions.count(),
+                    'comments_count': post.comments.count(),
+                    # Giả định: Frontend tự xử lý media array từ PostMedia
+                }
+                items.append(post_data)
+                
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'items': items,
+                    'pagination': {
+                        'current_page': page,
+                        'total_pages': total_pages,
+                        'has_next': page < total_pages
+                    }
+                }
+            })
+        except Exception as e:
+            return handle_exception(e)
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            # Nhận multipart/form-data
+            content = request.POST.get('content', '')
+            visibility = request.POST.get('visibility', 'PUBLIC')
+            
+            # Quá trình upload file qua Cloudinary sẽ được thêm ở đây
+            media_urls = [] # Tạm thời giả định mảng rỗng
+            
+            post = services.create_post(
+                user=request.user, 
+                data={'content': content, 'visibility': visibility}, 
+                media_urls=media_urls
+            )
+            
+            return JsonResponse({'success': True, 'data': {'id': str(post.id)}})
+        except Exception as e:
+            return handle_exception(e)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PostReactionView(View):
+    """API Thả Cảm xúc."""
+    def post(self, request, post_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False}, status=401)
+        try:
+            data = json.loads(request.body)
+            reaction_type = data.get('reaction_type')
+            
+            result = services.toggle_reaction(request.user, post_id, reaction_type)
+            return JsonResponse({'success': True, 'data': result})
+        except Exception as e:
+            return handle_exception(e)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PostCommentView(View):
+    """API Bình luận."""
+    def post(self, request, post_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False}, status=401)
+        try:
+            data = json.loads(request.body)
+            content = data.get('content', '')
+            parent_id = data.get('parent_id') # Nullable
+            
+            comment = services.create_comment(request.user, post_id, content, parent_id)
+            
+            return JsonResponse({'success': True, 'data': {'id': str(comment.id)}})
+        except Exception as e:
+            return handle_exception(e)
+```
+
+---
+
+## Bước 2: Định tuyến URL (`urls.py`)
+
+Tạo file `posts/urls.py` và liên kết các View trên với Endpoint.
+
+```python
+from django.urls import path
+from . import views
+
+app_name = 'posts'
+
+urlpatterns = [
+    # Bảng tin và Tạo bài
+    path('', views.PostListView.as_view(), name='post-list'),
+    
+    # Cảm xúc
+    path('<uuid:post_id>/react/', views.PostReactionView.as_view(), name='post-react'),
+    
+    # Bình luận
+    path('<uuid:post_id>/comments/', views.PostCommentView.as_view(), name='post-comments'),
+]
+```
+
+---
+
+## Bước 3: Đăng ký URL vào dự án gốc
+
+Mở file `music_platform/urls.py` (file gốc của toàn dự án), tìm mục khai báo các API v1 và thêm đường dẫn của app `posts` vào.
+
+```python
+# Mở file music_platform/urls.py
+# Thêm dòng này vào danh sách urlpatterns, thường ở gần dòng của chat/social
+
+    path('api/v1/posts/', include('posts.urls')),
+```
+
+---
+
+## 👉 Xác nhận hoàn thành
+Nếu đã tạo xong các API Endpoint và Terminal vẫn báo `System check identified no issues`, hãy sang Giai đoạn 4!

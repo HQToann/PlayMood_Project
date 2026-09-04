@@ -138,6 +138,10 @@ urlpatterns = [
     path('search/', login_required_view('search/search_results.html'), name='search_page'),
     path('mood/', login_required_view('social/mood.html'), name='mood_page'),
     path('mood/explore/', login_required_view('social/mood_explore.html'), name='mood_explore_page'),
+    
+    # Bảng tin Mạng xã hội
+    path('feed/', login_required_view('posts/feed.html'), name='news_feed_page'),
+    
     path('playlist/', login_required_view('playlists/playlist.html'), name='playlist_page'),
     path('playlist/detail/', login_required_view('playlists/playlist_detail.html'), name='playlist_detail_page'),
     
@@ -182,6 +186,8 @@ urlpatterns = [
     # Tuần 6 - chat
     path('api/v1/chat/', include('chat.urls')),
 
+    # Bài viết - Mạng xã hội
+    path('api/v1/posts/', include('posts.urls')),
 ]
 
 # Phục vụ media files trong môi trường development

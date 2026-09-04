@@ -1,0 +1,181 @@
+# Hướng dẫn Triển khai Giai đoạn 4: Xây dựng Giao diện HTML & CSS
+
+Giai đoạn này chúng ta sẽ vẽ bộ khung giao diện của một Bài viết (Post) bao gồm Grid lưới ảnh, khối đếm cảm xúc, thanh tương tác Thích/Bình luận và cấu trúc cây trả lời bình luận.
+
+---
+
+## Bước 1: Tạo HTML cho Bài viết (`feed.html` hoặc `post_card.html`)
+
+Bạn có thể tạo một file template mới tại `templates/posts/post_card.html` để tái sử dụng nhiều lần cho vòng lặp vòng quanh News Feed.
+
+```html
+<div class="post-card bg-card rounded-4 p-3 mb-4 shadow-sm" data-post-id="{{ post.id }}">
+    
+    <!-- 1. HEADER: Avatar & Thời gian -->
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="d-flex align-items-center gap-2">
+            <img src="{{ post.author.avatar.url|default:'https://ui-avatars.com/api/?name=User' }}" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+            <div>
+                <h6 class="mb-0 fw-bold text-white">{{ post.author.display_name }}</h6>
+                <small class="text-muted-custom">{{ post.created_at|timesince }} trước</small>
+            </div>
+        </div>
+        <button class="btn btn-link text-muted-custom p-0"><i class="bi bi-three-dots"></i></button>
+    </div>
+
+    <!-- 2. BODY: Text & Hình ảnh -->
+    <div class="post-body text-white mb-2">
+        <p class="mb-2" style="font-size: 0.95rem;">{{ post.content }}</p>
+        
+        <!-- Ví dụ Lưới Ảnh (Grid) cho 4 tấm ảnh -->
+        <div class="post-image-grid grid-4">
+            <!-- (Thực tế phần này sẽ render động bằng JS) -->
+            <div class="grid-img" style="background-image: url('img1.jpg');"></div>
+            <div class="grid-img" style="background-image: url('img2.jpg');"></div>
+            <div class="grid-img" style="background-image: url('img3.jpg');"></div>
+            <div class="grid-img more-overlay" style="background-image: url('img4.jpg');">
+                <span class="fs-4 fw-bold">+3</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. BỘ ĐẾM: Số cảm xúc & Bình luận -->
+    <div class="d-flex align-items-center justify-content-between pb-2 border-bottom border-secondary mb-2">
+        <div class="d-flex align-items-center gap-1">
+            <div class="reaction-stack d-flex">
+                <!-- Stack các Icon Top 3 -->
+                <img src="/static/images/reactions/like.png" width="18" height="18" class="rounded-circle border border-dark">
+                <img src="/static/images/reactions/love.png" width="18" height="18" class="rounded-circle border border-dark" style="margin-left: -6px;">
+            </div>
+            <small class="text-muted-custom ms-1 reaction-count">1.2k</small>
+        </div>
+        <div class="d-flex gap-3 text-muted-custom">
+            <small class="comment-count">120 Bình luận</small>
+            <small class="share-count">14 Chia sẻ</small>
+        </div>
+    </div>
+
+    <!-- 4. ACTION BAR: Nút Tương tác -->
+    <div class="d-flex align-items-center justify-content-between position-relative">
+        
+        <!-- Khối chứa Nút Thích & Dải Popover Cảm xúc ẩn -->
+        <div class="reaction-container position-relative">
+            <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-like">
+                <i class="bi bi-hand-thumbs-up fs-5"></i> Thích
+            </button>
+            
+            <!-- Dải 6 icon cảm xúc (Popover) trượt lên khi Hover -->
+            <div class="reaction-popover shadow-lg rounded-pill p-1 d-flex gap-1">
+                <button class="btn p-0 react-icon" data-type="LIKE"><img src="/static/images/reactions/like.gif" width="32"></button>
+                <button class="btn p-0 react-icon" data-type="LOVE"><img src="/static/images/reactions/love.gif" width="32"></button>
+                <button class="btn p-0 react-icon" data-type="HAHA"><img src="/static/images/reactions/haha.gif" width="32"></button>
+                <button class="btn p-0 react-icon" data-type="WOW"><img src="/static/images/reactions/wow.gif" width="32"></button>
+                <button class="btn p-0 react-icon" data-type="SAD"><img src="/static/images/reactions/sad.gif" width="32"></button>
+                <button class="btn p-0 react-icon" data-type="ANGRY"><img src="/static/images/reactions/angry.gif" width="32"></button>
+            </div>
+        </div>
+
+        <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-comment">
+            <i class="bi bi-chat fs-5"></i> Bình luận
+        </button>
+        <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-share" data-bs-toggle="modal" data-bs-target="#sharePostModal">
+            <i class="bi bi-share fs-5"></i> Chia sẻ
+        </button>
+    </div>
+</div>
+```
+
+---
+
+## Bước 2: Viết CSS (`posts.css`)
+
+Tạo file `static/css/posts.css` để định hình Layout Ảnh và Hiệu ứng Popover thả tim.
+
+```css
+/* Màu nền chung */
+.bg-card { background-color: #242526; }
+.text-muted-custom { color: #b0b3b8 !important; }
+
+/* Các nút tương tác */
+.action-btn { 
+    display: flex; align-items: center; justify-content: center; gap: 8px; 
+    flex: 1; border-radius: 8px; color: #b0b3b8; 
+}
+.action-btn:hover { background-color: rgba(255,255,255,0.1); color: #e4e6eb; }
+
+/* Trạng thái thả cảm xúc được JS đắp class vào */
+.action-btn.reacted-like { color: #2078f4; }
+.action-btn.reacted-love { color: #f33e58; }
+.action-btn.reacted-haha, .action-btn.reacted-wow, .action-btn.reacted-sad { color: #f7b125; }
+.action-btn.reacted-angry { color: #e9710f; }
+
+/* DẢI CẢM XÚC (POPOVER) */
+.reaction-popover {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background-color: #242526;
+    border: 1px solid rgba(255,255,255,0.1);
+    transform: translateY(10px) scale(0.8); /* Ẩn đi và thu nhỏ */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+}
+
+/* Kích hoạt Popover khi Hover vào container */
+.reaction-container:hover .reaction-popover {
+    transform: translateY(-5px) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Hiệu ứng phóng to từng Icon khi hover */
+.react-icon img { transition: transform 0.2s; }
+.react-icon:hover img { transform: scale(1.3) translateY(-5px); }
+
+
+/* LƯỚI HÌNH ẢNH (GRID) */
+.post-image-grid {
+    display: grid;
+    gap: 4px;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 400px; /* Chiều cao cố định */
+}
+.grid-img {
+    background-size: cover;
+    background-position: center;
+    width: 100%; height: 100%;
+    cursor: pointer;
+}
+
+/* Biến thể cấu trúc lưới */
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.grid-3 .grid-img:first-child { grid-column: 1 / 3; } /* Cột 1 chiếm 2 vị trí */
+.grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+/* Lớp phủ đen khi ảnh quá nhiều */
+.more-overlay {
+    position: relative;
+}
+.more-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+}
+.more-overlay span {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    z-index: 2;
+}
+```
+
+---
+
+## 👉 Xác nhận hoàn thành
+Hãy tạo xong HTML và lưu CSS. Sau đó gọi mình: **"Giai đoạn 4 OK, cho tôi Javascript Giai đoạn 5"**!
