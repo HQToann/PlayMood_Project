@@ -169,25 +169,55 @@ class PostCommentView(View):
     def get(self, request, post_id):
         try:
             from .models import Comment
-            # Chỉ lấy các bình luận gốc (parent is null) và prefetch replies
-            comments = Comment.objects.filter(post_id=post_id, parent__isnull=True).prefetch_related('replies', 'author', 'replies__author').order_by('created_at')
+            comments = Comment.objects.filter(post_id=post_id, parent__isnull=True).prefetch_related('replies', 'author', 'replies__author', 'reactions', 'replies__reactions').order_by('created_at')
+            
+            def process_reactions(item):
+                reaction_counts = {}
+                for r in item.reactions.all():
+                    reaction_counts[r.reaction_type] = reaction_counts.get(r.reaction_type, 0) + 1
+                
+                top_reaction_types = [
+                    k for k, v in sorted(reaction_counts.items(), key=lambda x: x[1], reverse=True)
+                ][:3]
+                
+                current_user_reaction = None
+                if request.user.is_authenticated:
+                    for r in item.reactions.all():
+                        if r.user_id == request.user.id:
+                            current_user_reaction = r.reaction_type
+                            break
+                            
+                return {
+                    'reactions_count': sum(reaction_counts.values()),
+                    'top_reactions': top_reaction_types,
+                    'current_user_reaction': current_user_reaction
+                }
             
             comments_data = []
             for comment in comments:
                 replies_data = []
                 for reply in comment.replies.all():
+                    r_stats = process_reactions(reply)
                     replies_data.append({
                         'id': str(reply.id),
                         'author': reply.author.to_dict(),
                         'content': reply.content,
-                        'created_at': reply.created_at.isoformat()
+                        'created_at': reply.created_at.isoformat(),
+                        'reactions_count': r_stats['reactions_count'],
+                        'top_reactions': r_stats['top_reactions'],
+                        'current_user_reaction': r_stats['current_user_reaction']
                     })
+                    
+                c_stats = process_reactions(comment)
                 comments_data.append({
                     'id': str(comment.id),
                     'author': comment.author.to_dict(),
                     'content': comment.content,
                     'created_at': comment.created_at.isoformat(),
-                    'replies': replies_data
+                    'replies': replies_data,
+                    'reactions_count': c_stats['reactions_count'],
+                    'top_reactions': c_stats['top_reactions'],
+                    'current_user_reaction': c_stats['current_user_reaction']
                 })
                 
             return JsonResponse({'success': True, 'data': comments_data})
@@ -205,5 +235,69 @@ class PostCommentView(View):
             comment = services.create_comment(request.user, post_id, content, parent_id)
             
             return JsonResponse({'success': True, 'data': {'id': str(comment.id)}})
+        except Exception as e:
+            return handle_exception(e)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CommentReactionView(View):
+    """API Thả Cảm xúc Bình luận."""
+    def post(self, request, comment_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False}, status=401)
+        try:
+            from .models import Comment, CommentReaction
+            from notifications.services import create_notification
+            from notifications.models import Notification
+            import json
+            data = json.loads(request.body)
+            reaction_type = data.get('reaction_type')
+            
+            comment = Comment.objects.get(id=comment_id)
+            existing_reaction = CommentReaction.objects.filter(comment=comment, user=request.user).first()
+            
+            action = 'added'
+            if existing_reaction:
+                if existing_reaction.reaction_type == reaction_type:
+                    existing_reaction.delete()
+                    action = 'removed'
+                else:
+                    existing_reaction.reaction_type = reaction_type
+                    existing_reaction.save()
+                    action = 'updated'
+            else:
+                CommentReaction.objects.create(
+                    comment=comment,
+                    user=request.user,
+                    reaction_type=reaction_type
+                )
+                
+                if comment.author != request.user:
+                    create_notification(
+                        recipient=comment.author,
+                        sender=request.user,
+                        notif_type=Notification.TYPE_LIKE,
+                        target_type=Notification.TARGET_COMMENT,
+                        target_id=comment.id,
+                        message=f"{request.user.get_display_name()} đã bày tỏ cảm xúc về bình luận của bạn."
+                    )
+                
+            reaction_counts = {}
+            for r in comment.reactions.all():
+                reaction_counts[r.reaction_type] = reaction_counts.get(r.reaction_type, 0) + 1
+            
+            top_reaction_types = [
+                k for k, v in sorted(reaction_counts.items(), key=lambda x: x[1], reverse=True)
+            ][:3]
+                
+            return JsonResponse({
+                'success': True, 
+                'data': {
+                    'action': action,
+                    'reaction': reaction_type,
+                    'reactions_count': sum(reaction_counts.values()),
+                    'top_reactions': top_reaction_types
+                }
+            })
         except Exception as e:
             return handle_exception(e)

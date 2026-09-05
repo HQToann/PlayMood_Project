@@ -110,6 +110,36 @@ class MessageListView(View):
             return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Tham số phân trang không hợp lệ'}}, status=400)
         except Exception as e:
             return handle_exception(e)
+            
+    def post(self, request, conversation_id):
+        """
+        POST /api/v1/chat/conversations/<conversation_id>/messages/
+        Gửi tin nhắn thông qua API (Dùng cho tính năng chia sẻ)
+        """
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            body = json.loads(request.body)
+            # Gọi services để tạo tin nhắn
+            msg = services.create_message(request.user, conversation_id, body)
+            
+            # Bắn qua WebSocket để real-time cho các thành viên trong room
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f'chat_{conversation_id}',
+                    {
+                        'type': 'chat_message',
+                        'message_data': msg.to_dict()
+                    }
+                )
+            
+            return JsonResponse({'success': True, 'data': msg.to_dict()}, status=201)
+        except Exception as e:
+            return handle_exception(e)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadImageView(View):

@@ -93,6 +93,25 @@ def create_message(sender, conversation_id, data: dict) -> Message:
     conversation.save()
 
     logger.info('Tin nhắn mới được gửi bởi %s trong cuộc trò chuyện %s', sender.username, conversation_id)
+
+    # Bắn thông báo Toast qua WebSocket cho tất cả người nhận
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    channel_layer = get_channel_layer()
+    if channel_layer:
+        for participant in conversation.participants.exclude(id=sender.id):
+            async_to_sync(channel_layer.group_send)(
+                f'user_{participant.id}',
+                {
+                    'type': 'notification_message',
+                    'message': 'new_chat_message',
+                    'notification_data': {
+                        'title': f'Tin nhắn từ {sender.get_display_name()}',
+                        'message': content[:50] + ('...' if len(content) > 50 else '') if content else 'Đã gửi một đính kèm'
+                    }
+                }
+            )
+
     return message
 
 def mark_messages_as_read(conversation_id, user) -> int:

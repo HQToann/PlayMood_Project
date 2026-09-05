@@ -2,6 +2,8 @@ import logging
 
 from notifications.models import Notification
 from notifications.exceptions import NotificationNotFound
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,19 @@ def create_notification(recipient, notif_type: str,
     )
 
     logger.info('Notification created: recipient=%s type=%s', recipient.username, notif_type)
+
+    # Broadcast qua WebSocket
+    channel_layer = get_channel_layer()
+    if channel_layer:
+        group_name = f'user_{recipient.id}'
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                'type': 'notification_message',
+                'message': 'new_notification',
+                'notification_data': notification.to_dict()
+            }
+        )
 
     return notification
 

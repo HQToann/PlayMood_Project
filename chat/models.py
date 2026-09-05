@@ -178,7 +178,7 @@ class Message(models.Model):
             'shared_post': {
                 'id': str(self.shared_post.id),
                 'content': self.shared_post.content,
-                'author': self.shared_post.author.display_name,
+                'author': self.shared_post.author.get_display_name(),
             } if self.shared_post else None,
             'reactions': self.reactions,
             'is_read': self.is_read,

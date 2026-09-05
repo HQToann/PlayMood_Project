@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderArtistCard(artist) {
         var avatar = artist.avatar || DEFAULT_AVATAR;
-        return '<a href="/profile/' + (artist.username || artist.id) + '/" class="artist-card">' +
+        return '<a href="/profile/' + artist.id + '/" class="artist-card">' +
             '<img src="' + esc(avatar) + '" alt="' + esc(artist.display_name) + '" class="artist-avatar" loading="lazy">' +
             '<div class="artist-name">' + esc(artist.display_name) + '</div>' +
             '<div class="artist-role">Nghệ sĩ</div>' +

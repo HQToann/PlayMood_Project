@@ -12,4 +12,7 @@ urlpatterns = [
     
     # Bình luận
     path('<uuid:post_id>/comments/', views.PostCommentView.as_view(), name='post-comments'),
+    
+    # Cảm xúc bình luận
+    path('comments/<uuid:comment_id>/react/', views.CommentReactionView.as_view(), name='comment-react'),
 ]

@@ -391,30 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // --- 2. MỞ CHIA SẺ BÀI VIẾT LỚP 1 ---
-        const shareBtn = e.target.closest('.btn-share');
-        if (shareBtn) {
-            const postCard = shareBtn.closest('.post-card');
-            window.currentSharePostId = postCard.dataset.postId;
-            document.getElementById('shareModalLayer1').style.display = 'block';
-            document.getElementById('shareModalLayer2').style.display = 'none';
-        }
-        
-        // --- 3. CHỌN BẠN BÈ ĐỂ CHIA SẺ (LỚP 2) ---
-        const friendItem = e.target.closest('.share-friend-item');
-        if (friendItem) {
-            const conversationId = friendItem.dataset.conversationId;
-            document.getElementById('btnConfirmShare').dataset.conversationId = conversationId;
-            
-            document.getElementById('shareModalLayer1').style.display = 'none';
-            document.getElementById('shareModalLayer2').style.display = 'block';
-        }
-        
-        // NÚT BACK (TỪ 2 QUAY VỀ 1)
-        if(e.target.closest('#btnBackToLayer1')) {
-            document.getElementById('shareModalLayer1').style.display = 'block';
-            document.getElementById('shareModalLayer2').style.display = 'none';
-        }
+
 
         // --- 4. MỞ BÌNH LUẬN ---
         const commentBtn = e.target.closest('.btn-comment');
@@ -430,30 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // --- NÚT GỬI CHIA SẺ TRONG CHAT ---
-    const btnConfirmShare = document.getElementById('btnConfirmShare');
-    if(btnConfirmShare) {
-        btnConfirmShare.addEventListener('click', function() {
-            const conversationId = this.dataset.conversationId;
-            const optionalMessage = document.getElementById('shareOptionalMessage').value;
-            
-            if (window.chatSocket && window.chatSocket.readyState === window.WebSocket.OPEN) {
-                window.chatSocket.send(JSON.stringify({
-                    'action': 'send_message',
-                    'conversation_id': conversationId,
-                    'message': optionalMessage,
-                    'shared_post_id': window.currentSharePostId
-                }));
-                
-                const modal = bootstrap.Modal.getInstance(document.getElementById('sharePostModal'));
-                modal.hide();
-                alert('Đã gửi bài viết qua tin nhắn!');
-                document.getElementById('shareOptionalMessage').value = '';
-            } else {
-                alert('Chat chưa kết nối, vui lòng tải lại trang!');
-            }
-        });
-    }
+
 
     // --- XỬ LÝ GỬI BÌNH LUẬN ---
     const submitCommentBtn = document.getElementById('submitCommentBtn');
@@ -461,37 +415,38 @@ document.addEventListener('DOMContentLoaded', () => {
         submitCommentBtn.addEventListener('click', async () => {
             if (!window.currentCommentPostId) return;
             const input = document.getElementById('commentInput');
-            const content = input.value.trim();
+            let content = input.value.trim();
             if (!content) return;
             
-            // Ẩn nút gửi để tránh click nhiều lần
+            // Xóa tag mention ra khỏi content nếu có
+            if (window.currentCommentParentId && content.startsWith('@')) {
+                const spaceIndex = content.indexOf(' ');
+                if (spaceIndex !== -1) {
+                    content = content.substring(spaceIndex + 1).trim();
+                }
+            }
+            if (!content) return;
+            
             submitCommentBtn.disabled = true;
             try {
+                const payload = { content: content };
+                if (window.currentCommentParentId) {
+                    payload.parent_id = window.currentCommentParentId;
+                }
+                
                 const response = await fetch(`/api/v1/posts/${window.currentCommentPostId}/comments/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrftoken
                     },
-                    body: JSON.stringify({ content: content })
+                    body: JSON.stringify(payload)
                 });
                 
                 const data = await response.json();
                 if (data.success) {
                     input.value = '';
-                    loadComments(window.currentCommentPostId);
-                    
-                    // Cập nhật số đếm trên giao diện
-                    const postCard = document.querySelector(`.post-card[data-post-id="${window.currentCommentPostId}"]`);
-                    if (postCard) {
-                        const commentsTextSpan = postCard.querySelector('.text-muted-custom.small span.me-3');
-                        if (commentsTextSpan) {
-                            const currentText = commentsTextSpan.innerText;
-                            const match = currentText.match(/(\d+)/);
-                            const count = match ? parseInt(match[1]) + 1 : 1;
-                            commentsTextSpan.innerText = `${count} bình luận`;
-                        }
-                    }
+                    window.currentCommentParentId = null; // Reset
                 }
             } catch (error) {
                 console.error('Error posting comment:', error);
@@ -509,52 +464,219 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- SỰ KIỆN DELEGATION BÌNH LUẬN (THÍCH / PHẢN HỒI) ---
+    const commentListContainer = document.getElementById('commentList');
+    if (commentListContainer) {
+        commentListContainer.addEventListener('click', async (e) => {
+            // 1. Thả Cảm xúc bình luận (chọn từ Popover)
+            if (e.target.closest('.comment-react-icon')) {
+                const btn = e.target.closest('.comment-react-icon');
+                const commentId = btn.dataset.commentId;
+                const reactionType = btn.dataset.type;
+                
+                try {
+                    const res = await fetch(`/api/v1/posts/comments/${commentId}/react/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({ reaction_type: reactionType })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const commentContainer = btn.closest('.d-flex.gap-2'); // root of comment
+                        updateCommentReactionUI(commentContainer, data.data);
+                    }
+                } catch(error) { console.error(error); }
+            }
+            
+            // Nếu click thẳng vào nút Thích chính (Toggle Like Default)
+            if (e.target.closest('.comment-like-btn') && !e.target.closest('.reaction-popover')) {
+                const btn = e.target.closest('.comment-like-btn');
+                const commentId = btn.dataset.commentId;
+                
+                // Mặc định thả LIKE nếu click vào chữ
+                const reactionType = 'LIKE';
+                try {
+                    const res = await fetch(`/api/v1/posts/comments/${commentId}/react/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({ reaction_type: reactionType })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const commentContainer = btn.closest('.d-flex.gap-2');
+                        updateCommentReactionUI(commentContainer, data.data);
+                    }
+                } catch(error) { console.error(error); }
+            }
+            
+            // 2. Nút Phản hồi bình luận
+            if (e.target.closest('.comment-reply-btn')) {
+                const btn = e.target.closest('.comment-reply-btn');
+                const commentId = btn.dataset.commentId;
+                const authorName = btn.dataset.authorName;
+                
+                window.currentCommentParentId = commentId;
+                const input = document.getElementById('commentInput');
+                input.value = `@${authorName} `;
+                input.focus();
+            }
+        });
+    }
+
 });
 
+function updateCommentReactionUI(commentContainer, resultData) {
+    const mainActionBtn = commentContainer.querySelector('.comment-like-btn');
+    if (mainActionBtn) {
+        mainActionBtn.classList.remove('reacted-like', 'reacted-love', 'reacted-haha', 'reacted-wow', 'reacted-sad', 'reacted-angry');
+        if (resultData.action === 'removed') {
+            mainActionBtn.innerHTML = 'Thích';
+        } else {
+            const type = resultData.reaction;
+            mainActionBtn.classList.add(`reacted-${type.toLowerCase()}`);
+            let text = 'Thích';
+            switch(type) {
+                case 'LIKE': text = 'Thích'; break;
+                case 'LOVE': text = 'Yêu thích'; break;
+                case 'HAHA': text = 'Haha'; break;
+                case 'WOW': text = 'Wow'; break;
+                case 'SAD': text = 'Buồn'; break;
+                case 'ANGRY': text = 'Phẫn nộ'; break;
+            }
+            mainActionBtn.innerHTML = text;
+        }
+    }
+    
+    // Cập nhật số đếm và icon
+    const countSpan = commentContainer.querySelector('.comment-like-count');
+    if (countSpan && resultData.top_reactions) {
+        const REACTION_EMOJIS = {
+            'LIKE': '👍', 'LOVE': '❤️', 'HAHA': '😂', 'WOW': '😮', 'SAD': '😢', 'ANGRY': '😡'
+        };
+        let stackHtml = '';
+        resultData.top_reactions.forEach((r, idx) => {
+            const margin = idx > 0 ? 'margin-left: -4px;' : '';
+            stackHtml += `<span style="${margin} font-size: 0.9em;">${REACTION_EMOJIS[r] || '👍'}</span>`;
+        });
+        
+        const countText = resultData.reactions_count > 0 ? ` ${resultData.reactions_count}` : '';
+        if (resultData.reactions_count > 0) {
+            countSpan.innerHTML = `· ${stackHtml} ${countText}`;
+        } else {
+            countSpan.innerHTML = '';
+        }
+    }
+}
+
 // -- HÀM TẢI BÌNH LUẬN --
-async function loadComments(postId) {
+async function loadComments(postId, silent = false) {
     const spinner = document.getElementById('commentLoadingSpinner');
     const listContainer = document.getElementById('commentList');
-    spinner.classList.remove('d-none');
-    listContainer.classList.add('d-none');
-    listContainer.innerHTML = '';
     
+    if (!silent) {
+        spinner.classList.remove('d-none');
+        listContainer.classList.add('d-none');
+        listContainer.innerHTML = '';
+    }
+    
+    // Hàm render 1 bình luận (dùng chung cho gốc & phản hồi)
+    window.renderCommentHtml = (comment, isReply = false) => {
+        const avatar = comment.author.avatar || 'https://ui-avatars.com/api/?name=User';
+        const paddingLeft = isReply ? 'ms-5 mt-2' : 'mb-3';
+        const imgSize = isReply ? '28' : '36';
+        
+        let mainActionBtnClass = 'comment-like-btn cursor-pointer fw-bold';
+        let mainActionBtnContent = 'Thích';
+        
+        if (comment.current_user_reaction) {
+            const type = comment.current_user_reaction;
+            mainActionBtnClass += ` reacted-${type.toLowerCase()}`;
+            switch(type) {
+                case 'LIKE': mainActionBtnContent = 'Thích'; break;
+                case 'LOVE': mainActionBtnContent = 'Yêu thích'; break;
+                case 'HAHA': mainActionBtnContent = 'Haha'; break;
+                case 'WOW': mainActionBtnContent = 'Wow'; break;
+                case 'SAD': mainActionBtnContent = 'Buồn'; break;
+                case 'ANGRY': mainActionBtnContent = 'Phẫn nộ'; break;
+            }
+        }
+        
+        let stackHtml = '';
+        if (comment.top_reactions && comment.top_reactions.length > 0) {
+            const REACTION_EMOJIS = { 'LIKE': '👍', 'LOVE': '❤️', 'HAHA': '😂', 'WOW': '😮', 'SAD': '😢', 'ANGRY': '😡' };
+            comment.top_reactions.forEach((r, idx) => {
+                const margin = idx > 0 ? 'margin-left: -4px;' : '';
+                stackHtml += `<span style="${margin} font-size: 0.9em;">${REACTION_EMOJIS[r] || '👍'}</span>`;
+            });
+        }
+        const likeCountText = comment.reactions_count > 0 ? `· ${stackHtml} ${comment.reactions_count}` : '';
+        
+        return `
+        <div class="d-flex gap-2 ${paddingLeft}">
+            <img src="${avatar}" class="rounded-circle mt-1" width="${imgSize}" height="${imgSize}" style="object-fit: cover;">
+            <div class="flex-grow-1">
+                <div class="bg-dark rounded-4 p-2 px-3 d-inline-block" style="border: 1px solid rgba(255,255,255,0.1);">
+                    <h6 class="mb-0 fw-bold text-white small">${comment.author.display_name}</h6>
+                    <span class="text-white small">${comment.content}</span>
+                </div>
+                <div class="text-muted-custom small ms-3 mt-1 d-flex gap-3 align-items-center">
+                    <div class="position-relative reaction-container">
+                        <span class="${mainActionBtnClass}" data-comment-id="${comment.id}">${mainActionBtnContent}</span>
+                        <div class="reaction-popover shadow-lg rounded-pill px-2 py-1 d-flex gap-1" style="bottom: 100%; transform-origin: bottom left; margin-bottom: 5px;">
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="LIKE" data-comment-id="${comment.id}" title="Thích">👍</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="LOVE" data-comment-id="${comment.id}" title="Yêu thích">❤️</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="HAHA" data-comment-id="${comment.id}" title="Haha">😂</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="WOW" data-comment-id="${comment.id}" title="Wow">😮</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="SAD" data-comment-id="${comment.id}" title="Buồn">😢</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="ANGRY" data-comment-id="${comment.id}" title="Phẫn nộ">😡</button>
+                        </div>
+                    </div>
+                    <span class="cursor-pointer fw-bold comment-reply-btn" data-comment-id="${comment.id}" data-author-name="${comment.author.display_name}">Phản hồi</span>
+                    <span>${timeSince(comment.created_at)}</span>
+                    <span class="comment-like-count">${likeCountText}</span>
+                </div>
+            </div>
+        </div>
+        `;
+    };
+
     try {
         const response = await fetch(`/api/v1/posts/${postId}/comments/`);
         const data = await response.json();
         
         if (data.success) {
+            let fullHtml = '';
             if (data.data.length === 0) {
-                listContainer.innerHTML = '<div class="text-center text-muted-custom py-3">Chưa có bình luận nào. Hãy là người đầu tiên!</div>';
+                fullHtml = '<div class="text-center text-muted-custom py-3">Chưa có bình luận nào. Hãy là người đầu tiên!</div>';
             } else {
                 data.data.forEach(comment => {
-                    const avatar = comment.author.avatar || 'https://ui-avatars.com/api/?name=User';
-                    const html = `
-                    <div class="d-flex gap-2 mb-3">
-                        <img src="${avatar}" class="rounded-circle mt-1" width="36" height="36" style="object-fit: cover;">
-                        <div class="flex-grow-1">
-                            <div class="bg-dark rounded-4 p-2 px-3 d-inline-block" style="border: 1px solid rgba(255,255,255,0.1);">
-                                <h6 class="mb-0 fw-bold text-white small">${comment.author.display_name}</h6>
-                                <span class="text-white small">${comment.content}</span>
-                            </div>
-                            <div class="text-muted-custom small ms-3 mt-1 d-flex gap-3">
-                                <span class="cursor-pointer fw-bold">Thích</span>
-                                <span class="cursor-pointer fw-bold">Phản hồi</span>
-                                <span>${timeSince(comment.created_at)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    `;
-                    listContainer.insertAdjacentHTML('beforeend', html);
+                    fullHtml += window.renderCommentHtml(comment, false);
+                    if (comment.replies && comment.replies.length > 0) {
+                        comment.replies.forEach(reply => {
+                            fullHtml += window.renderCommentHtml(reply, true);
+                        });
+                    }
                 });
             }
-            spinner.classList.add('d-none');
-            listContainer.classList.remove('d-none');
+            listContainer.innerHTML = fullHtml;
+            
+            if (!silent) {
+                spinner.classList.add('d-none');
+                listContainer.classList.remove('d-none');
+            }
         }
     } catch (error) {
         console.error('Error loading comments:', error);
-        spinner.classList.add('d-none');
-        listContainer.classList.remove('d-none');
+        if (!silent) {
+            spinner.classList.add('d-none');
+            listContainer.classList.remove('d-none');
+        }
         listContainer.innerHTML = '<div class="text-center text-danger py-3">Lỗi tải bình luận.</div>';
     }
 }
@@ -610,3 +732,210 @@ function updateReactionUI(postCard, resultData) {
         countSpan.innerText = resultData.reactions_count > 0 ? resultData.reactions_count : '';
     }
 }
+
+// --- WEBSOCKET CHO BẢNG TIN (LIVE FEED) ---
+document.addEventListener('DOMContentLoaded', () => {
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const feedSocket = new WebSocket(protocol + window.location.host + '/ws/feed/');
+
+    feedSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        
+        if (data.type === 'reaction_update') {
+            const reactionData = data.data;
+            const postCard = document.querySelector(`.post-card[data-post-id="${reactionData.post_id}"]`);
+            if (postCard) {
+                const stackDiv = postCard.querySelector('.reaction-stack');
+                const countSpan = postCard.querySelector(`#reaction-count-${reactionData.post_id}`);
+                
+                let stackHtml = '';
+                const REACTION_EMOJIS = { 'LIKE': '👍', 'LOVE': '❤️', 'HAHA': '😂', 'WOW': '😮', 'SAD': '😢', 'ANGRY': '😡' };
+                reactionData.top_reactions.forEach((r, idx) => {
+                    const margin = idx > 0 ? 'margin-left: -4px;' : '';
+                    stackHtml += `<span style="${margin} font-size: 0.9em;">${REACTION_EMOJIS[r] || '👍'}</span>`;
+                });
+                
+                if (stackDiv) stackDiv.innerHTML = stackHtml;
+                if (countSpan) countSpan.innerText = reactionData.reactions_count > 0 ? reactionData.reactions_count : '';
+            }
+        } else if (data.type === 'new_comment') {
+            const comment = data.data;
+            // Chỉ cập nhật nếu Bảng bình luận của bài viết này ĐANG MỞ
+            if (window.currentCommentPostId === comment.post_id) {
+                const listContainer = document.getElementById('commentList');
+                if (listContainer) {
+                    // Nếu đang báo 'Chưa có bình luận nào' thì xóa đi
+                    if (listContainer.innerHTML.includes('Chưa có bình luận nào')) {
+                        listContainer.innerHTML = '';
+                    }
+                    
+                    const isReply = !!comment.parent_id;
+                    const html = window.renderCommentHtml(comment, isReply);
+                    listContainer.insertAdjacentHTML('beforeend', html);
+                }
+            }
+            
+            // Luôn cập nhật số đếm trên giao diện bài viết (Dù có đang mở pop-up hay không)
+            const postCard = document.querySelector(`.post-card[data-post-id="${comment.post_id}"]`);
+            if (postCard) {
+                const commentsTextSpan = postCard.querySelector('.text-muted-custom.small span.me-3');
+                if (commentsTextSpan) {
+                    let text = commentsTextSpan.innerHTML; // vd: "<i class='bi bi-chat-dots me-1'></i> 2 Bình luận"
+                    let numMatch = text.match(/(\d+)/);
+                    if (numMatch) {
+                        let newNum = parseInt(numMatch[1]) + 1;
+                        commentsTextSpan.innerHTML = text.replace(numMatch[1], newNum);
+                    } else {
+                        // Nếu chưa có số đếm (0 bình luận)
+                        commentsTextSpan.innerHTML = "<i class='bi bi-chat-dots me-1'></i> 1 Bình luận";
+                    }
+                }
+            }
+        }
+    };
+    
+    feedSocket.onerror = function(err) {
+        console.error('Feed WebSocket error:', err);
+    };
+});
+
+// --- GIAI ĐOẠN 6: CHIA SẺ BÀI VIẾT QUA CHAT ---
+document.addEventListener('DOMContentLoaded', () => {
+    const sharePostModal = document.getElementById('sharePostModal');
+    let shareTargetConversationId = null;
+    let sharePostId = null;
+
+    if (sharePostModal) {
+        // 1. Khởi tạo Bootstrap Modal
+        const bsShareModal = new bootstrap.Modal(sharePostModal);
+
+        // 2. Lắng nghe nút 'Chia sẻ' trên từng bài viết (event delegation trên feedContainer)
+        document.body.addEventListener('click', async (e) => {
+            const shareBtn = e.target.closest('.btn-share');
+            if (shareBtn) {
+                e.preventDefault();
+                const postCard = shareBtn.closest('.post-card');
+                sharePostId = postCard.dataset.postId;
+                
+                // Mở Modal Lớp 1
+                document.getElementById('shareModalLayer1').style.display = 'block';
+                document.getElementById('shareModalLayer2').style.display = 'none';
+                
+                // Load danh sách bạn bè / cuộc trò chuyện
+                const friendListContainer = document.getElementById('shareFriendList');
+                friendListContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-secondary" role="status"></div></div>';
+                bsShareModal.show();
+                
+                try {
+                    const res = await fetch('/api/v1/chat/conversations/');
+                    const data = await res.json();
+                    if (data.success) {
+                        let html = '';
+                        if (data.data.length === 0) {
+                            html = '<div class="p-3 text-center text-muted-custom">Bạn chưa có cuộc trò chuyện nào. Hãy kết bạn và nhắn tin trước nhé!</div>';
+                        } else {
+                            data.data.forEach(conv => {
+                                // API list_user_conversations trả về to_dict(viewer=user), nên có key `other_user`
+                                const otherUser = conv.other_user;
+                                if (otherUser) {
+                                    const avatar = otherUser.avatar || 'https://ui-avatars.com/api/?name=User';
+                                    html += `
+                                        <button class="list-group-item list-group-item-action bg-transparent text-white border-secondary d-flex align-items-center gap-3 share-friend-item" data-conversation-id="${conv.id}">
+                                            <img src="${avatar}" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                                            <span class="fw-bold">${otherUser.display_name}</span>
+                                        </button>
+                                    `;
+                                }
+                            });
+                        }
+                        friendListContainer.innerHTML = html;
+                    }
+                } catch (err) {
+                    console.error('Error fetching conversations:', err);
+                    friendListContainer.innerHTML = '<div class="p-3 text-danger text-center">Không thể tải danh sách.</div>';
+                }
+            }
+        });
+
+        // 3. Xử lý click chọn bạn bè (Lớp 1 -> Lớp 2)
+        document.getElementById('shareFriendList').addEventListener('click', (e) => {
+            const friendItem = e.target.closest('.share-friend-item');
+            if (friendItem) {
+                shareTargetConversationId = friendItem.dataset.conversationId;
+                
+                // Chuyển sang Lớp 2
+                document.getElementById('shareModalLayer1').style.display = 'none';
+                document.getElementById('shareModalLayer2').style.display = 'block';
+                
+                // Cập nhật thông tin Lớp 2
+                document.getElementById('shareOptionalMessage').value = '';
+                
+                // Lấy thông tin bài viết để làm preview
+                const postCard = document.querySelector(`.post-card[data-post-id="${sharePostId}"]`);
+                const authorName = postCard.querySelector('.fw-bold.text-white.text-decoration-none').innerText;
+                document.getElementById('previewSharePostContent').innerHTML = `
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-reply-fill text-muted"></i>
+                        <span class="small text-muted-custom">Đang đính kèm bài viết của <b>${authorName}</b></span>
+                    </div>
+                `;
+            }
+        });
+
+        // 4. Nút Quay lại (Lớp 2 -> Lớp 1)
+        const btnBack = document.getElementById('btnBackToLayer1');
+        if (btnBack) {
+            btnBack.addEventListener('click', () => {
+                document.getElementById('shareModalLayer2').style.display = 'none';
+                document.getElementById('shareModalLayer1').style.display = 'block';
+                shareTargetConversationId = null;
+            });
+        }
+
+        // 5. Gửi trong Chat
+        const btnConfirmShare = document.getElementById('btnConfirmShare');
+        if (btnConfirmShare) {
+            btnConfirmShare.addEventListener('click', async () => {
+                if (!shareTargetConversationId || !sharePostId) return;
+                
+                const message = document.getElementById('shareOptionalMessage').value.trim();
+                
+                // Disable button
+                btnConfirmShare.disabled = true;
+                btnConfirmShare.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+                
+                try {
+                    const res = await fetch(`/api/v1/chat/conversations/${shareTargetConversationId}/messages/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({
+                            content: message,
+                            shared_post_id: sharePostId
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        bsShareModal.hide();
+                        if (window.showToast) {
+                            window.showToast('Đã gửi bài viết thành công!', true);
+                        } else {
+                            alert('Đã gửi bài viết thành công!');
+                        }
+                    } else {
+                        alert(data.error.message || 'Có lỗi xảy ra');
+                    }
+                } catch (err) {
+                    console.error('Error sending share message:', err);
+                    alert('Lỗi kết nối. Vui lòng thử lại sau.');
+                } finally {
+                    btnConfirmShare.disabled = false;
+                    btnConfirmShare.innerHTML = 'Gửi trong Chat';
+                }
+            });
+        }
+    }
+});

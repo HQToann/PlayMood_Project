@@ -63,6 +63,48 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(() => {
         // Do nothing if not authenticated
     });
+
+    // 2. Thiết lập Real-time WebSocket cho Thông báo
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const notifSocket = new WebSocket(protocol + window.location.host + '/ws/notifications/');
+
+    notifSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.message === 'new_notification') {
+            const notif = data.notification;
+            
+            // Cập nhật số đếm chuông
+            document.querySelectorAll('.bell-badge').forEach(b => {
+                let count = parseInt(b.textContent) || 0;
+                count += 1;
+                b.textContent = count > 99 ? '99+' : count;
+                b.style.display = 'inline-block';
+                
+                const icon = b.parentElement.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-bell');
+                    icon.classList.add('bi-bell-fill', 'text-white');
+                }
+            });
+            
+            // Hiển thị Toast
+            if (window.showToast) {
+                let shortMsg = notif.message.length > 50 ? notif.message.substring(0, 47) + '...' : notif.message;
+                window.showToast(shortMsg, true);
+            }
+        } else if (data.message === 'new_chat_message') {
+            const notif = data.notification;
+            
+            // Nếu có icon chat-badge ở đâu đó, ta có thể đánh dấu, nhưng hiện tại chỉ show Toast
+            if (window.showToast) {
+                window.showToast(`<strong>${notif.title}</strong><br>${notif.message}`, true);
+            }
+        }
+    };
+    
+    notifSocket.onerror = function(err) {
+        console.error('Notification WebSocket error:', err);
+    };
 });
 
 

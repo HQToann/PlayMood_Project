@@ -81,3 +81,14 @@ class Comment(models.Model):
     class Meta:
         db_table = 'posts_comment'
         ordering = ['created_at'] # Bình luận cũ xếp trên, mới xếp dưới
+
+class CommentReaction(models.Model):
+    """Lưu trữ cảm xúc cho bình luận"""
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment_reactions')
+    reaction_type = models.CharField(max_length=10, choices=PostReaction.REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'posts_comment_reaction'
+        unique_together = ['comment', 'user']

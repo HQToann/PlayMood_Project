@@ -1,171 +1,1468 @@
 # Hướng dẫn Triển khai Giai đoạn 6: Tích hợp Giao tiếp Xuyên Ứng dụng (Chia sẻ qua Chat)
 
-Đây là giai đoạn thú vị nhất! Chúng ta sẽ nâng cấp ứng dụng `chat` cũ để nó có thể "chuyên chở" một Bài viết (từ ứng dụng `posts` mới tạo) gửi thẳng vào hộp thoại tin nhắn (Messenger).
+Đây là bản hoàn chỉnh cập nhật nhất (sau khi đã fix lỗi hiển thị, logic real-time, và API).
 
 ---
+## Bước 1: Model Chat (`chat/models.py`)
 
-## Bước 1: Nâng cấp Model của App Chat
-
-Mở file `chat/models.py`. Bạn cần thêm trường `shared_post` vào bảng `Message`. Vì chúng ta đang ở trong app `chat`, ta phải import lười (lazy load) hoặc dùng string `posts.Post` để tránh lỗi vòng lặp import (Circular Import).
-
-**File: `chat/models.py`**
+Cập nhật `Message.to_dict()` để không bị lỗi `display_name` và thêm `shared_post`.
 ```python
-# (Giữ nguyên các import cũ của bạn)
+import uuid
+from django.db import models
+from accounts.models import User
+from music.models import Song
+from music_platform.utils import optimize_cloudinary_url
+
+class Conversation(models.Model):
+    """
+    Lưu trữ thông tin cuộc trò chuyện giữa 2 (hoặc nhiều) người.
+    Trong phạm vi ứng dụng chat 1-1, số lượng participants thường là 2.
+    """
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    participants = models.ManyToManyField(
+        User,
+        related_name='conversations',
+        verbose_name='Người tham gia',
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày tạo',
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Cập nhật lần cuối',
+    )
+
+    class Meta:
+        db_table = 'chat_conversation'
+        verbose_name = 'Cuộc trò chuyện'
+        verbose_name_plural = 'Cuộc trò chuyện'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Conversation {self.id}"
+
+    def to_dict(self, viewer=None):
+        """
+        Serialize Conversation thành dict.
+        viewer: truyền vào User hiện tại để tự động lấy ra người kia (other_user).
+        """
+
+        data = {
+            'id': str(self.id),
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+        }
+
+        # Nếu biết ai đang xem tìm người còn lại trong cuộc trò chuyện
+        if viewer:
+            other_participants = self.participants.exclude(id=viewer.id)
+            if other_participants.exists():
+                other = other_participants.first()
+                data['other_user'] = other.to_dict()
+
+        return data
 
 class Message(models.Model):
-    # Các trường dữ liệu cũ giữ nguyên...
-    conversation = models.ForeignKey(Conversation, ...)
-    sender = models.ForeignKey(User, ...)
-    text_content = models.TextField(...)
-    
-    # ... (Các trường chia sẻ nhạc cũ) ...
-    shared_song = models.ForeignKey('music.Song', ...)
-    
-    # 🌟 TRƯỜNG MỚI THÊM VÀO ĐỂ HỖ TRỢ CHIA SẺ BÀI VIẾT 🌟
+    """
+    Lưu trữ thông tin chi tiết của 1 tin nhắn.
+    Bao gồm text, ảnh, bài hát chia sẻ và thả tim (reactions).
+    """
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='Cuộc trò chuyện',
+    )
+
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null = True,
+        verbose_name='Người gửi',
+    )
+
+    # Nội dung text (có thể rỗng nếu chỉ gửi ảnh/nhạc)
+    content = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Nội dung',
+    )
+
+    # URL ảnh được lưu trên cloudinary
+    image_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name='Ảnh đính kèm',
+    )
+
+    # Chia sẻ bài hát (có thể tuỳ biến thêm Playlist nếu cần)
+    shared_song = models.ForeignKey(
+        Song,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Bài hát chia sẻ'
+    )
+
+    shared_album = models.ForeignKey(
+        'music.Album',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Album chia sẻ'
+    )
+
+    shared_playlist = models.ForeignKey(
+        'playlists.Playlist',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Playlist chia sẻ'
+    )
+
     shared_post = models.ForeignKey(
-        'posts.Post', # Trỏ sang app posts
-        on_delete=models.SET_NULL, 
-        null=True, blank=True, 
-        related_name='shared_in_messages',
-        verbose_name='Bài viết được chia sẻ'
+        'posts.Post',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Bài viết chia sẻ'
     )
-```
 
-Sau khi sửa xong, **BẮT BUỘC** phải chạy lại lệnh cập nhật Database:
-```bash
-python manage.py makemigrations chat
-python manage.py migrate
-```
+    # Lưu danh sách thả cảm xúc dạng JSON dict
+    reactions = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name='Cảm xúc',
+    )
 
+    # Trạng thái đã xem tin nhắn hay chưa
+    is_read = models.BooleanField(
+        default=False,
+        verbose_name='Đã xem',
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+        verbose_name='Ngày gửi',
+    )
+
+    class Meta:
+        db_table='chat_message'
+        verbose_name='Tin nhắn'
+        verbose_name_plural='Tin nhắn'
+        ordering = ['created_at'] # Xếp tin cũ lên trên, tin mới ở dưới
+
+    def __str__(self):
+        return f"Message {self.id} by {self.sender}"
+
+    def to_dict(self):
+        """
+        Serialize Message thành dict cho API.
+        """
+        return {
+            'id': str(self.id),
+            'conversation_id': str(self.conversation_id),
+            'sender': self.sender.to_dict() if self.sender else None,
+            'content': self.content,
+            'image_url': optimize_cloudinary_url(self.image_url, 'image') if self.image_url else None,
+            'shared_song': self.shared_song.to_dict() if self.shared_song else None,
+            'shared_album': self.shared_album.to_dict() if self.shared_album else None,
+            'shared_playlist': self.shared_playlist.to_dict(include_song_count=False) if self.shared_playlist else None,
+            'shared_post': {
+                'id': str(self.shared_post.id),
+                'content': self.shared_post.content,
+                'author': self.shared_post.author.get_display_name(),
+            } if self.shared_post else None,
+            'reactions': self.reactions,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat(),
+        }
+```
 ---
+## Bước 2: Services Chat (`chat/services.py`)
 
-## Bước 2: Nâng cấp Logic Tạo Tin nhắn (`chat/services.py`)
-
-Mở file `chat/services.py` và tìm hàm tạo tin nhắn (thường là `create_message` hoặc `save_message`). Bạn cần cho phép nó nhận thêm tham số `shared_post_id`.
-
-**File: `chat/services.py`**
+Thêm `shared_post_id` vào `create_message`.
 ```python
-# (Tìm hàm tạo tin nhắn hiện tại của bạn và bổ sung)
+import logging
+from social.models import Follow
+from music.models import Song
+from .models import Conversation, Message
+from .exceptions import NotFriendsError
+from .validators import validate_message_content
+from .selectors import get_conversation_by_id
 
-def create_message(conversation_id, sender, text_content, ... , shared_post_id=None):
+logger = logging.getLogger(__name__)
+
+def check_is_friend(user, target_user) -> bool:
+    """
+    Kiểm tra xem 2 người có follow chéo nhau không (bạn bè).
+    """
+    user_follows_target = Follow.objects.filter(follower=user, following=target_user).exists()
+    target_follows_user = Follow.objects.filter(follower=target_user, following=user).exists()
+    return user_follows_target and target_follows_user
+
+def get_or_create_direct_conversation(user, target_user) -> tuple[Conversation, bool]:
+    """
+    Tạo hoặc lấy ra cuộc trò chuyện 1-1. Trả về (Conversation, created_flag)
+    """
+
+    # Ràng buộc nghiệp vụ: Chỉ bạn bè mới được chat với nhau
+    if not check_is_friend(user, target_user):
+        raise NotFriendsError()
+
+    # Lấy các đoạn chat có user tham gia
+    conversations = Conversation.objects.filter(participants=user).filter(participants=target_user)
+
+    # Tìm đoạn chat 1-1 (chỉ có 2 người)
+    for conv in conversations:
+        if conv.participants.count() == 2:
+            return conv, False
+
+    # Nếu chưa có, tạo mới
+    new_conv = Conversation.objects.create()
+    new_conv.participants.add(user, target_user)
+    logger.info('Cuộc trò chuyện mới được tạo giữa %s và %s', user.username, target_user.username)
+    return new_conv, True
+
+def create_message(sender, conversation_id, data: dict) -> Message:
+    """
+    Tạo tin nhắn mới và lưu vào csdl
+    """
+    content = data.get('content', '')
+    image_url = data.get('image_url', None)
+    shared_song_id = data.get('shared_song_id', None)
+    shared_album_id = data.get('shared_album_id', None)
+    shared_playlist_id = data.get('shared_playlist_id', None)
+    shared_post_id = data.get('shared_post_id', None)
+
+    # 1. Validation
+    validate_message_content(content, image_url, shared_song_id, shared_album_id, shared_playlist_id, shared_post_id)
+
+    # 2. Lấy conversation (đồng thời kiểm tra quyền)
+    conversation = get_conversation_by_id(conversation_id, sender)
+
+    # 3. Lấy Object đính kèm nếu có
+    from music.models import Album
+    from playlists.models import Playlist
     
-    # Code kiểm tra quyền cũ...
-    
-    msg = Message(
-        conversation_id=conversation_id,
-        sender=sender,
-        text_content=text_content
-    )
-    
-    # ... (Gắn file đính kèm cũ)
-    
-    # 🌟 LOGIC MỚI: Gắn Bài viết vào tin nhắn
+    song_obj = None
+    if shared_song_id:
+        song_obj = Song.objects.get(id=shared_song_id)
+        
+    album_obj = None
+    if shared_album_id:
+        album_obj = Album.objects.get(id=shared_album_id)
+        
+    playlist_obj = None
+    if shared_playlist_id:
+        playlist_obj = Playlist.objects.get(id=shared_playlist_id)
+        
+    post_obj = None
     if shared_post_id:
-        from posts.models import Post # Import cục bộ
-        try:
-            post = Post.objects.get(id=shared_post_id)
-            msg.shared_post = post
-        except Post.DoesNotExist:
-            pass # Bỏ qua nếu không tìm thấy bài
+        from posts.models import Post
+        post_obj = Post.objects.get(id=shared_post_id)
+
+    # 4. Lưu tin nhắn mới
+    message = Message.objects.create(
+        conversation=conversation,
+        sender=sender,
+        content=content,
+        image_url=image_url,
+        shared_song=song_obj,
+        shared_album=album_obj,
+        shared_playlist=playlist_obj,
+        shared_post=post_obj
+    )
+
+    # Cập nhật thời gian updated_at của Conversation để đẩy nó lên đầu danh sách chat
+    conversation.save()
+
+    logger.info('Tin nhắn mới được gửi bởi %s trong cuộc trò chuyện %s', sender.username, conversation_id)
+
+    # Bắn thông báo Toast qua WebSocket cho tất cả người nhận
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    channel_layer = get_channel_layer()
+    if channel_layer:
+        for participant in conversation.participants.exclude(id=sender.id):
+            async_to_sync(channel_layer.group_send)(
+                f'user_{participant.id}',
+                {
+                    'type': 'notification_message',
+                    'message': 'new_chat_message',
+                    'notification_data': {
+                        'title': f'Tin nhắn từ {sender.get_display_name()}',
+                        'message': content[:50] + ('...' if len(content) > 50 else '') if content else 'Đã gửi một đính kèm'
+                    }
+                }
+            )
+
+    return message
+
+def mark_messages_as_read(conversation_id, user) -> int:
+    """
+    Đánh dấu toàn bộ tin nhắn của đối phương trong cuộc trò chuyện này là đã đọc
+    """
+    conversation = get_conversation_by_id(conversation_id, user)
+
+    # Chỉ update những tin nhắn do người khác gửi và chưa đọc
+    unread_messages = conversation.messages.exclude(sender=user).filter(is_read=False)
+    updated_count = unread_messages.update(is_read=True)
+
+    if updated_count > 0:
+        logger.info('%s đã đọc %d tin nhắn trong cuộc trò chuyện %s', user.username, updated_count, conversation_id)
+    return updated_count
+```
+---
+## Bước 3: HTTP API POST (`chat/views.py`)
+
+Chúng ta quyết định dùng HTTP POST để gửi tin nhắn thay vì WebSocket để Bảng tin có thể chia sẻ dễ dàng hơn!
+```python
+import json
+from django.views import View
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+# Import các file nghiệp vụ
+from . import selectors
+from . import services
+from .exceptions import ChatException
+from accounts.exceptions import AppException
+
+def handle_exception(e):
+    """Hàm tiện ích để chuyển đổi Exception thành JSON Error Response"""
+    if isinstance(e, AppException):
+        status_code = 400
+        if e.error_code == 'NOT_FOUND':
+            status_code = 404
+        elif e.error_code in ['NOT_FRIENDS', 'PERMISSION_DENIED']:
+            status_code = 403
             
-    msg.save()
-    return msg
-```
-
----
-
-## Bước 3: Nâng cấp HTML Chat Widget (Giao diện Tin nhắn)
-
-Mở file HTML hiển thị khung chat (`chat_widget.html` hoặc tương tự). Khi một Message có chứa `shared_post`, ta phải vẽ một khung nhỏ (Card) hiển thị bài viết đó ra.
-
-**File: `templates/includes/chat_widget.html` (Hoặc nơi bạn render tin nhắn)**
-```html
-<!-- Bên trong vòng lặp hiển thị tin nhắn -->
-{% if message.shared_post %}
-    <div class="shared-post-attachment mt-2 p-2 rounded bg-dark border border-secondary" style="width: 250px;">
-        <div class="d-flex align-items-center mb-1">
-            <!-- Avatar Tác giả bài viết -->
-            <img src="{{ message.shared_post.author.avatar.url }}" width="24" height="24" class="rounded-circle me-2">
-            <span class="small fw-bold text-white">{{ message.shared_post.author.display_name }}</span>
-        </div>
-        <!-- Nội dung rút gọn -->
-        <p class="small text-muted-custom mb-1 text-truncate">{{ message.shared_post.content }}</p>
-        
-        <!-- Nếu bài viết có ảnh, hiển thị ảnh đầu tiên làm Cover -->
-        {% with first_image=message.shared_post.media.first %}
-        {% if first_image %}
-            <img src="{{ first_image.file_url }}" class="img-fluid rounded mt-1" style="max-height: 120px; object-fit: cover; width: 100%;">
-        {% endif %}
-        {% endwith %}
-        
-        <a href="/posts/{{ message.shared_post.id }}/" class="btn btn-sm btn-outline-light w-100 mt-2" style="font-size: 0.75rem;">Xem bài viết</a>
-    </div>
-{% endif %}
-```
-
----
-
-## Bước 4: Xử lý Modal 2 Lớp (Javascript)
-
-Cuối cùng, trong file `posts.js`, ta viết đoạn mã điều khiển Modal Chia sẻ. Khi bấm "Gửi", ta bắn tín hiệu WebSocket sang hệ thống Chat.
-
-```javascript
-// (Đặt code này trong posts.js)
-
-// Biến lưu trữ ID bài viết đang muốn chia sẻ
-let currentSharePostId = null; 
-
-// Khi bấm nút "Chia sẻ" trên 1 bài viết -> Lưu ID lại
-document.body.addEventListener('click', (e) => {
-    if (e.target.closest('.btn-share')) {
-        const postCard = e.target.closest('.post-card');
-        currentSharePostId = postCard.dataset.postId;
-        
-        // Chuyển Modal về Lớp 1 (Danh sách bạn bè)
-        document.getElementById('shareModalLayer1').style.display = 'block';
-        document.getElementById('shareModalLayer2').style.display = 'none';
-    }
-});
-
-// Khi chọn 1 người bạn (Từ Lớp 1)
-document.body.addEventListener('click', (e) => {
-    const friendItem = e.target.closest('.share-friend-item');
-    if (friendItem) {
-        const conversationId = friendItem.dataset.conversationId;
-        
-        // Lưu thông tin người nhận vào nút Gửi ở Lớp 2
-        document.getElementById('btnConfirmShare').dataset.conversationId = conversationId;
-        
-        // Hiệu ứng chuyển từ Lớp 1 -> Lớp 2 (Slide qua)
-        document.getElementById('shareModalLayer1').style.display = 'none';
-        document.getElementById('shareModalLayer2').style.display = 'block';
-    }
-});
-
-// Khi bấm nút "Gửi" cuối cùng (Ở Lớp 2)
-document.getElementById('btnConfirmShare').addEventListener('click', function() {
-    const conversationId = this.dataset.conversationId;
-    const optionalMessage = document.getElementById('shareOptionalMessage').value;
+        payload = {'code': e.error_code, 'message': e.message}
+        if hasattr(e, 'fields') and e.fields:
+            payload['fields'] = e.fields
+            
+        return JsonResponse({'success': False, 'error': payload}, status=status_code)
     
-    // GỬI QUA WEBSOCKET (Sử dụng lại chatSocket đã có của dự án)
-    if (window.chatSocket && window.chatSocket.readyState === WebSocket.OPEN) {
-        window.chatSocket.send(JSON.stringify({
-            'action': 'send_message',
-            'conversation_id': conversationId,
-            'message': optionalMessage,
-            'shared_post_id': currentSharePostId // 🌟 Biến mới cực quan trọng
-        }));
+    # Lỗi hệ thống không lường trước được
+    return JsonResponse({
+        'success': False, 
+        'error': {'code': 'SERVER_ERROR', 'message': str(e)}
+    }, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ConversationListView(View):
+    """
+    GET /api/v1/chat/conversations/
+    Lấy danh sách các cuộc trò chuyện của user hiện tại.
+    """
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            # Gọi hàm ở selectors.py
+            conversations = selectors.list_user_conversations(request.user)
+            return JsonResponse({'success': True, 'data': conversations})
+        except Exception as e:
+            return handle_exception(e)
+            
+    """
+    POST /api/v1/chat/conversations/
+    Tạo hoặc mở một cuộc trò chuyện 1-1 với bạn bè.
+    Body: { "target_user_id": "<uuid>" }
+    """
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            body = json.loads(request.body)
+            target_user_id = body.get('target_user_id')
+            
+            if not target_user_id:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Thiếu target_user_id'}}, status=400)
+                
+            from accounts.models import User
+            target_user = User.objects.get(id=target_user_id)
+            
+            # Gọi hàm ở services.py
+            conv, created = services.get_or_create_direct_conversation(request.user, target_user)
+            
+            return JsonResponse({
+                'success': True, 
+                'data': conv.to_dict(viewer=request.user),
+                'is_new': created
+            }, status=201 if created else 200)
+            
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Không tìm thấy người dùng'}}, status=404)
+        except Exception as e:
+            return handle_exception(e)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MessageListView(View):
+    """
+    GET /api/v1/chat/conversations/<conversation_id>/messages/
+    Lấy lịch sử tin nhắn của một cuộc trò chuyện (có phân trang).
+    """
+    def get(self, request, conversation_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            page = int(request.GET.get('page', 1))
+            page_size = int(request.GET.get('page_size', 20))
+            
+            # Gọi hàm ở selectors.py
+            result = selectors.list_messages_in_conversation(
+                conversation_id=conversation_id,
+                user=request.user,
+                page=page,
+                page_size=page_size
+            )
+            return JsonResponse({'success': True, 'data': result})
+            
+        except ValueError:
+            return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Tham số phân trang không hợp lệ'}}, status=400)
+        except Exception as e:
+            return handle_exception(e)
+            
+    def post(self, request, conversation_id):
+        """
+        POST /api/v1/chat/conversations/<conversation_id>/messages/
+        Gửi tin nhắn thông qua API (Dùng cho tính năng chia sẻ)
+        """
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            body = json.loads(request.body)
+            # Gọi services để tạo tin nhắn
+            msg = services.create_message(request.user, conversation_id, body)
+            
+            # Bắn qua WebSocket để real-time cho các thành viên trong room
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f'chat_{conversation_id}',
+                    {
+                        'type': 'chat_message',
+                        'message_data': msg.to_dict()
+                    }
+                )
+            
+            return JsonResponse({'success': True, 'data': msg.to_dict()}, status=201)
+        except Exception as e:
+            return handle_exception(e)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadImageView(View):
+    """
+    POST /api/v1/chat/upload-image/
+    Upload ảnh lên server/cloudinary và trả về URL để gửi qua WebSockets.
+    """
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+            
+        try:
+            image_file = request.FILES.get('image')
+            if not image_file:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Không có file ảnh'}}, status=400)
+                
+            # Kiểm tra định dạng
+            allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+            if image_file.content_type not in allowed_types:
+                return JsonResponse({'success': False, 'error': {'code': 'VALIDATION_ERROR', 'message': 'Định dạng ảnh không hợp lệ'}}, status=400)
+                
+            # Upload dùng default_storage (sẽ tự động đẩy lên Cloudinary theo settings)
+            from django.core.files.storage import default_storage
+            import uuid
+            
+            ext = image_file.name.split('.')[-1]
+            filename = f"chat_images/{uuid.uuid4()}.{ext}"
+            path = default_storage.save(filename, image_file)
+            url = default_storage.url(path)
+            
+            # Đảm bảo dùng HTTPS cho Cloudinary URL nếu có thể (nhưng default_storage thường tự lo)
+            return JsonResponse({
+                'success': True, 
+                'data': {
+                    'image_url': url
+                }
+            })
+            
+        except Exception as e:
+            return handle_exception(e)
+
+```
+---
+## Bước 4: Frontend Logic (`static/js/posts.js`)
+
+Logic Modal Chia sẻ gọi fetch API và reload bằng `window.showToast()`.
+```javascript
+// File: static/js/posts.js
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// -- TẢI BẢNG TIN (FEED) --
+async function loadFeed() {
+    const feedContainer = document.getElementById('postsFeedContainer');
+    if(!feedContainer) return;
+
+    try {
+        const res = await fetch('/api/v1/posts/?page=1&page_size=10');
+        const data = await res.json();
+        if(data.success) {
+            renderFeed(data.data.items);
+        }
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+function timeSince(dateString) {
+    const date = new Date(dateString);
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " năm";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " tháng";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " ngày";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " giờ";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " phút";
+    return Math.floor(seconds) + " giây";
+}
+
+function renderFeed(posts) {
+    const feedContainer = document.getElementById('postsFeedContainer');
+    feedContainer.innerHTML = ''; // Clear loading
+    
+    if(posts.length === 0) {
+        feedContainer.innerHTML = '<div class="text-center text-muted-custom py-5">Chưa có bài viết nào. Hãy là người đầu tiên đăng bài!</div>';
+        return;
+    }
+
+    posts.forEach(post => {
+        const avatar = post.author.avatar || 'https://ui-avatars.com/api/?name=User';
         
-        // Đóng Modal, thông báo thành công
-        const modal = bootstrap.Modal.getInstance(document.getElementById('sharePostModal'));
-        modal.hide();
-        alert('Đã gửi bài viết qua tin nhắn!');
-        document.getElementById('shareOptionalMessage').value = ''; // Reset ô nhập
-    } else {
-        alert('Kết nối chat bị gián đoạn!');
+        let gridHtml = '';
+        if(post.media && post.media.length > 0) {
+            const count = post.media.length;
+            const gridClass = count === 1 ? '' : count === 2 ? 'grid-2' : count === 3 ? 'grid-3' : 'grid-4';
+            gridHtml = `<div class="post-image-grid ${gridClass} mt-2">`;
+            post.media.slice(0, 4).forEach((media, idx) => {
+                if(idx === 3 && count > 4) {
+                    gridHtml += `<div class="grid-img more-overlay" style="background-image: url('${media.url}');"><span>+${count - 3}</span></div>`;
+                } else {
+                    gridHtml += `<div class="grid-img" style="background-image: url('${media.url}');"></div>`;
+                }
+            });
+            gridHtml += `</div>`;
+        }
+
+        let sharedSongHtml = '';
+        if (post.shared_song) {
+            sharedSongHtml = `
+            <div class="mt-2 p-3 bg-dark rounded d-flex align-items-center gap-3 cursor-pointer" onclick="playSong('${post.shared_song.id}')" style="border: 1px solid rgba(255,255,255,0.1);">
+                <div class="position-relative">
+                    <img src="${post.shared_song.cover_image}" class="rounded" width="60" height="60" style="object-fit: cover;">
+                    <div class="position-absolute top-50 start-50 translate-middle text-white bg-dark bg-opacity-50 rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                        <i class="bi bi-play-fill"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="fw-bold text-white text-truncate">${post.shared_song.title}</div>
+                    <div class="text-muted-custom small text-truncate">${post.shared_song.artist}</div>
+                </div>
+            </div>`;
+        }
+
+        const REACTION_EMOJIS = {
+            'LIKE': '👍',
+            'LOVE': '❤️',
+            'HAHA': '😂',
+            'WOW': '😮',
+            'SAD': '😢',
+            'ANGRY': '😡'
+        };
+
+        let reactionStackHtml = '';
+        if (post.top_reactions && post.top_reactions.length > 0) {
+            post.top_reactions.forEach((r, idx) => {
+                const margin = idx > 0 ? 'margin-left: -8px;' : '';
+                reactionStackHtml += `<span style="${margin}">${REACTION_EMOJIS[r] || '👍'}</span>`;
+            });
+        }
+
+        let mainActionBtnClass = 'btn-link text-muted-custom text-decoration-none fw-bold btn-action react-trigger';
+        let mainActionBtnContent = '<i class="bi bi-hand-thumbs-up"></i> Thích';
+        
+        if (post.current_user_reaction) {
+            const type = post.current_user_reaction;
+            mainActionBtnClass += ` reacted-${type.toLowerCase()}`;
+            
+            let iconHtml = '';
+            let text = '';
+            switch(type) {
+                case 'LIKE': iconHtml = '<i class="bi bi-hand-thumbs-up-fill fs-5"></i>'; text = 'Thích'; break;
+                case 'LOVE': iconHtml = '<i class="bi bi-heart-fill fs-5"></i>'; text = 'Yêu thích'; break;
+                case 'HAHA': iconHtml = '<i class="bi bi-emoji-laughing-fill fs-5"></i>'; text = 'Haha'; break;
+                case 'WOW': iconHtml = '<i class="bi bi-emoji-surprise-fill fs-5"></i>'; text = 'Wow'; break;
+                case 'SAD': iconHtml = '<i class="bi bi-emoji-frown-fill fs-5"></i>'; text = 'Buồn'; break;
+                case 'ANGRY': iconHtml = '<i class="bi bi-emoji-angry-fill fs-5"></i>'; text = 'Phẫn nộ'; break;
+            }
+            mainActionBtnContent = `${iconHtml} ${text}`;
+        }
+
+        const html = `
+        <div class="post-card bg-card rounded-4 p-3 mb-4 shadow-sm" data-post-id="${post.id}">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="${avatar}" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                    <div>
+                        <h6 class="mb-0 fw-bold text-white">${post.author.display_name}</h6>
+                        <small class="text-muted-custom">${timeSince(post.created_at)} trước</small>
+                    </div>
+                </div>
+                <button class="btn btn-link text-muted-custom p-0"><i class="bi bi-three-dots"></i></button>
+            </div>
+            
+            <div class="post-body text-white mb-2">
+                <p class="mb-2" style="font-size: 0.95rem;">${post.content}</p>
+                ${gridHtml}
+                ${sharedSongHtml}
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-between pb-2 border-bottom border-secondary mb-2">
+                <div class="d-flex align-items-center gap-1">
+                    <div class="reaction-stack d-flex align-items-center fs-5" style="margin-right: 4px;">
+                        ${reactionStackHtml}
+                    </div>
+                    <span class="text-muted-custom small" id="reaction-count-${post.id}">${post.reactions_count > 0 ? post.reactions_count : ''}</span>
+                </div>
+                <div class="text-muted-custom small">
+                    <span class="me-3">${post.comments_count > 0 ? post.comments_count + ' bình luận' : ''}</span>
+                    <span>12 chia sẻ</span>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="position-relative reaction-container">
+                    <button class="btn ${mainActionBtnClass}">
+                        ${mainActionBtnContent}
+                    </button>
+                    <div class="reaction-popover shadow-lg rounded-pill px-3 py-2 d-flex gap-2">
+                        <button class="btn btn-sm btn-link p-0 react-icon text-decoration-none fs-3" data-type="LIKE" title="Thích">👍</button>
+                        <button class="btn btn-sm btn-link p-0 react-icon text-decoration-none fs-3" data-type="LOVE" title="Yêu thích">❤️</button>
+                        <button class="btn btn-sm btn-link p-0 react-icon text-decoration-none fs-3" data-type="HAHA" title="Haha">😂</button>
+                        <button class="btn btn-sm btn-link p-0 react-icon text-decoration-none fs-3" data-type="WOW" title="Wow">😮</button>
+                        <button class="btn btn-sm btn-link p-0 react-icon text-decoration-none fs-3" data-type="SAD" title="Buồn">😢</button>
+                        <button class="btn btn-sm btn-link p-0 react-icon text-decoration-none fs-3" data-type="ANGRY" title="Phẫn nộ">😡</button>
+                    </div>
+                </div>
+                <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-comment">
+                    <i class="bi bi-chat fs-5"></i> Bình luận
+                </button>
+                <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-share" data-bs-toggle="modal" data-bs-target="#sharePostModal">
+                    <i class="bi bi-share fs-5"></i> Chia sẻ
+                </button>
+            </div>
+        </div>
+        `;
+        feedContainer.insertAdjacentHTML('beforeend', html);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadFeed();
+
+    // -- XỬ LÝ PREVIEW ẢNH & NHẠC --
+    const postImageInput = document.getElementById('postImageInput');
+    const postPreviewContainer = document.getElementById('postPreviewContainer');
+    const postImagePreview = document.getElementById('postImagePreview');
+    const postSongPreview = document.getElementById('postSongPreview');
+    const postSharedSongId = document.getElementById('postSharedSongId');
+    const removePostPreviewBtn = document.getElementById('removePostPreviewBtn');
+
+    function resetPreview() {
+        postPreviewContainer.classList.add('d-none');
+        postImagePreview.classList.add('d-none');
+        postSongPreview.classList.add('d-none');
+        postImagePreview.src = '';
+        if(postImageInput) postImageInput.value = '';
+        if(postSharedSongId) postSharedSongId.value = '';
+    }
+
+    if(removePostPreviewBtn) {
+        removePostPreviewBtn.addEventListener('click', resetPreview);
+    }
+
+    if(postImageInput) {
+        postImageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Hide song preview if any, but DO NOT call resetPreview() which clears the file input
+                    postSongPreview.classList.add('d-none');
+                    if(postSharedSongId) postSharedSongId.value = '';
+                    
+                    postPreviewContainer.classList.remove('d-none');
+                    postImagePreview.classList.remove('d-none');
+                    postImagePreview.src = e.target.result;
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+
+    // -- CHIA SẺ NHẠC TRONG BÀI VIẾT --
+    const postMusicSearchInput = document.getElementById('postMusicSearchInput');
+    const postMusicSearchResults = document.getElementById('postMusicSearchResults');
+    const postShareMusicModal = document.getElementById('postShareMusicModal');
+    let postMusicSearchDebounce = null;
+
+    if (postShareMusicModal) {
+        postShareMusicModal.addEventListener('show.bs.modal', async function () {
+            postMusicSearchInput.value = '';
+            postMusicSearchResults.innerHTML = '<div class="text-center text-muted-custom py-4"><div class="spinner-border spinner-border-sm"></div></div>';
+            
+            try {
+                const res = await fetch('/api/v1/recommendations/for-you/');
+                const data = await res.json();
+                const results = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+                renderPostMusicResults(results);
+            } catch (e) {
+                postMusicSearchResults.innerHTML = '<div class="text-center text-danger">Lỗi tải dữ liệu</div>';
+            }
+        });
+
+        postMusicSearchInput.addEventListener('input', function () {
+            clearTimeout(postMusicSearchDebounce);
+            const query = this.value.trim();
+            if (!query) return;
+
+            postMusicSearchDebounce = setTimeout(async () => {
+                postMusicSearchResults.innerHTML = '<div class="text-center text-muted-custom py-4"><div class="spinner-border spinner-border-sm"></div></div>';
+                try {
+                    const res = await fetch(`/api/v1/search/?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    renderPostMusicResults(data.data.songs || []);
+                } catch (e) {
+                    postMusicSearchResults.innerHTML = '<div class="text-center text-danger">Lỗi tải dữ liệu</div>';
+                }
+            }, 500);
+        });
+    }
+
+    function renderPostMusicResults(songs) {
+        if (!songs.length) {
+            postMusicSearchResults.innerHTML = '<div class="text-center text-muted-custom py-4">Không tìm thấy bài hát nào</div>';
+            return;
+        }
+
+        postMusicSearchResults.innerHTML = '';
+        songs.forEach(song => {
+            const item = document.createElement('div');
+            item.className = 'd-flex align-items-center gap-3 p-2 rounded cursor-pointer song-row';
+            item.style.transition = 'background 0.2s';
+            
+            const cover = song.cover_image || 'https://images.unsplash.com/photo-1614680376593-902f74a7460c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
+            const artist = song.artist?.display_name || 'Nghệ sĩ';
+            
+            item.innerHTML = `
+                <img src="${cover}" class="rounded" style="width: 48px; height: 48px; object-fit: cover;">
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="text-white text-truncate fw-bold">${song.title}</div>
+                    <div class="text-muted-custom small text-truncate">${artist}</div>
+                </div>
+            `;
+            
+            // Hover effect
+            item.addEventListener('mouseenter', () => item.style.backgroundColor = 'rgba(255,255,255,0.1)');
+            item.addEventListener('mouseleave', () => item.style.backgroundColor = 'transparent');
+            
+            item.addEventListener('click', () => {
+                resetPreview(); // Clear old preview
+                postSharedSongId.value = song.id;
+                
+                document.getElementById('postSongCover').src = cover;
+                document.getElementById('postSongTitle').innerText = song.title;
+                
+                postPreviewContainer.classList.remove('d-none');
+                postSongPreview.classList.remove('d-none');
+                postSongPreview.classList.add('d-flex');
+                
+                bootstrap.Modal.getInstance(postShareMusicModal).hide();
+            });
+            postMusicSearchResults.appendChild(item);
+        });
+    }
+
+    // -- POST BÀI MỚI --
+    const btnSubmitPost = document.getElementById('btnSubmitPost');
+    if(btnSubmitPost) {
+        btnSubmitPost.addEventListener('click', async () => {
+            const content = document.getElementById('postContentInput').value;
+            const visibility = document.getElementById('postVisibility').value;
+            
+            const formData = new FormData();
+            formData.append('content', content);
+            formData.append('visibility', visibility);
+            
+            if(postImageInput && postImageInput.files.length > 0) {
+                for(let i = 0; i < postImageInput.files.length; i++) {
+                    formData.append('images', postImageInput.files[i]);
+                }
+            }
+            if(postSharedSongId && postSharedSongId.value) {
+                formData.append('shared_song_id', postSharedSongId.value);
+            }
+            
+            btnSubmitPost.disabled = true;
+            btnSubmitPost.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang đăng...';
+            
+            try {
+                const res = await fetch('/api/v1/posts/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken },
+                    body: formData
+                });
+                const data = await res.json();
+                if(data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createPostModal'));
+                    modal.hide();
+                    document.getElementById('postContentInput').value = '';
+                    resetPreview();
+                    loadFeed(); // Reload feed
+                } else {
+                    alert(data.error.message || 'Lỗi khi đăng bài');
+                }
+            } catch(e) {
+                console.error(e);
+            } finally {
+                btnSubmitPost.disabled = false;
+                btnSubmitPost.innerHTML = 'Đăng';
+            }
+        });
+    }
+
+    // -- EVENT DELEGATION: Tương tác ngầm --
+    document.body.addEventListener('click', async (e) => {
+        
+        // --- 1. THẢ CẢM XÚC ---
+        const reactBtn = e.target.closest('.react-icon');
+        if (reactBtn) {
+            e.preventDefault();
+            const postCard = reactBtn.closest('.post-card');
+            const postId = postCard.dataset.postId;
+            const reactionType = reactBtn.dataset.type;
+            
+            try {
+                const response = await fetch(`/api/v1/posts/${postId}/react/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ reaction_type: reactionType })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    updateReactionUI(postCard, data.data);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        
+
+
+        // --- 4. MỞ BÌNH LUẬN ---
+        const commentBtn = e.target.closest('.btn-comment');
+        if (commentBtn) {
+            e.preventDefault();
+            const postCard = commentBtn.closest('.post-card');
+            window.currentCommentPostId = postCard.dataset.postId;
+            
+            const commentModal = new bootstrap.Modal(document.getElementById('commentPostModal'));
+            commentModal.show();
+            
+            loadComments(window.currentCommentPostId);
+        }
+    });
+    
+
+
+    // --- XỬ LÝ GỬI BÌNH LUẬN ---
+    const submitCommentBtn = document.getElementById('submitCommentBtn');
+    if (submitCommentBtn) {
+        submitCommentBtn.addEventListener('click', async () => {
+            if (!window.currentCommentPostId) return;
+            const input = document.getElementById('commentInput');
+            let content = input.value.trim();
+            if (!content) return;
+            
+            // Xóa tag mention ra khỏi content nếu có
+            if (window.currentCommentParentId && content.startsWith('@')) {
+                const spaceIndex = content.indexOf(' ');
+                if (spaceIndex !== -1) {
+                    content = content.substring(spaceIndex + 1).trim();
+                }
+            }
+            if (!content) return;
+            
+            submitCommentBtn.disabled = true;
+            try {
+                const payload = { content: content };
+                if (window.currentCommentParentId) {
+                    payload.parent_id = window.currentCommentParentId;
+                }
+                
+                const response = await fetch(`/api/v1/posts/${window.currentCommentPostId}/comments/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    input.value = '';
+                    window.currentCommentParentId = null; // Reset
+                }
+            } catch (error) {
+                console.error('Error posting comment:', error);
+            } finally {
+                submitCommentBtn.disabled = false;
+            }
+        });
+        
+        // Nhấn Enter để gửi
+        document.getElementById('commentInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitCommentBtn.click();
+            }
+        });
+    }
+
+    // --- SỰ KIỆN DELEGATION BÌNH LUẬN (THÍCH / PHẢN HỒI) ---
+    const commentListContainer = document.getElementById('commentList');
+    if (commentListContainer) {
+        commentListContainer.addEventListener('click', async (e) => {
+            // 1. Thả Cảm xúc bình luận (chọn từ Popover)
+            if (e.target.closest('.comment-react-icon')) {
+                const btn = e.target.closest('.comment-react-icon');
+                const commentId = btn.dataset.commentId;
+                const reactionType = btn.dataset.type;
+                
+                try {
+                    const res = await fetch(`/api/v1/posts/comments/${commentId}/react/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({ reaction_type: reactionType })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const commentContainer = btn.closest('.d-flex.gap-2'); // root of comment
+                        updateCommentReactionUI(commentContainer, data.data);
+                    }
+                } catch(error) { console.error(error); }
+            }
+            
+            // Nếu click thẳng vào nút Thích chính (Toggle Like Default)
+            if (e.target.closest('.comment-like-btn') && !e.target.closest('.reaction-popover')) {
+                const btn = e.target.closest('.comment-like-btn');
+                const commentId = btn.dataset.commentId;
+                
+                // Mặc định thả LIKE nếu click vào chữ
+                const reactionType = 'LIKE';
+                try {
+                    const res = await fetch(`/api/v1/posts/comments/${commentId}/react/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({ reaction_type: reactionType })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const commentContainer = btn.closest('.d-flex.gap-2');
+                        updateCommentReactionUI(commentContainer, data.data);
+                    }
+                } catch(error) { console.error(error); }
+            }
+            
+            // 2. Nút Phản hồi bình luận
+            if (e.target.closest('.comment-reply-btn')) {
+                const btn = e.target.closest('.comment-reply-btn');
+                const commentId = btn.dataset.commentId;
+                const authorName = btn.dataset.authorName;
+                
+                window.currentCommentParentId = commentId;
+                const input = document.getElementById('commentInput');
+                input.value = `@${authorName} `;
+                input.focus();
+            }
+        });
+    }
+
+});
+
+function updateCommentReactionUI(commentContainer, resultData) {
+    const mainActionBtn = commentContainer.querySelector('.comment-like-btn');
+    if (mainActionBtn) {
+        mainActionBtn.classList.remove('reacted-like', 'reacted-love', 'reacted-haha', 'reacted-wow', 'reacted-sad', 'reacted-angry');
+        if (resultData.action === 'removed') {
+            mainActionBtn.innerHTML = 'Thích';
+        } else {
+            const type = resultData.reaction;
+            mainActionBtn.classList.add(`reacted-${type.toLowerCase()}`);
+            let text = 'Thích';
+            switch(type) {
+                case 'LIKE': text = 'Thích'; break;
+                case 'LOVE': text = 'Yêu thích'; break;
+                case 'HAHA': text = 'Haha'; break;
+                case 'WOW': text = 'Wow'; break;
+                case 'SAD': text = 'Buồn'; break;
+                case 'ANGRY': text = 'Phẫn nộ'; break;
+            }
+            mainActionBtn.innerHTML = text;
+        }
+    }
+    
+    // Cập nhật số đếm và icon
+    const countSpan = commentContainer.querySelector('.comment-like-count');
+    if (countSpan && resultData.top_reactions) {
+        const REACTION_EMOJIS = {
+            'LIKE': '👍', 'LOVE': '❤️', 'HAHA': '😂', 'WOW': '😮', 'SAD': '😢', 'ANGRY': '😡'
+        };
+        let stackHtml = '';
+        resultData.top_reactions.forEach((r, idx) => {
+            const margin = idx > 0 ? 'margin-left: -4px;' : '';
+            stackHtml += `<span style="${margin} font-size: 0.9em;">${REACTION_EMOJIS[r] || '👍'}</span>`;
+        });
+        
+        const countText = resultData.reactions_count > 0 ? ` ${resultData.reactions_count}` : '';
+        if (resultData.reactions_count > 0) {
+            countSpan.innerHTML = `· ${stackHtml} ${countText}`;
+        } else {
+            countSpan.innerHTML = '';
+        }
+    }
+}
+
+// -- HÀM TẢI BÌNH LUẬN --
+async function loadComments(postId, silent = false) {
+    const spinner = document.getElementById('commentLoadingSpinner');
+    const listContainer = document.getElementById('commentList');
+    
+    if (!silent) {
+        spinner.classList.remove('d-none');
+        listContainer.classList.add('d-none');
+        listContainer.innerHTML = '';
+    }
+    
+    // Hàm render 1 bình luận (dùng chung cho gốc & phản hồi)
+    window.renderCommentHtml = (comment, isReply = false) => {
+        const avatar = comment.author.avatar || 'https://ui-avatars.com/api/?name=User';
+        const paddingLeft = isReply ? 'ms-5 mt-2' : 'mb-3';
+        const imgSize = isReply ? '28' : '36';
+        
+        let mainActionBtnClass = 'comment-like-btn cursor-pointer fw-bold';
+        let mainActionBtnContent = 'Thích';
+        
+        if (comment.current_user_reaction) {
+            const type = comment.current_user_reaction;
+            mainActionBtnClass += ` reacted-${type.toLowerCase()}`;
+            switch(type) {
+                case 'LIKE': mainActionBtnContent = 'Thích'; break;
+                case 'LOVE': mainActionBtnContent = 'Yêu thích'; break;
+                case 'HAHA': mainActionBtnContent = 'Haha'; break;
+                case 'WOW': mainActionBtnContent = 'Wow'; break;
+                case 'SAD': mainActionBtnContent = 'Buồn'; break;
+                case 'ANGRY': mainActionBtnContent = 'Phẫn nộ'; break;
+            }
+        }
+        
+        let stackHtml = '';
+        if (comment.top_reactions && comment.top_reactions.length > 0) {
+            const REACTION_EMOJIS = { 'LIKE': '👍', 'LOVE': '❤️', 'HAHA': '😂', 'WOW': '😮', 'SAD': '😢', 'ANGRY': '😡' };
+            comment.top_reactions.forEach((r, idx) => {
+                const margin = idx > 0 ? 'margin-left: -4px;' : '';
+                stackHtml += `<span style="${margin} font-size: 0.9em;">${REACTION_EMOJIS[r] || '👍'}</span>`;
+            });
+        }
+        const likeCountText = comment.reactions_count > 0 ? `· ${stackHtml} ${comment.reactions_count}` : '';
+        
+        return `
+        <div class="d-flex gap-2 ${paddingLeft}">
+            <img src="${avatar}" class="rounded-circle mt-1" width="${imgSize}" height="${imgSize}" style="object-fit: cover;">
+            <div class="flex-grow-1">
+                <div class="bg-dark rounded-4 p-2 px-3 d-inline-block" style="border: 1px solid rgba(255,255,255,0.1);">
+                    <h6 class="mb-0 fw-bold text-white small">${comment.author.display_name}</h6>
+                    <span class="text-white small">${comment.content}</span>
+                </div>
+                <div class="text-muted-custom small ms-3 mt-1 d-flex gap-3 align-items-center">
+                    <div class="position-relative reaction-container">
+                        <span class="${mainActionBtnClass}" data-comment-id="${comment.id}">${mainActionBtnContent}</span>
+                        <div class="reaction-popover shadow-lg rounded-pill px-2 py-1 d-flex gap-1" style="bottom: 100%; transform-origin: bottom left; margin-bottom: 5px;">
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="LIKE" data-comment-id="${comment.id}" title="Thích">👍</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="LOVE" data-comment-id="${comment.id}" title="Yêu thích">❤️</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="HAHA" data-comment-id="${comment.id}" title="Haha">😂</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="WOW" data-comment-id="${comment.id}" title="Wow">😮</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="SAD" data-comment-id="${comment.id}" title="Buồn">😢</button>
+                            <button class="btn btn-sm btn-link p-0 react-icon comment-react-icon text-decoration-none fs-5" data-type="ANGRY" data-comment-id="${comment.id}" title="Phẫn nộ">😡</button>
+                        </div>
+                    </div>
+                    <span class="cursor-pointer fw-bold comment-reply-btn" data-comment-id="${comment.id}" data-author-name="${comment.author.display_name}">Phản hồi</span>
+                    <span>${timeSince(comment.created_at)}</span>
+                    <span class="comment-like-count">${likeCountText}</span>
+                </div>
+            </div>
+        </div>
+        `;
+    };
+
+    try {
+        const response = await fetch(`/api/v1/posts/${postId}/comments/`);
+        const data = await response.json();
+        
+        if (data.success) {
+            let fullHtml = '';
+            if (data.data.length === 0) {
+                fullHtml = '<div class="text-center text-muted-custom py-3">Chưa có bình luận nào. Hãy là người đầu tiên!</div>';
+            } else {
+                data.data.forEach(comment => {
+                    fullHtml += window.renderCommentHtml(comment, false);
+                    if (comment.replies && comment.replies.length > 0) {
+                        comment.replies.forEach(reply => {
+                            fullHtml += window.renderCommentHtml(reply, true);
+                        });
+                    }
+                });
+            }
+            listContainer.innerHTML = fullHtml;
+            
+            if (!silent) {
+                spinner.classList.add('d-none');
+                listContainer.classList.remove('d-none');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading comments:', error);
+        if (!silent) {
+            spinner.classList.add('d-none');
+            listContainer.classList.remove('d-none');
+        }
+        listContainer.innerHTML = '<div class="text-center text-danger py-3">Lỗi tải bình luận.</div>';
+    }
+}
+
+function updateReactionUI(postCard, resultData) {
+    // 1. Cập nhật nút chính (Thích / Yêu thích...)
+    const mainActionBtn = postCard.querySelector('.react-trigger');
+    if (mainActionBtn) {
+        mainActionBtn.classList.remove('reacted-like', 'reacted-love', 'reacted-haha', 'reacted-wow', 'reacted-sad', 'reacted-angry');
+        
+        if (resultData.action === 'removed') {
+            mainActionBtn.innerHTML = '<i class="bi bi-hand-thumbs-up"></i> Thích';
+        } else {
+            const type = resultData.reaction;
+            mainActionBtn.classList.add(`reacted-${type.toLowerCase()}`);
+            
+            let iconHtml = '';
+            let text = '';
+            switch(type) {
+                case 'LIKE': iconHtml = '<i class="bi bi-hand-thumbs-up-fill fs-5"></i>'; text = 'Thích'; break;
+                case 'LOVE': iconHtml = '<i class="bi bi-heart-fill fs-5"></i>'; text = 'Yêu thích'; break;
+                case 'HAHA': iconHtml = '<i class="bi bi-emoji-laughing-fill fs-5"></i>'; text = 'Haha'; break;
+                case 'WOW': iconHtml = '<i class="bi bi-emoji-surprise-fill fs-5"></i>'; text = 'Wow'; break;
+                case 'SAD': iconHtml = '<i class="bi bi-emoji-frown-fill fs-5"></i>'; text = 'Buồn'; break;
+                case 'ANGRY': iconHtml = '<i class="bi bi-emoji-angry-fill fs-5"></i>'; text = 'Phẫn nộ'; break;
+            }
+            mainActionBtn.innerHTML = `${iconHtml} ${text}`;
+        }
+    }
+
+    // 2. Cập nhật dải biểu tượng (Reaction Stack)
+    const stackContainer = postCard.querySelector('.reaction-stack');
+    if (stackContainer && resultData.top_reactions) {
+        const REACTION_EMOJIS = {
+            'LIKE': '👍',
+            'LOVE': '❤️',
+            'HAHA': '😂',
+            'WOW': '😮',
+            'SAD': '😢',
+            'ANGRY': '😡'
+        };
+        let stackHtml = '';
+        resultData.top_reactions.forEach((r, idx) => {
+            const margin = idx > 0 ? 'margin-left: -8px;' : '';
+            stackHtml += `<span style="${margin}">${REACTION_EMOJIS[r] || '👍'}</span>`;
+        });
+        stackContainer.innerHTML = stackHtml;
+    }
+
+    // 3. Cập nhật số đếm
+    const countSpan = postCard.querySelector('[id^="reaction-count-"]');
+    if (countSpan && resultData.reactions_count !== undefined) {
+        countSpan.innerText = resultData.reactions_count > 0 ? resultData.reactions_count : '';
+    }
+}
+
+// --- WEBSOCKET CHO BẢNG TIN (LIVE FEED) ---
+document.addEventListener('DOMContentLoaded', () => {
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const feedSocket = new WebSocket(protocol + window.location.host + '/ws/feed/');
+
+    feedSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        
+        if (data.type === 'reaction_update') {
+            const reactionData = data.data;
+            const postCard = document.querySelector(`.post-card[data-post-id="${reactionData.post_id}"]`);
+            if (postCard) {
+                const stackDiv = postCard.querySelector('.reaction-stack');
+                const countSpan = postCard.querySelector(`#reaction-count-${reactionData.post_id}`);
+                
+                let stackHtml = '';
+                const REACTION_EMOJIS = { 'LIKE': '👍', 'LOVE': '❤️', 'HAHA': '😂', 'WOW': '😮', 'SAD': '😢', 'ANGRY': '😡' };
+                reactionData.top_reactions.forEach((r, idx) => {
+                    const margin = idx > 0 ? 'margin-left: -4px;' : '';
+                    stackHtml += `<span style="${margin} font-size: 0.9em;">${REACTION_EMOJIS[r] || '👍'}</span>`;
+                });
+                
+                if (stackDiv) stackDiv.innerHTML = stackHtml;
+                if (countSpan) countSpan.innerText = reactionData.reactions_count > 0 ? reactionData.reactions_count : '';
+            }
+        } else if (data.type === 'new_comment') {
+            const comment = data.data;
+            // Chỉ cập nhật nếu Bảng bình luận của bài viết này ĐANG MỞ
+            if (window.currentCommentPostId === comment.post_id) {
+                const listContainer = document.getElementById('commentList');
+                if (listContainer) {
+                    // Nếu đang báo 'Chưa có bình luận nào' thì xóa đi
+                    if (listContainer.innerHTML.includes('Chưa có bình luận nào')) {
+                        listContainer.innerHTML = '';
+                    }
+                    
+                    const isReply = !!comment.parent_id;
+                    const html = window.renderCommentHtml(comment, isReply);
+                    listContainer.insertAdjacentHTML('beforeend', html);
+                }
+            }
+            
+            // Luôn cập nhật số đếm trên giao diện bài viết (Dù có đang mở pop-up hay không)
+            const postCard = document.querySelector(`.post-card[data-post-id="${comment.post_id}"]`);
+            if (postCard) {
+                const commentsTextSpan = postCard.querySelector('.text-muted-custom.small span.me-3');
+                if (commentsTextSpan) {
+                    let text = commentsTextSpan.innerHTML; // vd: "<i class='bi bi-chat-dots me-1'></i> 2 Bình luận"
+                    let numMatch = text.match(/(\d+)/);
+                    if (numMatch) {
+                        let newNum = parseInt(numMatch[1]) + 1;
+                        commentsTextSpan.innerHTML = text.replace(numMatch[1], newNum);
+                    } else {
+                        // Nếu chưa có số đếm (0 bình luận)
+                        commentsTextSpan.innerHTML = "<i class='bi bi-chat-dots me-1'></i> 1 Bình luận";
+                    }
+                }
+            }
+        }
+    };
+    
+    feedSocket.onerror = function(err) {
+        console.error('Feed WebSocket error:', err);
+    };
+});
+
+// --- GIAI ĐOẠN 6: CHIA SẺ BÀI VIẾT QUA CHAT ---
+document.addEventListener('DOMContentLoaded', () => {
+    const sharePostModal = document.getElementById('sharePostModal');
+    let shareTargetConversationId = null;
+    let sharePostId = null;
+
+    if (sharePostModal) {
+        // 1. Khởi tạo Bootstrap Modal
+        const bsShareModal = new bootstrap.Modal(sharePostModal);
+
+        // 2. Lắng nghe nút 'Chia sẻ' trên từng bài viết (event delegation trên feedContainer)
+        document.body.addEventListener('click', async (e) => {
+            const shareBtn = e.target.closest('.btn-share');
+            if (shareBtn) {
+                e.preventDefault();
+                const postCard = shareBtn.closest('.post-card');
+                sharePostId = postCard.dataset.postId;
+                
+                // Mở Modal Lớp 1
+                document.getElementById('shareModalLayer1').style.display = 'block';
+                document.getElementById('shareModalLayer2').style.display = 'none';
+                
+                // Load danh sách bạn bè / cuộc trò chuyện
+                const friendListContainer = document.getElementById('shareFriendList');
+                friendListContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-secondary" role="status"></div></div>';
+                bsShareModal.show();
+                
+                try {
+                    const res = await fetch('/api/v1/chat/conversations/');
+                    const data = await res.json();
+                    if (data.success) {
+                        let html = '';
+                        if (data.data.length === 0) {
+                            html = '<div class="p-3 text-center text-muted-custom">Bạn chưa có cuộc trò chuyện nào. Hãy kết bạn và nhắn tin trước nhé!</div>';
+                        } else {
+                            data.data.forEach(conv => {
+                                // API list_user_conversations trả về to_dict(viewer=user), nên có key `other_user`
+                                const otherUser = conv.other_user;
+                                if (otherUser) {
+                                    const avatar = otherUser.avatar || 'https://ui-avatars.com/api/?name=User';
+                                    html += `
+                                        <button class="list-group-item list-group-item-action bg-transparent text-white border-secondary d-flex align-items-center gap-3 share-friend-item" data-conversation-id="${conv.id}">
+                                            <img src="${avatar}" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                                            <span class="fw-bold">${otherUser.display_name}</span>
+                                        </button>
+                                    `;
+                                }
+                            });
+                        }
+                        friendListContainer.innerHTML = html;
+                    }
+                } catch (err) {
+                    console.error('Error fetching conversations:', err);
+                    friendListContainer.innerHTML = '<div class="p-3 text-danger text-center">Không thể tải danh sách.</div>';
+                }
+            }
+        });
+
+        // 3. Xử lý click chọn bạn bè (Lớp 1 -> Lớp 2)
+        document.getElementById('shareFriendList').addEventListener('click', (e) => {
+            const friendItem = e.target.closest('.share-friend-item');
+            if (friendItem) {
+                shareTargetConversationId = friendItem.dataset.conversationId;
+                
+                // Chuyển sang Lớp 2
+                document.getElementById('shareModalLayer1').style.display = 'none';
+                document.getElementById('shareModalLayer2').style.display = 'block';
+                
+                // Cập nhật thông tin Lớp 2
+                document.getElementById('shareOptionalMessage').value = '';
+                
+                // Lấy thông tin bài viết để làm preview
+                const postCard = document.querySelector(`.post-card[data-post-id="${sharePostId}"]`);
+                const authorName = postCard.querySelector('.fw-bold.text-white.text-decoration-none').innerText;
+                document.getElementById('previewSharePostContent').innerHTML = `
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-reply-fill text-muted"></i>
+                        <span class="small text-muted-custom">Đang đính kèm bài viết của <b>${authorName}</b></span>
+                    </div>
+                `;
+            }
+        });
+
+        // 4. Nút Quay lại (Lớp 2 -> Lớp 1)
+        const btnBack = document.getElementById('btnBackToLayer1');
+        if (btnBack) {
+            btnBack.addEventListener('click', () => {
+                document.getElementById('shareModalLayer2').style.display = 'none';
+                document.getElementById('shareModalLayer1').style.display = 'block';
+                shareTargetConversationId = null;
+            });
+        }
+
+        // 5. Gửi trong Chat
+        const btnConfirmShare = document.getElementById('btnConfirmShare');
+        if (btnConfirmShare) {
+            btnConfirmShare.addEventListener('click', async () => {
+                if (!shareTargetConversationId || !sharePostId) return;
+                
+                const message = document.getElementById('shareOptionalMessage').value.trim();
+                
+                // Disable button
+                btnConfirmShare.disabled = true;
+                btnConfirmShare.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+                
+                try {
+                    const res = await fetch(`/api/v1/chat/conversations/${shareTargetConversationId}/messages/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({
+                            content: message,
+                            shared_post_id: sharePostId
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        bsShareModal.hide();
+                        if (window.showToast) {
+                            window.showToast('Đã gửi bài viết thành công!', true);
+                        } else {
+                            alert('Đã gửi bài viết thành công!');
+                        }
+                    } else {
+                        alert(data.error.message || 'Có lỗi xảy ra');
+                    }
+                } catch (err) {
+                    console.error('Error sending share message:', err);
+                    alert('Lỗi kết nối. Vui lòng thử lại sau.');
+                } finally {
+                    btnConfirmShare.disabled = false;
+                    btnConfirmShare.innerHTML = 'Gửi trong Chat';
+                }
+            });
+        }
     }
 });
-```
 
----
-🎉 **CHÚC MỪNG BẠN!** Bạn đã sở hữu trọn bộ 6 "Bí kíp võ công" để xây dựng tính năng Mạng xã hội chuyên nghiệp. Bạn hoàn toàn có thể tự tin tải bộ code này về nhánh chính và lắp ráp chúng!
+```
