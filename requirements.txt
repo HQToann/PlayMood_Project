@@ -1,36 +1,46 @@
-# Database
+# Cơ sở dữ liệu (Database) PostgreSQL
 psycopg2-binary==2.9.9
+psycopg[binary]
+dj-database-url
 
-# Environment variables
+# Biến môi trường (Ẩn các mã bảo mật khỏi mã nguồn)
 python-decouple==3.8
 
-# CORS
+# CORS - Xử lý chia sẻ tài nguyên chéo nguồn (Cho phép Frontend gọi API Backend)
 django-cors-headers==4.4.0
 
-# Cloudinary — lưu trữ audio, ảnh bìa, avatar
+# Lưu trữ đám mây Cloudinary (Dùng để chứa Audio, ảnh bìa, avatar)
 cloudinary==1.40.0
 django-cloudinary-storage==0.3.0
 
-# Input sanitization — chống XSS (Fix R12)
+# Bảo mật - Làm sạch dữ liệu nhập vào, chống tấn công mã độc XSS
 bleach==6.1.0
 
-# Rate limiting — chống brute force (Fix R6, bật ở Tuần 8)
+# Bảo mật - Giới hạn tần suất thao tác, chống tấn công dò mật khẩu (Brute force)
 django-ratelimit==4.1.0
 
-# Testing utilities
+# Công cụ tạo dữ liệu giả lập cho Kiểm thử (Testing)
 factory-boy==3.3.0
 
-# Image processing (dùng khi validate ảnh upload)
+# Xử lý hình ảnh (Dùng khi xác thực hoặc cắt ghép ảnh người dùng tải lên)
 Pillow==10.4.0
 
-# Read metadata audio
+# Công cụ trích xuất siêu dữ liệu (metadata) từ các file âm thanh (MP3, WAV...)
 mutagen==1.47.0
 
+# Dịch vụ tích hợp gửi Email tự động
 django-anymail
 resend
-dj-database-url
+
+# Máy chủ Web và Quản lý file tĩnh dành cho môi trường Production (khi chạy thực tế)
 gunicorn
-psycopg[binary]
 whitenoise
+
+# Giao diện cho trang Quản trị (Admin Dashboard) đẹp mắt hơn
 django-jazzmin==3.0.5
 django-unfold==0.91.0
+
+# WebSockets - Nền tảng thời gian thực (Dành riêng cho tính năng Nhắn tin Chat realtime)
+channels>=4.0.0
+channels-redis>=4.1.0
+daphne>=4.0.0

@@ -19,6 +19,12 @@
             <a href="{% url 'mood_page' %}" class="nav-link-custom {% if active_page == 'mood' %}active{% endif %}">
                 <i class="bi bi-emoji-smile"></i> Tâm trạng
             </a>
+            <a href="{% url 'news_feed_page' %}" class="nav-link-custom {% if active_page == 'feed' %}active{% endif %}">
+                <i class="bi bi-newspaper"></i> Bảng tin
+            </a>
+            <a href="{% url 'chat_page' %}" class="nav-link-custom {% if active_page == 'chat' %}active{% endif %}">
+                <i class="bi bi-chat-dots"></i> Nhắn tin
+            </a>
 
             {% if request.user.role == 'artist' %}
             <a href="{% url 'artist_manage_page' %}" class="nav-link-custom {% if active_page == 'artist_manage' %}active{% endif %}">

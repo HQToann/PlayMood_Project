@@ -32,3 +32,7 @@ Thumbs.db
 *.log
 
 settings.TN.py
+
+# RoadMap
+New_App_Message/
+New_App_Posts/

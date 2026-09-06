@@ -1,0 +1,518 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Nhắn tin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/chat.css' %}" rel="stylesheet">
+    <style>
+        .chat-page-container { display: flex; height: calc(100vh - var(--player-height, 90px) - 70px); overflow: hidden; }
+        .conv-list-panel { width: 300px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; background: var(--bg-card, #1a1a2e); }
+        .conv-list-panel .panel-header { padding: 20px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .conv-list-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .conv-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; border-radius: 12px; margin: 2px 8px; transition: background 0.15s; }
+        .conv-item:hover, .conv-item.active { background: rgba(255,255,255,0.06); }
+        .conv-item .conv-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .conv-item .conv-info { flex: 1; overflow: hidden; }
+        .conv-item .conv-name { font-weight: 600; font-size: 0.9rem; color: #fff; }
+        .conv-item .conv-preview { font-size: 0.78rem; color: rgba(255,255,255,0.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conv-item .conv-time { font-size: 0.72rem; color: rgba(255,255,255,0.35); flex-shrink: 0; }
+        .chat-main-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-main-header { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .chat-main-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .chat-main-messages { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+        .chat-main-footer { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.07); }
+        .chat-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; font-size: 0.9rem; line-height: 1.4; word-break: break-word; }
+        .chat-bubble.mine { background: var(--accent-color, #6c5ce7); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-bubble.theirs { background: rgba(255,255,255,0.08); color: #e0e0e0; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-area { display: flex; align-items: flex-end; gap: 10px; }
+        .chat-input-area textarea { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; color: #fff; padding: 10px 16px; resize: none; outline: none; font-size: 0.9rem; }
+        .chat-input-area textarea::placeholder { color: rgba(255,255,255,0.35); }
+        .chat-input-area textarea:focus { border-color: rgba(255,255,255,0.25); }
+        .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); gap: 12px; }
+        .empty-state i { font-size: 3rem; }
+        .shared-post-bubble { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; margin-top: 6px; background: rgba(255,255,255,0.05); max-width: 280px; }
+        .shared-post-bubble .post-img { border-radius: 8px; width: 100%; object-fit: cover; max-height: 140px; margin-bottom: 8px; }
+        .shared-post-bubble .avatar-img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="main-wrapper">
+        {% include 'includes/left_sidebar.html' with active_page='chat' %}
+        <main class="main-content" style="padding: 0; overflow: hidden;">
+            {% include 'includes/top_header.html' %}
+            <div class="chat-page-container">
+                <!-- Danh sách cuộc trò chuyện -->
+                <div class="conv-list-panel">
+                    <div class="panel-header">
+                        <h5 class="text-white mb-0"><i class="bi bi-chat-dots me-2"></i>Nhắn tin</h5>
+                    </div>
+                    <div class="conv-list-scroll" id="convListScroll">
+                        <div class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Cửa sổ chat chính -->
+                <div class="chat-main-panel" id="chatMainPanel">
+                    <div class="empty-state" id="chatEmptyState">
+                        <i class="bi bi-chat-square-text"></i>
+                        <p class="mb-0 fw-semibold" style="font-size:1rem;">Chọn cuộc trò chuyện để bắt đầu</p>
+                        <small>Tin nhắn của bạn sẽ hiển thị ở đây</small>
+                    </div>
+                    <div id="chatActivePanel" class="d-none" style="flex-direction:column; flex:1; overflow:hidden;">
+                        <div class="chat-main-header">
+                            <img id="chatMainAvatar" src="https://ui-avatars.com/api/?name=U" alt="Avatar">
+                            <div>
+                                <div id="chatMainName" class="fw-bold text-white" style="font-size:0.95rem;">...</div>
+                                <small class="text-muted-custom" style="font-size:0.75rem;">Đang hoạt động</small>
+                            </div>
+                        </div>
+                        <div class="chat-main-messages" id="chatMainMessages"></div>
+                        <div id="chatMainAttachmentPreview" class="d-none align-items-center gap-2 px-3 pt-2 pb-1" style="background: var(--bg-card);">
+                            <div id="chatMainAttachmentPreviewContent" class="d-flex align-items-center gap-2 bg-dark rounded p-2" style="border: 1px solid rgba(255,255,255,0.1);">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-link text-danger p-0" id="chatMainRemoveAttachmentBtn">
+                                <i class="bi bi-x-circle-fill fs-5"></i>
+                            </button>
+                        </div>
+                        <div class="chat-main-footer">
+                            <div class="chat-input-area">
+                                <label for="chatMainImageInput" class="btn btn-link text-muted-custom p-1 m-0" title="Gửi ảnh">
+                                    <i class="bi bi-image" style="font-size:1.3rem;"></i>
+                                </label>
+                                <input type="file" id="chatMainImageInput" class="d-none" accept="image/*">
+                                <button type="button" class="btn btn-link text-muted-custom p-1 m-0" title="Gửi nhạc" data-bs-toggle="modal" data-bs-target="#chatMainShareMusicModal">
+                                    <i class="bi bi-music-note-beamed" style="font-size: 1.2rem;"></i>
+                                </button>
+                                <textarea id="chatMainInput" placeholder="Aa" rows="1"></textarea>
+                                <button type="button" id="chatMainSendBtn" class="btn btn-link p-1 m-0" style="color:var(--accent-color);" disabled>
+                                    <i class="bi bi-send-fill" style="font-size:1.3rem;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        {% include 'includes/right_sidebar.html' %}
+    </div>
+    
+    <!-- Thanh phát nhạc -->
+    {% include 'includes/player_bar.html' %}
+</div>
+
+<!-- Modal Chọn Nhạc để Gửi cho Chat Chính -->
+<div class="modal fade" id="chatMainShareMusicModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content text-white" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h6 class="modal-title fw-bold">Chia sẻ Nhạc</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="search-bar mb-3 w-100" style="padding: 10px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.05);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 1rem;"></i>
+                    <input type="text" id="chatMainMusicSearchInput" placeholder="Tìm kiếm bài hát..." style="background: transparent; border: none; color: #fff; width: calc(100% - 30px); outline: none; margin-left: 10px;">
+                </div>
+                <h6 class="fw-bold mb-3" style="font-size: 0.85rem; color: rgba(255,255,255,0.5);" id="chatMainShareMusicTitle">GỢI Ý CHO BẠN</h6>
+                <div id="chatMainShareMusicResults" class="d-flex flex-column gap-2 pb-3">
+                    <!-- Kết quả render JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+const CURRENT_USER_ID = "{{ request.user.id }}";
+let chatMainSocket = null;
+let activeConvId = null;
+let pendingMainAttachment = null;
+let lastMainSenderId = null;
+let lastMainTimestamp = null;
+
+async function loadConversations() {
+    const c = document.getElementById('convListScroll');
+    try {
+        const res = await fetch('/api/v1/chat/conversations/', { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+        if (!data.success) { c.innerHTML = '<div class="text-center text-muted-custom py-4">Không thể tải</div>'; return; }
+        const items = data.data;
+        if (!items.length) { c.innerHTML = '<div class="text-center text-muted-custom py-4 small">Chưa có cuộc trò chuyện nào</div>'; return; }
+        
+        c.innerHTML = items.map(conv => {
+            const time = formatTime(conv.updated_at);
+            const name = conv.other_user ? conv.other_user.display_name : 'Unknown';
+            const avatar = conv.other_user ? conv.other_user.avatar : 'https://ui-avatars.com/api/?name=U';
+            const unread = conv.unread_count ? `<span class="badge bg-danger rounded-pill ms-auto">${conv.unread_count}</span>` : '';
+            return `<div class="conv-item" data-conv-id="${conv.id}" data-conv-name="${encodeURIComponent(name)}" data-conv-avatar="${encodeURIComponent(avatar)}">
+                <img src="${avatar}" class="conv-avatar">
+                <div class="conv-info">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <div class="conv-name text-truncate">${esc(name)}</div>
+                        <div class="conv-time">${time}</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="conv-preview text-truncate">Tin nhắn mới</div>
+                        ${unread}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+        
+        document.querySelectorAll('.conv-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const el = e.target.closest('.conv-item');
+                if (!el) return;
+                openConv(el.dataset.convId, decodeURIComponent(el.dataset.convName), decodeURIComponent(el.dataset.convAvatar));
+            });
+        });
+    } catch(e) { console.error(e); }
+}
+
+function updateMainAttachmentPreview() {
+    const previewBox = document.getElementById('chatMainAttachmentPreview');
+    const previewContent = document.getElementById('chatMainAttachmentPreviewContent');
+    const input = document.getElementById('chatMainInput');
+    const btn = document.getElementById('chatMainSendBtn');
+
+    if (!pendingMainAttachment) {
+        previewBox.classList.add('d-none');
+        previewContent.innerHTML = '';
+        btn.disabled = !input.value.trim();
+        return;
+    }
+
+    previewBox.classList.remove('d-none');
+    if (pendingMainAttachment.type === 'image') {
+        previewContent.innerHTML = `
+            <img src="${pendingMainAttachment.preview}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+            <span class="text-truncate text-white" style="font-size: 0.85rem;">Hình ảnh đính kèm</span>
+        `;
+    } else if (pendingMainAttachment.type === 'song') {
+        previewContent.innerHTML = `
+            <img src="${pendingMainAttachment.cover}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+            <span class="text-truncate text-white" style="font-size: 0.85rem;">${pendingMainAttachment.title}</span>
+        `;
+    }
+    btn.disabled = false;
+}
+
+// Gắn sự kiện xoá attachment
+document.addEventListener('DOMContentLoaded', () => {
+    loadConversations();
+    document.getElementById('chatMainRemoveAttachmentBtn')?.addEventListener('click', () => {
+        pendingMainAttachment = null;
+        const imgInput = document.getElementById('chatMainImageInput');
+        if (imgInput) imgInput.value = '';
+        updateMainAttachmentPreview();
+    });
+
+    const chatMainImageInput = document.getElementById('chatMainImageInput');
+    if (chatMainImageInput) {
+        chatMainImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    if (window.showToast) window.showToast('Chỉ chấp nhận file ảnh', false);
+                    this.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    pendingMainAttachment = { type: 'image', file: file, preview: e.target.result };
+                    updateMainAttachmentPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Gắn sự kiện modal chia sẻ nhạc
+    const modalEl = document.getElementById('chatMainShareMusicModal');
+    const searchInput = document.getElementById('chatMainMusicSearchInput');
+    const resultsEl = document.getElementById('chatMainShareMusicResults');
+    const titleEl = document.getElementById('chatMainShareMusicTitle');
+    let debounce = null;
+    
+    if (modalEl) {
+        modalEl.addEventListener('show.bs.modal', async function () {
+            searchInput.value = '';
+            titleEl.innerText = 'GỢI Ý CHO BẠN';
+            resultsEl.innerHTML = '<div class="text-center text-muted-custom py-4"><div class="spinner-border spinner-border-sm"></div></div>';
+            try {
+                const res = await fetch('/api/v1/recommendations/for-you/');
+                const data = await res.json();
+                const items = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+                renderMainMusicResults(data.success ? items : []);
+            } catch(e) { resultsEl.innerHTML = '<div class="text-center text-muted-custom py-4">Lỗi</div>'; }
+        });
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounce);
+            const q = this.value.trim();
+            if (!q) {
+                titleEl.innerText = 'GỢI Ý CHO BẠN';
+                modalEl.dispatchEvent(new Event('show.bs.modal'));
+                return;
+            }
+            titleEl.innerText = 'KẾT QUẢ TÌM KIẾM';
+            resultsEl.innerHTML = '<div class="text-center text-muted-custom py-4"><div class="spinner-border spinner-border-sm"></div></div>';
+            debounce = setTimeout(async () => {
+                try {
+                    const res = await fetch('/api/v1/music/songs/?q=' + encodeURIComponent(q));
+                    const data = await res.json();
+                    const items = Array.isArray(data.data) ? data.data : (data.data?.items || []);
+                    renderMainMusicResults(data.success ? items : []);
+                } catch(e) { resultsEl.innerHTML = '<div class="text-center text-muted-custom py-4">Lỗi</div>'; }
+            }, 500);
+        });
+    }
+});
+
+function renderMainMusicResults(songs) {
+    const resultsEl = document.getElementById('chatMainShareMusicResults');
+    if (!songs || songs.length === 0) {
+        resultsEl.innerHTML = '<div class="text-center text-muted-custom py-4 small">Không tìm thấy bài hát nào</div>';
+        return;
+    }
+    resultsEl.innerHTML = '';
+    songs.forEach(song => {
+        const fallback = 'https://images.unsplash.com/photo-1614680376593-902f74a7460c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80';
+        const cover = song.cover_image || fallback;
+        const item = document.createElement('div');
+        item.className = 'd-flex align-items-center gap-3 p-2 rounded cursor-pointer';
+        item.style.transition = 'background 0.2s';
+        item.onmouseover = () => item.style.background = 'rgba(255,255,255,0.1)';
+        item.onmouseout = () => item.style.background = 'transparent';
+        item.onclick = () => {
+            pendingMainAttachment = { type: 'song', id: song.id, title: song.title, cover: cover };
+            bootstrap.Modal.getInstance(document.getElementById('chatMainShareMusicModal')).hide();
+            updateMainAttachmentPreview();
+        };
+        item.innerHTML = `
+            <img src="${cover}" class="rounded" style="width: 46px; height: 46px; object-fit: cover;">
+            <div style="flex: 1; overflow: hidden;">
+                <div class="text-white fw-bold text-truncate" style="font-size: 0.95rem;">${esc(song.title)}</div>
+                <div class="text-truncate text-muted-custom" style="font-size: 0.8rem;">${esc(song.artist_name || 'Nhiều nghệ sĩ')}</div>
+            </div>
+        `;
+        resultsEl.appendChild(item);
+    });
+}
+
+// Gộp chung hàm mở conversation và render
+async function openConv(convId, name, avatar) {
+    activeConvId = convId;
+    document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+    const item = document.querySelector('.conv-item[data-conv-id="' + convId + '"]');
+    if (item) item.classList.add('active');
+    document.getElementById('chatEmptyState').classList.add('d-none');
+    const panel = document.getElementById('chatActivePanel');
+    panel.classList.remove('d-none');
+    panel.style.display = 'flex';
+    document.getElementById('chatMainAvatar').src = avatar;
+    document.getElementById('chatMainName').textContent = name;
+    
+    // Reset state
+    pendingMainAttachment = null;
+    updateMainAttachmentPreview();
+    
+    await loadMessages(convId);
+    
+    if (chatMainSocket) { chatMainSocket.close(); }
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    chatMainSocket = new WebSocket(`${protocol}${window.location.host}/ws/chat/conversation/${convId}/`);
+    chatMainSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'new_message') {
+            appendMainMsgToUI(data.data);
+            const c = document.getElementById('chatMainMessages');
+            c.scrollTop = c.scrollHeight;
+        }
+    };
+    
+    const input = document.getElementById('chatMainInput');
+    const btn = document.getElementById('chatMainSendBtn');
+    input.oninput = () => { btn.disabled = (!input.value.trim() && !pendingMainAttachment); };
+    input.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } };
+    btn.onclick = sendMsg;
+}
+
+async function loadMessages(convId) {
+    const c = document.getElementById('chatMainMessages');
+    c.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary" role="status"></div></div>';
+    try {
+        const res = await fetch('/api/v1/chat/conversations/' + convId + '/messages/', { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+        if (!data.success) { c.innerHTML = '<div class="text-center text-muted-custom py-4">Không thể tải</div>'; return; }
+        
+        c.innerHTML = '';
+        lastMainSenderId = null;
+        lastMainTimestamp = null;
+        
+        const msgs = (data.data.items || []);
+        if (msgs.length === 0) {
+            c.innerHTML = '<div class="text-center text-muted-custom py-4 small">Chưa có tin nhắn. Hãy bắt đầu!</div>';
+        } else {
+            msgs.forEach(msg => appendMainMsgToUI(msg, false));
+            c.scrollTop = c.scrollHeight;
+        }
+    } catch(e) { console.error(e); }
+}
+
+function appendMainMsgToUI(msg, autoScroll = true) {
+    const c = document.getElementById('chatMainMessages');
+    if (c.innerHTML.includes('Chưa có tin nhắn')) c.innerHTML = '';
+    
+    const isMe = String(msg.sender_id || msg.sender?.id) === String(CURRENT_USER_ID);
+    const msgTime = new Date(msg.created_at);
+    
+    let showTime = false;
+    if (!lastMainTimestamp || (msgTime - lastMainTimestamp > 15 * 60000)) showTime = true;
+    if (showTime) {
+        const timeHtml = `<div class="text-center my-3"><small class="text-muted-custom" style="font-size:0.75rem;">${formatTime(msg.created_at)}</small></div>`;
+        c.insertAdjacentHTML('beforeend', timeHtml);
+    }
+    
+    const sameSender = (lastMainSenderId === (msg.sender_id || msg.sender?.id)) && !showTime;
+    
+    // Xử lý avatar: Trong Messenger, avatar xuất hiện ở tin cuối cùng của cụm.
+    // Vì ta append từ trên xuống, ta hiển thị avatar cho mọi tin nhắn nhưng làm 
+    // mờ (visibility: hidden) các tin nhắn trước đó của cùng người gửi.
+    let avatarHtml = '';
+    if (!isMe) {
+        const avatarUrl = msg.sender?.avatar || 'https://ui-avatars.com/api/?name=U';
+        // Xoá hình đại diện của tin nhắn trước đó (nếu cùng người gửi)
+        if (sameSender) {
+            const prevAvatars = c.querySelectorAll('.main-msg-avatar');
+            if (prevAvatars.length > 0) {
+                prevAvatars[prevAvatars.length - 1].style.visibility = 'hidden';
+            }
+        }
+        avatarHtml = `<img src="${avatarUrl}" width="28" height="28" class="rounded-circle me-2 flex-shrink-0 main-msg-avatar" style="object-fit:cover; margin-bottom: 2px;">`;
+    }
+    
+    let contentHtml = '';
+    if (msg.image_url) contentHtml += `<img src="${msg.image_url}" class="img-fluid rounded mb-1" style="max-width:220px;" onclick="window.open(this.src,'_blank')">`;
+    if (msg.content) contentHtml += `<div>${esc(msg.content)}</div>`;
+    if (msg.shared_post) {
+        const p = msg.shared_post;
+        contentHtml += '<div class="shared-post-bubble">' +
+            '<div class="d-flex align-items-center gap-2 mb-2">' +
+                '<img src="' + (p.author_avatar || 'https://ui-avatars.com/api/?name=U') + '" class="avatar-img">' +
+                '<span class="small fw-bold">' + esc(p.author_name || '') + '</span>' +
+            '</div>' +
+            '<p class="small mb-0 text-truncate" style="color:rgba(255,255,255,0.75);">' + esc(p.content || '') + '</p>' +
+            (p.first_image ? '<img src="' + p.first_image + '" alt="" class="post-img mt-2">' : '') +
+            '<a href="/feed/?post=' + p.id + '" class="btn btn-sm btn-outline-light w-100 mt-2" style="font-size:0.75rem;">Xem bài viết</a>' +
+            '</div>';
+    }
+    if (msg.shared_song) {
+        const s = msg.shared_song;
+        contentHtml += `<a href="javascript:void(0)" onclick="if(typeof playSong === 'function') playSong('${s.id}')" class="text-decoration-none" style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.1); padding:8px; border-radius:8px; margin-top:4px;">
+            <img src="${s.cover_image || ''}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">
+            <div style="color:#fff; overflow:hidden;">
+                <div class="small fw-bold text-truncate">${esc(s.title)}</div>
+                <div style="font-size:0.7rem; color:rgba(255,255,255,0.5);"><i class="bi bi-music-note"></i> Bài hát</div>
+            </div>
+        </a>`;
+    }
+    
+    const cls = isMe ? 'mine' : 'theirs';
+    const mt = sameSender ? 'margin-top: 2px;' : 'margin-top: 12px;';
+    
+    const html = `<div style="display:flex; justify-content:${isMe ? 'flex-end' : 'flex-start'}; align-items:flex-end; ${mt}">
+        ${!isMe ? avatarHtml : ''}
+        <div style="display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'}; max-width: ${isMe ? '70%' : 'calc(70% - 36px)'};">
+            <div class="chat-bubble ${cls}" style="max-width: 100%;">${contentHtml || '<em style="opacity:.5">...</em>'}</div>
+        </div>
+    </div>`;
+    
+    c.insertAdjacentHTML('beforeend', html);
+    
+    lastMainSenderId = (msg.sender_id || msg.sender?.id);
+    lastMainTimestamp = msgTime;
+    
+    if (autoScroll) c.scrollTop = c.scrollHeight;
+}
+
+async function sendMsg() {
+    if (!activeConvId || !chatMainSocket || chatMainSocket.readyState !== WebSocket.OPEN) return;
+    const input = document.getElementById('chatMainInput');
+    const text = input.value.trim();
+    if (!text && !pendingMainAttachment) return;
+    
+    const btn = document.getElementById('chatMainSendBtn');
+    input.value = 'Đang gửi...';
+    input.disabled = true;
+    btn.disabled = true;
+    
+    if (pendingMainAttachment && pendingMainAttachment.type === 'image') {
+        const formData = new FormData();
+        formData.append('image', pendingMainAttachment.file);
+        try {
+            const res = await fetch('/api/v1/chat/upload-image/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success && data.data.image_url) {
+                chatMainSocket.send(JSON.stringify({
+                    'type': 'send_message',
+                    'content': text,
+                    'image_url': data.data.image_url
+                }));
+            } else { if (window.showToast) window.showToast('Lỗi tải ảnh', false); }
+        } catch(e) { if (window.showToast) window.showToast('Lỗi tải ảnh', false); }
+    } else if (pendingMainAttachment && pendingMainAttachment.type === 'song') {
+        chatMainSocket.send(JSON.stringify({
+            'type': 'send_message',
+            'content': text,
+            'shared_song_id': pendingMainAttachment.id
+        }));
+    } else {
+        chatMainSocket.send(JSON.stringify({
+            'type': 'send_message',
+            'content': text
+        }));
+    }
+    
+    input.value = '';
+    input.disabled = false;
+    pendingMainAttachment = null;
+    const imgInput = document.getElementById('chatMainImageInput');
+    if (imgInput) imgInput.value = '';
+    updateMainAttachmentPreview();
+    input.focus();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatTime(iso) {
+    if (!iso) return '';
+    try {
+        const d = new Date(iso), now = new Date(), diff = now - d;
+        if (diff < 60000) return 'Vừa xong';
+        if (diff < 3600000) return Math.floor(diff/60000) + ' phút';
+        if (diff < 86400000) return Math.floor(diff/3600000) + ' giờ';
+        return d.toLocaleDateString('vi-VN');
+    } catch(e) { return ''; }
+}
+function getCookie(name) {
+    const v = '; ' + document.cookie, p = v.split('; ' + name + '=');
+    if (p.length === 2) return p.pop().split(';').shift();
+}
+
+</script>
+</body>
+</html>

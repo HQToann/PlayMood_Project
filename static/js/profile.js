@@ -18,7 +18,7 @@ async function loadStats() {
 
         const likesEl = document.getElementById('totalLikesCount');
         if (likesEl) {
-            const statsRes = await fetch('/api/v1/artists/me/stats/');
+            const statsRes = await fetch(`/api/v1/artists/${targetUserId}/stats/`);
             if (statsRes.ok) {
                 const statsData = await statsRes.json();
                 if (statsData.success) {

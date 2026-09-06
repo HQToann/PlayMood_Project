@@ -27,6 +27,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # --- ỨNG DỤNG ---
 INSTALLED_APPS = [
+    "daphne",
     "unfold",
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,6 +51,8 @@ INSTALLED_APPS = [
     'notifications',
     'search',
     'recommendations',
+    'chat',
+    'posts',
 ]
 
 MIDDLEWARE = [
@@ -83,6 +86,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'music_platform.wsgi.application'
+ASGI_APPLICATION = 'music_platform.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        # 🔧 DEV: Dùng InMemory để không cần Redis khi phát triển local
+        # Khi deploy production: chuyển sang RedisChannelLayer
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [("127.0.0.1", 6379)],
+        # },
+    },
+}
 
 # --- DATABASE ---
 DATABASES = {

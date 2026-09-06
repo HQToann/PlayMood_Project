@@ -129,6 +129,7 @@
                 </div>
                 {% endif %}
                 
+                {% include 'includes/chat_widget.html' %}
             </aside>
 
     <!-- Logout Confirmation Modal -->
@@ -252,3 +253,5 @@
             100% { transform: translateX(-50%); }
         }
     </style>
+    <link href="{% static 'css/chat.css' %}?v=2.0" rel="stylesheet">
+    <script src="{% static 'js/chat.js' %}?v=2.0"></script>

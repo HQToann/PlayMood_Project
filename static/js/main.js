@@ -14,21 +14,27 @@ window.addEventListener('error', function(e) {
     }
 });
 
+// ═══════════════════════════════════════════════════════
+// GLOBAL MODAL BACKDROP CLEANUP
+// Fix lỗi màn hình đen khi đóng Modal trong khi Chat popup đang mở.
+// Bootstrap không tự xóa backdrop nếu có nhiều lớp overlay.
+// ═══════════════════════════════════════════════════════
+document.addEventListener('hidden.bs.modal', function () {
+    // Nếu không còn modal nào đang mở → dọn dẹp backdrop bị kẹt
+    if (!document.querySelector('.modal.show')) {
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+    }
+});
+
 // Global navigation wrapper to use AJAX router if available
 window.goToPage = function(url) {
     if (window.pmNavigate) {
         window.pmNavigate(url, true);
     } else {
         window.location.href = url;
-    }
-};
-
-// Global reload wrapper to use AJAX router if available (prevents music stopping)
-window.pmReload = function() {
-    if (window.pmNavigate) {
-        window.pmNavigate(window.location.href, false);
-    } else {
-        window.location.reload();
     }
 };
 // main.js
@@ -72,6 +78,48 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(() => {
         // Do nothing if not authenticated
     });
+
+    // 2. Thiết lập Real-time WebSocket cho Thông báo
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const notifSocket = new WebSocket(protocol + window.location.host + '/ws/notifications/');
+
+    notifSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.message === 'new_notification') {
+            const notif = data.notification;
+            
+            // Cập nhật số đếm chuông
+            document.querySelectorAll('.bell-badge').forEach(b => {
+                let count = parseInt(b.textContent) || 0;
+                count += 1;
+                b.textContent = count > 99 ? '99+' : count;
+                b.style.display = 'inline-block';
+                
+                const icon = b.parentElement.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-bell');
+                    icon.classList.add('bi-bell-fill', 'text-white');
+                }
+            });
+            
+            // Hiển thị Toast
+            if (window.showToast) {
+                let shortMsg = notif.message.length > 50 ? notif.message.substring(0, 47) + '...' : notif.message;
+                window.showToast(shortMsg, true);
+            }
+        } else if (data.message === 'new_chat_message') {
+            const notif = data.notification;
+            
+            // Nếu có icon chat-badge ở đâu đó, ta có thể đánh dấu, nhưng hiện tại chỉ show Toast
+            if (window.showToast) {
+                window.showToast(`<strong>${notif.title}</strong><br>${notif.message}`, true);
+            }
+        }
+    };
+    
+    notifSocket.onerror = function(err) {
+        console.error('Notification WebSocket error:', err);
+    };
 });
 
 
