@@ -88,17 +88,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'music_platform.wsgi.application'
 ASGI_APPLICATION = 'music_platform.asgi.application'
 
-CHANNEL_LAYERS = {
-    "default": {
-        # 🔧 DEV: Dùng InMemory để không cần Redis khi phát triển local
-        # Khi deploy production: chuyển sang RedisChannelLayer
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-        # "BACKEND": "channels_redis.core.RedisChannelLayer",
-        # "CONFIG": {
-        #     "hosts": [("127.0.0.1", 6379)],
-        # },
-    },
-}
+redis_url = config('REDIS_URL', default='')
+
+if redis_url:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [redis_url],
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
 
 # --- DATABASE ---
 DATABASES = {

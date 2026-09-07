@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: playmood-web
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "daphne music_platform.asgi:application --port $PORT --bind 0.0.0.0"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: playmood-redis
+          property: connectionString
+
+  - type: redis
+    name: playmood-redis
+    ipAllowList: []
+    plan: free
+
