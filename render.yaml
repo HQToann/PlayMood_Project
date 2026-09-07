@@ -1,6 +1,7 @@
 services:
   - type: web
     name: playmood-web
+    plan: free
     env: python
     buildCommand: "./build.sh"
     startCommand: "daphne music_platform.asgi:application --port $PORT --bind 0.0.0.0"
