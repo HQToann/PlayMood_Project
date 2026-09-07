@@ -179,7 +179,7 @@ function renderFeed(posts) {
                 <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-comment">
                     <i class="bi bi-chat fs-5"></i> Bình luận
                 </button>
-                <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-share" data-bs-toggle="modal" data-bs-target="#sharePostModal">
+                <button class="btn btn-link text-muted-custom text-decoration-none fw-bold action-btn btn-share">
                     <i class="bi bi-share fs-5"></i> Chia sẻ
                 </button>
             </div>

@@ -93,7 +93,7 @@ redis_url = config('REDIS_URL', default='')
 if redis_url:
     CHANNEL_LAYERS = {
         "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
             "CONFIG": {
                 "hosts": [redis_url],
             },

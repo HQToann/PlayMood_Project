@@ -106,7 +106,7 @@
 
     <!-- Modal Tạo Bài Viết Mới -->
     <div class="modal fade" id="createPostModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content bg-card text-white" style="border: 1px solid rgba(255,255,255,0.1);">
                 <div class="modal-header border-bottom border-secondary">
                     <h5 class="modal-title w-100 text-center fw-bold">Tạo bài viết</h5>
@@ -115,7 +115,7 @@
                 <div class="modal-body">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img src="{{ request.user.avatar.url|default:'https://ui-avatars.com/api/?name=User' }}"
-                            class="rounded-circle" width="45" height="45">
+                            class="rounded-circle" width="45" height="45" style="object-fit: cover;">
                         <div>
                             <h6 class="mb-0 fw-bold">{{ request.user.display_name }}</h6>
                             <select id="postVisibility"
@@ -127,17 +127,15 @@
                             </select>
                         </div>
                     </div>
-                    <textarea id="postContentInput"
-                        class="form-control bg-transparent text-white border-0 shadow-none px-0 fs-5 mb-3" rows="4"
-                        placeholder="{{ request.user.display_name }} ơi, bạn đang nghĩ gì thế?"></textarea>
+                    <textarea class="form-control bg-transparent text-white border-0 p-0 shadow-none mb-3" rows="3"
+                        placeholder="{{ request.user.display_name }} ơi, bạn đang nghĩ gì thế?" id="postContentInput"
+                        style="resize: none; font-size: 1.1rem; outline: none;"></textarea>
 
-                    <!-- Vùng Preview Ảnh & Nhạc -->
-                    <div id="postPreviewContainer" class="d-none mb-3 position-relative rounded overflow-hidden"
-                        style="max-height: 200px; border: 1px solid rgba(255,255,255,0.1);">
-                        <button type="button"
-                            class="btn btn-sm btn-dark position-absolute top-0 end-0 m-2 rounded-circle"
-                            id="removePostPreviewBtn" style="z-index: 5;"><i class="bi bi-x"></i></button>
-                        <img id="postImagePreview" src="" class="w-100 d-none" style="object-fit: cover;">
+                    <!-- Preview Container -->
+                    <div id="postPreviewContainer" class="position-relative d-none mb-3 border border-secondary rounded overflow-hidden">
+                        <button type="button" class="btn btn-dark btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
+                            id="removePostPreviewBtn" style="z-index: 10;"><i class="bi bi-x"></i></button>
+                        <img id="postImagePreview" src="" class="w-100 d-none" style="object-fit: contain; max-height: 300px; background: #000;">
                         <div id="postSongPreview" class="d-none p-3 bg-dark align-items-center gap-3">
                             <img id="postSongCover" src="" width="60" class="rounded">
                             <div>
@@ -157,7 +155,7 @@
                                 onclick="document.getElementById('postImageInput').click()"><i
                                     class="bi bi-images"></i></button>
                             <button type="button" class="btn btn-link p-1 text-info fs-4" data-bs-toggle="modal"
-                                data-bs-target="#postShareMusicModal"><i class="bi bi-music-note-beamed"></i></button>
+                                data-bs-target="#postShareMusicModal" id="postSearchMusicBtn"><i class="bi bi-music-note-beamed"></i></button>
                             <button type="button" class="btn btn-link p-1 text-primary fs-4"><i
                                     class="bi bi-person-fill-add"></i></button>
                             <button type="button" class="btn btn-link p-1 text-warning fs-4"><i
