@@ -50,6 +50,7 @@ function timeSince(dateString) {
 
 function renderFeed(posts) {
     const feedContainer = document.getElementById('postsFeedContainer');
+    if(!feedContainer) return;
     feedContainer.innerHTML = ''; // Clear loading
     
     if(posts.length === 0) {
