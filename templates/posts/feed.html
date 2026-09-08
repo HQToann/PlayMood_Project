@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -13,7 +13,7 @@
     <!-- Custom CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
-    <link href="{% static 'css/posts.css' %}" rel="stylesheet">
+    <link href="{% static 'css/posts.css' %}?v=2.0" rel="stylesheet">
 </head>
 
 <body>
@@ -34,29 +34,32 @@
                     <div style="padding: 24px 32px 140px 32px;">
 
                         <!-- POST FORM (Tạo bài viết mới) -->
-                        <div class="bg-card rounded-4 p-3 mb-4 shadow-sm">
-                            <div class="d-flex align-items-center gap-2 mb-3">
-                                <img src="{{ request.user.avatar.url|default:'https://ui-avatars.com/api/?name=User' }}"
-                                    class="rounded-circle" width="40" height="40" style="object-fit: cover;">
-                                <button class="btn w-100 text-start text-muted-custom"
-                                    style="background: rgba(255,255,255,0.05); border-radius: 20px; padding: 10px 15px;"
-                                    data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <div class="post-create-box">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.username|default:'U' }}{% endif %}"
+                                    class="rounded-circle flex-shrink-0" width="42" height="42"
+                                    style="object-fit: cover; border: 2px solid rgba(255,255,255,0.08);">
+                                <button class="post-create-trigger" data-bs-toggle="modal"
+                                    data-bs-target="#createPostModal">
                                     {{ request.user.display_name }} ơi, bạn đang nghĩ gì thế?
                                 </button>
                             </div>
-                            <hr class="border-secondary opacity-25">
-                            <div class="d-flex justify-content-between">
-                                <button class="btn btn-link text-muted-custom text-decoration-none fw-bold flex-grow-1"
-                                    data-bs-toggle="modal" data-bs-target="#createPostModal"
-                                    onclick="setTimeout(() => document.getElementById('postSearchMusicBtn').click(), 500)"><i
-                                        class="bi bi-music-note-beamed text-info"></i> Chia sẻ nhạc</button>
-                                <button class="btn btn-link text-muted-custom text-decoration-none fw-bold flex-grow-1"
-                                    data-bs-toggle="modal" data-bs-target="#createPostModal"
-                                    onclick="setTimeout(() => document.getElementById('postImageInput').click(), 500)"><i
-                                        class="bi bi-images text-success"></i> Ảnh/Video</button>
-                                <button
-                                    class="btn btn-link text-muted-custom text-decoration-none fw-bold flex-grow-1"><i
-                                        class="bi bi-emoji-smile text-warning"></i> Cảm xúc/Hoạt động</button>
+                            <hr class="post-create-divider">
+                            <div class="post-create-actions">
+                                <button type="button" class="post-create-action-btn" onclick="openShareMusicFlow()">
+                                    <i class="bi bi-music-note-beamed" style="color: #4CC9F0;"></i>
+                                    Chia sẻ nhạc
+                                </button>
+                                <button class="post-create-action-btn" data-bs-toggle="modal"
+                                    data-bs-target="#createPostModal"
+                                    onclick="setTimeout(() => document.getElementById('postImageInput').click(), 500)">
+                                    <i class="bi bi-images" style="color: #8CE1B2;"></i>
+                                    Ảnh/Video
+                                </button>
+                                <button type="button" class="post-create-action-btn" onclick="openFeelingFlow()">
+                                    <i class="bi bi-emoji-smile" style="color: #FFD166;"></i>
+                                    Cảm xúc
+                                </button>
                             </div>
                         </div>
 
@@ -72,189 +75,358 @@
 
                     </div>
                 </div>
+
+                <!-- POST SHARE MUSIC MODAL (Standalone, opens before createPostModal) -->
+                <div class="modal fade" id="postShareMusicModal" tabindex="-1" style="z-index: 1056;">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 420px;">
+                        <div class="modal-content text-white"
+                            style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+                            <div class="modal-header border-0 pb-1">
+                                <div>
+                                    <h5 class="modal-title fw-bold mb-0">Chia sẻ nhạc</h5>
+                                    <small class="text-muted-custom">Chọn bài hát để đăng bài</small>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body pt-2">
+                                <!-- Search bar -->
+                                <div class="d-flex align-items-center gap-2 mb-3 px-3 py-2 rounded-3"
+                                    style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
+                                    <i class="bi bi-search text-muted-custom"></i>
+                                    <input type="text" class="flex-grow-1 bg-transparent text-white border-0 outline-0"
+                                        id="postMusicSearchInput" placeholder="Tìm bài hát, nghệ sĩ..."
+                                        style="outline: none;">
+                                </div>
+                                <div id="postMusicSearchTitle" class="text-muted-custom small fw-bold mb-2"
+                                    style="letter-spacing:0.05em;">GỢI Ý CHO BẠN</div>
+                                <div id="postMusicSearchResults" class="d-flex flex-column gap-1"
+                                    style="max-height: 340px; overflow-y: auto;">
+                                    <div class="text-center text-muted-custom py-4">
+                                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODAL TAG BẠN BÈ -->
+                <div class="modal fade" id="postTagFriendsModal" tabindex="-1" style="z-index: 1057;">
+                    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+                        <div class="modal-content text-white"
+                            style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                                <div>
+                                    <h5 class="modal-title fw-bold mb-0">Tag bạn bè</h5>
+                                    <small class="text-muted-custom">Chọn bạn bè xuất hiện trong bài viết</small>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-0">
+                                <!-- Search bar -->
+                                <div class="px-3 pt-3 pb-2">
+                                    <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                                        style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
+                                        <i class="bi bi-search text-muted-custom"></i>
+                                        <input type="text" id="tagFriendSearchInput"
+                                            class="flex-grow-1 bg-transparent text-white border-0"
+                                            placeholder="Tìm bạn bè..." style="outline:none;">
+                                    </div>
+                                </div>
+                                <!-- Selected friends chips -->
+                                <div id="tagSelectedChips" class="px-3 pb-2 d-flex flex-wrap gap-2 d-none">
+                                    <!-- Chips render by JS -->
+                                </div>
+                                <!-- Friends list -->
+                                <div id="tagFriendList"
+                                    style="max-height: 340px; overflow-y: auto; padding: 0 8px 12px;">
+                                    <div class="text-center text-muted-custom py-4">
+                                        <div class="spinner-border spinner-border-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.07);">
+                                <button type="button" class="btn w-100 fw-bold" id="confirmTagFriendsBtn"
+                                    style="background: var(--accent-color); color: var(--bg-app); border-radius: 12px; padding: 10px;">Xác
+                                    nhận</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- MODAL CẢM XÚC / HOẠT ĐỘNG -->
+                <div class="modal fade" id="postFeelingModal" tabindex="-1" style="z-index: 1057;">
+                    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+                        <div class="modal-content text-white"
+                            style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                                <div>
+                                    <h5 class="modal-title fw-bold mb-0">Cảm xúc / Hoạt động</h5>
+                                    <small class="text-muted-custom">Bạn đang cảm thấy thế nào?</small>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-0">
+                                <!-- Search feeling -->
+                                <div class="px-3 pt-3 pb-2">
+                                    <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                                        style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
+                                        <i class="bi bi-search text-muted-custom"></i>
+                                        <input type="text" id="feelingSearchInput"
+                                            class="flex-grow-1 bg-transparent text-white border-0"
+                                            placeholder="Tìm cảm xúc..." style="outline:none;">
+                                    </div>
+                                </div>
+                                <!-- Feeling list -->
+                                <div id="feelingList" style="max-height: 380px; overflow-y: auto; padding: 0 8px 12px;">
+                                    <!-- Rendered by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Tạo Bài Viết Mới -->
+                <div class="modal fade" id="createPostModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content text-white"
+                            style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                                <h5 class="modal-title w-100 text-center fw-bold" style="font-size: 1rem;">Tạo bài viết
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.username|default:'U' }}{% endif %}"
+                                        class="rounded-circle" width="45" height="45" style="object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                                            {{ request.user.display_name }}
+                                            <span id="postFeelingBadge"
+                                                class="d-none align-items-center gap-1 fw-normal"
+                                                style="font-size:0.95rem;">
+                                                <span class="text-muted-custom">đang</span>
+                                                <span id="postFeelingText" class="text-white fw-semibold"></span>
+                                                <button type="button" id="removeFeelingBtn"
+                                                    class="btn btn-link p-0 text-danger" style="font-size:0.8rem;"
+                                                    title="Xóa cảm xúc">
+                                                    <i class="bi bi-x-circle-fill"></i>
+                                                </button>
+                                            </span>
+                                            <!-- Tag bạn bè badges -->
+                                            <span id="postTaggedFriendsBadge"
+                                                class="d-none align-items-center gap-1 fw-normal"
+                                                style="font-size:0.9rem;">
+                                                <span class="text-muted-custom">cùng với</span>
+                                                <span id="postTaggedFriendsText" class="text-white fw-semibold"></span>
+                                                <button type="button" id="removeTaggedFriendsBtn"
+                                                    class="btn btn-link p-0 text-danger" style="font-size:0.8rem;"
+                                                    title="Xóa tag">
+                                                    <i class="bi bi-x-circle-fill"></i>
+                                                </button>
+                                            </span>
+                                        </h6>
+                                        <select id="postVisibility" class="form-select form-select-sm text-white"
+                                            style="width: auto; padding: 2px 24px 2px 8px; font-size: 0.78rem; margin-top: 4px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;">
+                                            <option value="PUBLIC">🌍 Công khai</option>
+                                            <option value="FRIENDS">👥 Bạn bè</option>
+                                            <option value="PRIVATE">🔒 Chỉ mình tôi</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <textarea class="form-control bg-transparent text-white border-0 p-0 shadow-none mb-3"
+                                    rows="3" placeholder="{{ request.user.display_name }} ơi, bạn đang nghĩ gì thế?"
+                                    id="postContentInput"
+                                    style="resize: none; font-size: 1.1rem; outline: none;"></textarea>
+
+                                <!-- Preview Container -->
+                                <div id="postPreviewContainer"
+                                    class="position-relative d-none mb-3 border border-secondary rounded overflow-hidden">
+                                    <button type="button"
+                                        class="btn btn-dark btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
+                                        id="removePostPreviewBtn" style="z-index: 10;"><i class="bi bi-x"></i></button>
+                                    <img id="postImagePreview" src="" class="w-100 d-none"
+                                        style="object-fit: contain; max-height: 300px; background: #000;">
+                                    <div id="postSongPreview" class="d-none p-3 bg-dark align-items-center gap-3">
+                                        <img id="postSongCover" src="" width="60" class="rounded">
+                                        <div>
+                                            <div id="postSongTitle" class="fw-bold text-white"></div>
+                                            <div class="text-muted-custom small"><i class="bi bi-music-note-beamed"></i>
+                                                Bài hát
+                                                đính kèm</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center p-3 rounded-3"
+                                    style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);">
+                                    <span class="fw-semibold"
+                                        style="font-size: 0.88rem; color: var(--text-secondary);">Thêm vào bài
+                                        viết</span>
+                                    <div>
+                                        <input type="file" id="postImageInput" accept="image/*" class="d-none">
+                                        <input type="hidden" id="postSharedSongId">
+                                        <button type="button" class="btn btn-link p-1 text-success fs-4"
+                                            onclick="document.getElementById('postImageInput').click()"><i
+                                                class="bi bi-images"></i></button>
+                                        <button type="button" class="btn btn-link p-1 text-info fs-4"
+                                            id="postSearchMusicBtn" onclick="openPostShareMusicModal()"><i
+                                                class="bi bi-music-note-beamed"></i></button>
+                                        <button type="button" class="btn btn-link p-1 text-primary fs-4"
+                                            onclick="openTagFriendsModal()" title="Tag bạn bè"><i
+                                                class="bi bi-person-fill-add"></i></button>
+                                        <button type="button" class="btn btn-link p-1 text-warning fs-4"
+                                            onclick="openFeelingModal()"><i class="bi bi-emoji-smile"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.07);">
+                                <button type="button" class="btn w-100 fw-bold" id="btnSubmitPost"
+                                    style="background: var(--accent-color); color: var(--bg-app); border-radius: 12px; padding: 10px;">Đăng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Bình Luận -->
+                <div class="modal fade" id="commentPostModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content text-white"
+                            style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; height: 80vh;">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                                <h5 class="modal-title fw-bold" style="font-size: 1rem;">Bình luận</h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="commentListContainer" style="overflow-y: auto;">
+                                <div class="text-center py-5" id="commentLoadingSpinner">
+                                    <div class="spinner-border" style="color: var(--accent-color);" role="status"></div>
+                                </div>
+                                <div id="commentList" class="d-flex flex-column gap-3 d-none">
+                                    <!-- Render comments here -->
+                                </div>
+                            </div>
+                            <div class="modal-footer"
+                                style="border-top: 1px solid rgba(255,255,255,0.07); background: var(--bg-app);">
+                                <div class="d-flex align-items-center w-100 gap-2">
+                                    <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.username|default:'U' }}{% endif %}"
+                                        class="rounded-circle flex-shrink-0" width="36" height="36"
+                                        style="object-fit: cover; border: 2px solid rgba(255,255,255,0.08);">
+                                    <input type="text" id="commentInput" class="form-control rounded-pill text-white"
+                                        style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); font-size: 0.88rem; padding: 8px 16px;"
+                                        placeholder="Viết bình luận...">
+                                    <button type="button" id="submitCommentBtn"
+                                        class="btn rounded-circle d-flex align-items-center justify-content-center p-0 flex-shrink-0"
+                                        style="width: 36px; height: 36px; background: var(--accent-color); color: var(--bg-app); border: none;">
+                                        <i class="bi bi-send-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Chia Sẻ -->
+                <div class="modal fade" id="sharePostModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <!-- Lớp 1: Chọn bạn bè -->
+                        <div class="modal-content text-white" id="shareModalLayer1"
+                            style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                                <h5 class="modal-title w-100 text-center fw-bold" style="font-size: 1rem;">Chia sẻ</h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-0">
+                                <div class="p-3" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                                    <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                                        style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
+                                        <i class="bi bi-search" style="color: var(--text-secondary);"></i>
+                                        <input type="text" class="flex-grow-1 bg-transparent text-white border-0"
+                                            style="outline: none; font-size: 0.88rem;" placeholder="Tìm kiếm bạn bè...">
+                                    </div>
+                                </div>
+                                <div class="list-group list-group-flush" id="shareFriendList"
+                                    style="max-height: 300px; overflow-y: auto; padding: 8px;">
+                                    <!-- Render by JS -->
+                                    <button
+                                        class="list-group-item list-group-item-action bg-transparent text-white d-flex align-items-center gap-3 share-friend-item"
+                                        style="border: none; border-radius: 10px; padding: 10px 14px; margin-bottom: 2px; transition: background 0.15s;"
+                                        data-conversation-id="1">
+                                        <img src="https://ui-avatars.com/api/?name=F1" class="rounded-circle" width="40"
+                                            height="40" style="object-fit: cover;">
+                                        <span class="fw-bold" style="font-size: 0.9rem;">Bạn Bè 1</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lớp 2: Ghi lời nhắn -->
+                        <div class="modal-content text-white" id="shareModalLayer2"
+                            style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; display: none;">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                                <button type="button" class="btn btn-link text-white p-1 me-1" id="btnBackToLayer1"
+                                    style="border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-arrow-left fs-5"></i>
+                                </button>
+                                <h5 class="modal-title w-100 text-center fw-bold" style="font-size: 1rem;">Gửi cho bạn
+                                    bè</h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <textarea id="shareOptionalMessage"
+                                    class="w-100 bg-transparent text-white border-0 p-0 shadow-none mb-3" rows="3"
+                                    placeholder="Viết tin nhắn kèm theo..."
+                                    style="resize: none; font-size: 0.95rem; outline: none; font-family: inherit; line-height: 1.6;"></textarea>
+                                <div class="p-3 rounded-3" id="previewSharePostContent"
+                                    style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+                                    <!-- Preview bài viết -->
+                                    <span class="small" style="color: var(--text-secondary);">Đang đính kèm bài
+                                        viết...</span>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.07);">
+                                <button type="button" class="btn w-100 fw-bold" id="btnConfirmShare"
+                                    style="background: var(--accent-color); color: var(--bg-app); border-radius: 12px; padding: 10px; font-size: 0.92rem;">
+                                    <i class="bi bi-send me-2"></i>Gửi trong Chat
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                {% include 'includes/post_modals.html' %}
             </main>
+
 
             <!-- RIGHT SIDEBAR (Friends Activity) -->
             {% include 'includes/right_sidebar.html' %}
 
         </div>
 
-        <!-- POST SHARE MUSIC MODAL -->
-        <div class="modal fade pm-modal" id="postShareMusicModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-sm">
-                <div class="modal-content">
-                    <div class="modal-header border-bottom-0 pb-0">
-                        <h5 class="modal-title fs-6 fw-bold">Chia sẻ nhạc</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="text" class="form-control bg-dark text-white border-secondary mb-3 form-control-sm"
-                            id="postMusicSearchInput" placeholder="Tìm bài hát, nghệ sĩ...">
-                        <div id="postMusicSearchTitle" class="text-muted-custom small fw-bold mb-2">GỢI Ý CHO BẠN</div>
-                        <div id="postMusicSearchResults" class="d-flex flex-column gap-2"
-                            style="max-height: 300px; overflow-y: auto;">
-                            <!-- Results go here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{% static 'js/main.js' %}"></script>
 
-        <!-- PLAYER BAR -->
-        {% include 'includes/player_bar.html' %}
-    </div>
 
-    <!-- Modal Tạo Bài Viết Mới -->
-    <div class="modal fade" id="createPostModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content bg-card text-white" style="border: 1px solid rgba(255,255,255,0.1);">
-                <div class="modal-header border-bottom border-secondary">
-                    <h5 class="modal-title w-100 text-center fw-bold">Tạo bài viết</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <img src="{{ request.user.avatar.url|default:'https://ui-avatars.com/api/?name=User' }}"
-                            class="rounded-circle" width="45" height="45" style="object-fit: cover;">
-                        <div>
-                            <h6 class="mb-0 fw-bold">{{ request.user.display_name }}</h6>
-                            <select id="postVisibility"
-                                class="form-select form-select-sm bg-dark text-white border-secondary"
-                                style="width: auto; padding: 2px 24px 2px 8px; font-size: 0.8rem; margin-top: 2px;">
-                                <option value="PUBLIC">🌍 Công khai</option>
-                                <option value="FRIENDS">👥 Bạn bè</option>
-                                <option value="PRIVATE">🔒 Chỉ mình tôi</option>
-                            </select>
-                        </div>
-                    </div>
-                    <textarea class="form-control bg-transparent text-white border-0 p-0 shadow-none mb-3" rows="3"
-                        placeholder="{{ request.user.display_name }} ơi, bạn đang nghĩ gì thế?" id="postContentInput"
-                        style="resize: none; font-size: 1.1rem; outline: none;"></textarea>
+        <script>
+            window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
+        </script>
 
-                    <!-- Preview Container -->
-                    <div id="postPreviewContainer" class="position-relative d-none mb-3 border border-secondary rounded overflow-hidden">
-                        <button type="button" class="btn btn-dark btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
-                            id="removePostPreviewBtn" style="z-index: 10;"><i class="bi bi-x"></i></button>
-                        <img id="postImagePreview" src="" class="w-100 d-none" style="object-fit: contain; max-height: 300px; background: #000;">
-                        <div id="postSongPreview" class="d-none p-3 bg-dark align-items-center gap-3">
-                            <img id="postSongCover" src="" width="60" class="rounded">
-                            <div>
-                                <div id="postSongTitle" class="fw-bold text-white"></div>
-                                <div class="text-muted-custom small"><i class="bi bi-music-note-beamed"></i> Bài hát
-                                    đính kèm</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border border-secondary rounded p-3 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-white">Thêm vào bài viết của bạn</span>
-                        <div>
-                            <input type="file" id="postImageInput" accept="image/*" class="d-none">
-                            <input type="hidden" id="postSharedSongId">
-                            <button type="button" class="btn btn-link p-1 text-success fs-4"
-                                onclick="document.getElementById('postImageInput').click()"><i
-                                    class="bi bi-images"></i></button>
-                            <button type="button" class="btn btn-link p-1 text-info fs-4" data-bs-toggle="modal"
-                                data-bs-target="#postShareMusicModal" id="postSearchMusicBtn"><i class="bi bi-music-note-beamed"></i></button>
-                            <button type="button" class="btn btn-link p-1 text-primary fs-4"><i
-                                    class="bi bi-person-fill-add"></i></button>
-                            <button type="button" class="btn btn-link p-1 text-warning fs-4"><i
-                                    class="bi bi-emoji-smile"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-primary w-100 fw-bold" id="btnSubmitPost">Đăng</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Bình Luận -->
-    <div class="modal fade" id="commentPostModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content bg-card text-white" style="border: 1px solid rgba(255,255,255,0.1); height: 80vh;">
-                <div class="modal-header border-bottom border-secondary">
-                    <h5 class="modal-title fw-bold">Bình luận</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="commentListContainer">
-                    <div class="text-center py-5" id="commentLoadingSpinner">
-                        <div class="spinner-border text-primary" role="status"></div>
-                    </div>
-                    <div id="commentList" class="d-flex flex-column gap-3 d-none">
-                        <!-- Render comments here -->
-                    </div>
-                </div>
-                <div class="modal-footer border-top border-secondary bg-dark">
-                    <div class="d-flex align-items-center w-100 gap-2">
-                        <img src="{{ request.user.avatar.url|default:'https://ui-avatars.com/api/?name=User' }}" class="rounded-circle" width="36" height="36" style="object-fit: cover;">
-                        <input type="text" id="commentInput" class="form-control bg-transparent text-white border-secondary rounded-pill" placeholder="Viết bình luận...">
-                        <button type="button" id="submitCommentBtn" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px; flex-shrink: 0;">
-                            <i class="bi bi-send-fill"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Chia Sẻ (Giai đoạn 6) -->
-    <div class="modal fade" id="sharePostModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <!-- Lớp 1: Chọn bạn bè -->
-            <div class="modal-content bg-card text-white" id="shareModalLayer1"
-                style="border: 1px solid rgba(255,255,255,0.1);">
-                <div class="modal-header border-bottom border-secondary">
-                    <h5 class="modal-title w-100 text-center fw-bold">Chia sẻ</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="p-3 border-bottom border-secondary">
-                        <input type="text" class="form-control bg-dark text-white border-secondary"
-                            placeholder="Tìm kiếm...">
-                    </div>
-                    <div class="list-group list-group-flush" id="shareFriendList"
-                        style="max-height: 300px; overflow-y: auto;">
-                        <!-- Mock data -->
-                        <button
-                            class="list-group-item list-group-item-action bg-transparent text-white border-secondary d-flex align-items-center gap-3 share-friend-item"
-                            data-conversation-id="1">
-                            <img src="https://ui-avatars.com/api/?name=F1" class="rounded-circle" width="40">
-                            <span class="fw-bold">Bạn Bè 1</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lớp 2: Ghi lời nhắn -->
-            <div class="modal-content bg-card text-white" id="shareModalLayer2"
-                style="border: 1px solid rgba(255,255,255,0.1); display: none;">
-                <div class="modal-header border-bottom border-secondary">
-                    <button type="button" class="btn btn-link text-white p-0" id="btnBackToLayer1"><i
-                            class="bi bi-arrow-left fs-4"></i></button>
-                    <h5 class="modal-title w-100 text-center fw-bold ms-3">Gửi cho bạn bè</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <textarea id="shareOptionalMessage" class="form-control bg-dark text-white border-secondary mb-3"
-                        rows="3" placeholder="Viết tin nhắn..."></textarea>
-                    <div class="p-2 border border-secondary rounded bg-dark" id="previewSharePostContent">
-                        <!-- Preview bài viết -->
-                        <span class="small text-muted-custom">Đang đính kèm bài viết...</span>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-primary w-100 fw-bold" id="btnConfirmShare">Gửi trong
-                        Chat</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/posts.js' %}?v=2.0"></script>
+        <script src="{% static 'js/posts.js' %}?v=2.8"></script>
+        <script src="{% static 'js/feeling.js' %}?v=1.0"></script>
+        <script src="{% static 'js/tag_friends.js' %}?v=1.0"></script>
+    </div> <!-- closes app-container -->
+    <!-- PLAYER BAR -->
+    {% include 'includes/player_bar.html' %}
 </body>
 
 </html>

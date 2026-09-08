@@ -24,7 +24,7 @@
                                 <div class="dropdown d-xl-none">
             <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
                 {% if request.user.avatar %}
-                    <img src="{{ request.user.avatar.url }}" alt="avatar" class="user-avatar" id="mobileHeaderUserAvatar">
+                    <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.username|default:'U' }}{% endif %}" alt="avatar" class="user-avatar" id="mobileHeaderUserAvatar">
                 {% else %}
                     <img src="https://ui-avatars.com/api/?name={{ request.user.get_display_name|urlencode }}&background=random" alt="avatar" class="user-avatar" id="mobileHeaderUserAvatar">
                 {% endif %}

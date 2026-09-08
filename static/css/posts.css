@@ -1,81 +1,251 @@
-/* Màu nền chung */
-.bg-card { background-color: var(--bg-card); }
-.text-muted-custom { color: #b0b3b8 !important; }
+/* ============================================
+   PLAYMOOD - POSTS STYLESHEET
+   Design system: synced with style.css tokens
+   ============================================ */
 
-/* Các nút tương tác */
-.action-btn { 
-    display: flex; align-items: center; justify-content: center; gap: 8px; 
-    flex: 1; border-radius: 8px; color: #b0b3b8; 
+/* == Post Card ================================ */
+.post-card {
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: border-color 0.2s;
 }
-.action-btn:hover { background-color: rgba(255,255,255,0.1); color: #e4e6eb; }
+.post-card:hover { border-color: rgba(255, 255, 255, 0.1); }
 
-/* Trạng thái thả cảm xúc được JS đắp class vào */
-.action-btn.reacted-like { color: #2078f4; }
-.action-btn.reacted-love { color: #f33e58; }
-.action-btn.reacted-haha, .action-btn.reacted-wow, .action-btn.reacted-sad { color: #f7b125; }
+/* Post Header */
+.post-card .post-author-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.08);
+}
+.post-card .post-author-name {
+    font-weight: 700; font-size: 0.95rem;
+    color: #fff; text-decoration: none;
+}
+.post-card .post-author-name:hover { color: var(--accent-color); }
+.post-card .post-meta { font-size: 0.78rem; color: var(--text-secondary); }
+.post-pin-badge {
+    font-size: 0.72rem; color: var(--accent-color);
+    display: flex; align-items: center; gap: 3px; font-weight: 600;
+}
+
+/* 3-dots button */
+.post-dots-btn {
+    color: var(--text-secondary); background: none; border: none;
+    border-radius: 50%; width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s; cursor: pointer;
+}
+.post-dots-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+/* Dropdown menu */
+.post-dropdown-menu {
+    background-color: var(--bg-app) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
+    min-width: 210px !important;
+}
+.post-dropdown-menu .dropdown-item {
+    border-radius: 8px; padding: 9px 14px;
+    font-size: 0.88rem; font-weight: 500;
+    transition: background 0.15s;
+    display: flex; align-items: center; gap: 10px;
+}
+.post-dropdown-menu .dropdown-item:hover { background: rgba(255,255,255,0.07); }
+.post-dropdown-menu .dropdown-item.text-danger:hover { background: rgba(220,53,69,0.15); }
+.post-dropdown-menu .dropdown-divider {
+    border-color: rgba(255,255,255,0.08) !important; margin: 4px 0 !important;
+}
+
+/* Post Body */
+.post-content {
+    font-size: 0.95rem; line-height: 1.65;
+    color: rgba(255,255,255,0.95);
+    white-space: pre-wrap; word-break: break-word;
+}
+
+/* Stats bar */
+.post-stats-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 4px;
+}
+.post-reaction-stack { display: flex; align-items: center; gap: 2px; }
+.post-stats-count {
+    font-size: 0.82rem; color: var(--text-secondary);
+    cursor: pointer; transition: color 0.15s;
+}
+.post-stats-count:hover { color: #fff; }
+
+/* == Action Bar ================================ */
+.post-actions { display: flex; align-items: center; padding-top: 4px; }
+.action-btn {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 8px 4px; border-radius: 10px; border: none;
+    background: transparent; color: var(--text-secondary);
+    font-weight: 600; font-size: 0.88rem; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none; font-family: inherit;
+}
+.action-btn:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.action-btn i { font-size: 1.1rem; }
+.action-btn.reacted-like  { color: #4f9eff; }
+.action-btn.reacted-love  { color: #f33e58; }
+.action-btn.reacted-haha,
+.action-btn.reacted-wow,
+.action-btn.reacted-sad   { color: #f7b125; }
 .action-btn.reacted-angry { color: #e9710f; }
 
-/* DẢI CẢM XÚC (POPOVER) */
+/* == Reaction Popover ========================== */
+.reaction-container { position: relative; flex: 1; }
 .reaction-popover {
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 10px);
     left: 0;
-    background-color: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.1);
-    transform: translateY(10px) scale(0.8); /* Ẩn đi và thu nhỏ */
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 10;
+    background: var(--bg-app);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 40px;
+    padding: 8px 12px;
+    display: flex; gap: 6px;
+    transform: translateY(8px) scale(0.85);
+    opacity: 0; visibility: hidden;
+    transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    white-space: nowrap;
 }
-
-/* Kích hoạt Popover khi Hover vào container */
 .reaction-container:hover .reaction-popover {
-    transform: translateY(-5px) scale(1);
-    opacity: 1;
-    visibility: visible;
+    transform: translateY(0) scale(1);
+    opacity: 1; visibility: visible;
 }
+.react-icon {
+    font-size: 1.65rem; line-height: 1; cursor: pointer;
+    transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-block;
+}
+.react-icon:hover { transform: scale(1.45) translateY(-6px); }
 
-/* Hiệu ứng phóng to từng Icon khi hover */
-.react-icon { transition: transform 0.2s; }
-.react-icon:hover { transform: scale(1.3) translateY(-5px); }
-
-
-/* LƯỚI HÌNH ẢNH (GRID) */
+/* == Media Grid ================================ */
 .post-image-grid {
-    display: grid;
-    gap: 4px;
-    border-radius: 12px;
-    overflow: hidden;
-    height: 400px; /* Chiều cao cố định */
+    display: grid; gap: 3px;
+    border-radius: 14px; overflow: hidden; height: 380px; margin-top: 10px;
 }
 .grid-img {
-    background-size: cover;
-    background-position: center;
-    width: 100%; height: 100%;
-    cursor: pointer;
+    background-size: cover; background-position: center;
+    width: 100%; height: 100%; cursor: pointer; transition: filter 0.2s;
 }
-
-/* Biến thể cấu trúc lưới */
+.grid-img:hover { filter: brightness(1.06); }
 .grid-2 { grid-template-columns: 1fr 1fr; }
 .grid-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-.grid-3 .grid-img:first-child { grid-column: 1 / 3; } /* Cột 1 chiếm 2 vị trí */
+.grid-3 .grid-img:first-child { grid-column: 1 / 3; }
 .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-
-/* Lớp phủ đen khi ảnh quá nhiều */
-.more-overlay {
-    position: relative;
-}
+.more-overlay { position: relative; }
 .more-overlay::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
+    content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.52);
 }
 .more-overlay span {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    z-index: 2;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    color: white; z-index: 2; font-size: 1.5rem; font-weight: 700;
 }
+
+/* == Shared Song Card ========================== */
+.shared-song-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-left: 3px solid var(--accent-color);
+    border-radius: 12px; margin-top: 10px;
+    cursor: pointer; text-decoration: none;
+    transition: background 0.18s;
+}
+.shared-song-card:hover { background: rgba(140,225,178,0.07); }
+.shared-song-card .song-cover {
+    width: 52px; height: 52px; border-radius: 8px;
+    object-fit: cover; flex-shrink: 0;
+}
+.shared-song-card .song-title {
+    font-weight: 700; font-size: 0.9rem; color: #fff;
+    margin-bottom: 3px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.shared-song-card .song-artist {
+    font-size: 0.78rem; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.shared-song-card .song-icon {
+    color: var(--accent-color); font-size: 1.3rem;
+    margin-left: auto; flex-shrink: 0;
+}
+
+/* == Comment Section =========================== */
+.comment-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+.comment-item { display: flex; gap: 10px; margin-bottom: 12px; }
+.comment-item img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.comment-bubble {
+    background: rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 8px 14px; font-size: 0.88rem; line-height: 1.5;
+    color: rgba(255,255,255,0.92);
+}
+.comment-bubble .comment-author-name {
+    font-weight: 700; color: #fff; font-size: 0.88rem;
+}
+.comment-actions {
+    display: flex; gap: 12px; margin-top: 4px;
+    font-size: 0.78rem; color: var(--text-secondary); padding-left: 4px;
+}
+.comment-actions .comment-like-btn,
+.comment-actions .comment-reply-btn {
+    cursor: pointer; font-weight: 700; transition: color 0.15s;
+}
+.comment-actions .comment-like-btn:hover,
+.comment-actions .comment-reply-btn:hover { color: #fff; }
+.comment-actions .comment-like-btn.reacted-like { color: #4f9eff; }
+.comment-actions .comment-like-btn.reacted-love { color: #f33e58; }
+
+/* Comment input */
+.comment-input-wrap { display: flex; gap: 10px; align-items: center; padding-top: 8px; }
+.comment-input-wrap textarea {
+    flex: 1; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px; padding: 9px 16px;
+    color: #fff; font-size: 0.88rem; resize: none; outline: none;
+    transition: border-color 0.18s, background 0.18s; font-family: inherit; line-height: 1.5;
+}
+.comment-input-wrap textarea:focus {
+    border-color: rgba(140,225,178,0.4); background: rgba(255,255,255,0.09);
+}
+.comment-input-wrap textarea::placeholder { color: var(--text-secondary); }
+
+/* == Post Create Box =========================== */
+.post-create-box {
+    background: var(--bg-card); border-radius: 16px;
+    padding: 14px 20px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 16px;
+}
+.post-create-trigger {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 24px; padding: 10px 18px;
+    color: var(--text-secondary); font-size: 0.9rem;
+    text-align: left; cursor: pointer; width: 100%;
+    transition: background 0.15s, border-color 0.15s; font-family: inherit;
+}
+.post-create-trigger:hover {
+    background: rgba(255,255,255,0.09);
+    border-color: rgba(255,255,255,0.13); color: #fff;
+}
+.post-create-divider { border-color: rgba(255,255,255,0.06); margin: 10px 0; }
+.post-create-actions { display: flex; align-items: center; }
+.post-create-action-btn {
+    flex: 1; display: flex; align-items: center;
+    justify-content: center; gap: 7px; padding: 8px 4px;
+    border-radius: 10px; border: none; background: transparent;
+    color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: background 0.15s, color 0.15s; font-family: inherit;
+}
+.post-create-action-btn:hover { background: rgba(255,255,255,0.07); color: #fff; }

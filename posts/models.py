@@ -22,6 +22,11 @@ class Post(models.Model):
     # Hỗ trợ chức năng chia sẻ bài hát
     shared_song = models.ForeignKey('music.Song', on_delete=models.SET_NULL, null=True, blank=True, related_name='shared_in_posts', verbose_name='Bài hát chia sẻ')
     
+    # Hỗ trợ Tag bạn bè
+    tagged_users = models.ManyToManyField(User, blank=True, related_name='tagged_in_posts', verbose_name='Người được gắn thẻ')
+
+    is_pinned = models.BooleanField(default=False, verbose_name='Đã ghim')
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày đăng')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Cập nhật lần cuối')
 

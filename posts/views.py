@@ -35,9 +35,13 @@ class PostListView(View):
         try:
             page = int(request.GET.get('page', 1))
             page_size = int(request.GET.get('page_size', 10))
+            user_id = request.GET.get('user_id')
             
             # Sử dụng Selector chống N+1
-            qs = selectors.get_news_feed_queryset(request.user)
+            if user_id:
+                qs = selectors.get_user_posts_queryset(request.user, user_id)
+            else:
+                qs = selectors.get_news_feed_queryset(request.user)
             
             total = qs.count()
             total_pages = math.ceil(total / page_size) if total > 0 else 1
@@ -80,8 +84,13 @@ class PostListView(View):
                     'current_user_reaction': current_user_reaction,
                     'comments_count': len(post.comments.all()), # Avoid extra query
                     'shared_song': shared_song_data,
+                    'is_pinned': post.is_pinned,
                     'media': [
                         {'url': m.file_url, 'type': m.media_type} for m in post.media.all()
+                    ],
+                    'tagged_users': [
+                        {'id': str(u.id), 'display_name': u.get_display_name(), 'avatar': u.avatar.url if u.avatar else None}
+                        for u in post.tagged_users.all()
                     ]
                 }
                 items.append(post_data)
@@ -109,6 +118,7 @@ class PostListView(View):
             content = request.POST.get('content', '')
             visibility = request.POST.get('visibility', 'PUBLIC')
             shared_song_id = request.POST.get('shared_song_id')
+            tagged_user_ids = request.POST.getlist('tagged_user_ids')
             
             media_urls = []
             images = request.FILES.getlist('images')
@@ -127,6 +137,12 @@ class PostListView(View):
                 media_urls=media_urls,
                 shared_song_id=shared_song_id
             )
+            
+            # Gán tagged_users sau khi post đã được tạo
+            if tagged_user_ids:
+                from accounts.models import User as UserModel
+                tagged = UserModel.objects.filter(id__in=tagged_user_ids, is_active=True)
+                post.tagged_users.set(tagged)
             
             return JsonResponse({'success': True, 'data': {'id': str(post.id)}})
         except Exception as e:
@@ -299,5 +315,66 @@ class CommentReactionView(View):
                     'top_reactions': top_reaction_types
                 }
             })
+        except Exception as e:
+            return handle_exception(e)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PostDetailView(View):
+    """API Chỉnh sửa và Xóa bài viết."""
+    
+    def put(self, request, post_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+        try:
+            from .models import Post
+            import json
+            data = json.loads(request.body)
+            content = data.get('content', '')
+            
+            post = Post.objects.get(id=post_id)
+            if post.author != request.user:
+                return JsonResponse({'success': False, 'error': {'message': 'Không có quyền chỉnh sửa'}}, status=403)
+                
+            post.content = content
+            post.save()
+            return JsonResponse({'success': True, 'message': 'Đã cập nhật bài viết'})
+        except Post.DoesNotExist:
+            return JsonResponse({'success': False, 'error': {'message': 'Không tìm thấy bài viết'}}, status=404)
+        except Exception as e:
+            return handle_exception(e)
+            
+    def delete(self, request, post_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+        try:
+            from .models import Post
+            post = Post.objects.get(id=post_id)
+            if post.author != request.user:
+                return JsonResponse({'success': False, 'error': {'message': 'Không có quyền xóa'}}, status=403)
+                
+            post.delete()
+            return JsonResponse({'success': True, 'message': 'Đã xóa bài viết'})
+        except Post.DoesNotExist:
+            return JsonResponse({'success': False, 'error': {'message': 'Không tìm thấy bài viết'}}, status=404)
+        except Exception as e:
+            return handle_exception(e)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PostPinView(View):
+    """API Ghim/Bỏ ghim bài viết."""
+    def post(self, request, post_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
+        try:
+            from .models import Post
+            post = Post.objects.get(id=post_id)
+            if post.author != request.user:
+                return JsonResponse({'success': False, 'error': {'message': 'Không có quyền ghim'}}, status=403)
+                
+            post.is_pinned = not post.is_pinned
+            post.save()
+            return JsonResponse({'success': True, 'is_pinned': post.is_pinned, 'message': 'Đã cập nhật trạng thái ghim'})
+        except Post.DoesNotExist:
+            return JsonResponse({'success': False, 'error': {'message': 'Không tìm thấy bài viết'}}, status=404)
         except Exception as e:
             return handle_exception(e)

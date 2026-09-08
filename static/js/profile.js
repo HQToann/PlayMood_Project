@@ -276,17 +276,40 @@ window.switchToTab = function (tabName) {
     }
 };
 
-document.querySelectorAll('.profile-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
-        tab.classList.add('active');
-        const targetId = 'tab-' + tab.dataset.tab;
-        const section = document.getElementById(targetId);
-        if (section) section.style.display = 'block';
-    });
-});
+// Dùng event delegation trên document để hoạt động sau SPA navigation
+document.addEventListener('click', function (e) {
+        // Tab switching
+        var tab = e.target.closest('.profile-tab');
+        if (tab) {
+            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
+            tab.classList.add('active');
+            var targetId = 'tab-' + tab.dataset.tab;
+            var section = document.getElementById(targetId);
+            if (section) section.style.display = 'block';
 
+            // Load posts tab lazily
+            if (tab.dataset.tab === 'posts' && !window.profilePostsLoaded) {
+                window.profilePostsLoaded = true;
+                if (typeof loadProfilePosts === 'function') loadProfilePosts();
+            }
+        }
+
+        // Load more posts button
+        var loadMoreBtn = e.target.closest('#btnLoadMoreProfilePosts');
+        if (loadMoreBtn && window.hasNextProfilePostPage) {
+            window.currentProfilePostPage = (window.currentProfilePostPage || 1) + 1;
+            var originalText = loadMoreBtn.innerText;
+            loadMoreBtn.innerText = 'Đang tải...';
+            loadMoreBtn.disabled = true;
+            if (typeof loadProfilePosts === 'function') {
+                loadProfilePosts(true).finally(() => {
+                    loadMoreBtn.innerText = originalText;
+                    loadMoreBtn.disabled = false;
+                });
+            }
+        }
+});
 document.addEventListener('DOMContentLoaded', () => {
     const avatarInput = document.getElementById('avatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
@@ -537,3 +560,56 @@ window.submitUserReport = async function(event) {
         btn.disabled = false;
     }
 }
+
+// === TẢI BÀI VIẾT (TAB BÀI VIẾT) ===
+// Dùng window.* để event delegation truy cập được
+window.profilePostsLoaded = false;
+window.currentProfilePostPage = 1;
+window.hasNextProfilePostPage = true;
+
+async function loadProfilePosts(loadMore = false) {
+    if (!loadMore) {
+        window.currentProfilePostPage = 1;
+        document.getElementById('profilePostsContainer').innerHTML = `
+            <div class="d-flex justify-content-center py-4">
+                <div class="spinner-border text-secondary" role="status"></div>
+            </div>`;
+    }
+    
+    try {
+        const res = await fetch(`/api/v1/posts/?user_id=${window.TARGET_USER_ID}&page=${window.currentProfilePostPage}&page_size=10`);
+        const data = await res.json();
+        
+        if (data.success) {
+            if(!loadMore) document.getElementById('profilePostsContainer').innerHTML = '';
+            
+            if(data.data.items.length === 0 && !loadMore) {
+                document.getElementById('profilePostsContainer').innerHTML = `
+                    <div class="text-center py-5 text-muted-custom">
+                        <i class="bi bi-file-post display-1 text-secondary mb-3"></i>
+                        <p>Chưa có bài viết nào</p>
+                    </div>`;
+            } else {
+                if(window.renderFeed) {
+                    window.renderFeed(data.data.items, 'profilePostsContainer');
+                } else {
+                    console.error("renderFeed function not found. posts.js must be loaded before profile.js");
+                }
+            }
+            
+            window.hasNextProfilePostPage = data.data.pagination.has_next;
+            const btnLoadMore = document.getElementById('loadMoreProfilePostsContainer');
+            if (btnLoadMore) {
+                if (window.hasNextProfilePostPage) {
+                    btnLoadMore.classList.remove('d-none');
+                } else {
+                    btnLoadMore.classList.add('d-none');
+                }
+            }
+        }
+    } catch(err) {
+        console.error("Failed to load profile posts", err);
+    }
+}
+
+// Tab và load more đã được xử lý bằng event delegation ở trên

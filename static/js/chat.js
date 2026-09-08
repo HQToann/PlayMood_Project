@@ -1,32 +1,32 @@
 // static/js/chat.js
 
-let chatSocket = null;
-let currentConversationId = null;
-let currentTargetUserId = null;
-let typingTimeout = null;
-let isTyping = false;
+var chatSocket = null;
+var currentConversationId = null;
+var currentTargetUserId = null;
+var typingTimeout = null;
+var isTyping = false;
 
 // Variables for grouping messages
-let lastMessageSenderId = null;
-let lastMessageTimestamp = null;
+var lastMessageSenderId = null;
+var lastMessageTimestamp = null;
 
 // DOM Elements
-const chatWidget = document.getElementById('chatWidget');
-const closeChatBtn = document.getElementById('closeChatBtn');
-const chatHeaderName = document.getElementById('chatHeaderName');
-const chatHeaderAvatar = document.getElementById('chatHeaderAvatar');
-const chatHeaderStatus = document.getElementById('chatHeaderStatus');
-const chatHeaderOnlineDot = document.getElementById('chatHeaderOnlineDot');
-const chatHeaderProfileLink = document.getElementById('chatHeaderProfileLink');
+var chatWidget = document.getElementById('chatWidget');
+var closeChatBtn = document.getElementById('closeChatBtn');
+var chatHeaderName = document.getElementById('chatHeaderName');
+var chatHeaderAvatar = document.getElementById('chatHeaderAvatar');
+var chatHeaderStatus = document.getElementById('chatHeaderStatus');
+var chatHeaderOnlineDot = document.getElementById('chatHeaderOnlineDot');
+var chatHeaderProfileLink = document.getElementById('chatHeaderProfileLink');
 
-const chatMessages = document.getElementById('chatMessages');
-const chatBody = document.getElementById('chatBody');
-const chatLoading = document.getElementById('chatLoading');
-const chatTypingIndicator = document.getElementById('chatTypingIndicator');
+var chatMessages = document.getElementById('chatMessages');
+var chatBody = document.getElementById('chatBody');
+var chatLoading = document.getElementById('chatLoading');
+var chatTypingIndicator = document.getElementById('chatTypingIndicator');
 
-const chatForm = document.getElementById('chatForm');
-const chatInput = document.getElementById('chatInput');
-const chatSendBtn = document.getElementById('chatSendBtn');
+var chatForm = document.getElementById('chatForm');
+var chatInput = document.getElementById('chatInput');
+var chatSendBtn = document.getElementById('chatSendBtn');
 
 // Đóng chat
 if (closeChatBtn) {
@@ -144,6 +144,10 @@ async function loadMessageHistory(conversationId) {
 
 // Kết nối WebSocket
 function connectWebSocket(conversationId) {
+    if (chatSocket) {
+        chatSocket.close();
+    }
+
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const wsUrl = `${protocol}${window.location.host}/ws/chat/conversation/${conversationId}/`;
     
@@ -327,10 +331,10 @@ function appendMessageToUI(msg) {
 }
 
 // Khởi tạo các biến UI mới
-const chatAttachmentPreview = document.getElementById('chatAttachmentPreview');
-const chatAttachmentPreviewContent = document.getElementById('chatAttachmentPreviewContent');
-const chatRemoveAttachmentBtn = document.getElementById('chatRemoveAttachmentBtn');
-let pendingAttachment = null; // Có thể là {type: 'image', file: File, preview: string} hoặc {type: 'song', id: string, title: string, cover: string}
+var chatAttachmentPreview = document.getElementById('chatAttachmentPreview');
+var chatAttachmentPreviewContent = document.getElementById('chatAttachmentPreviewContent');
+var chatRemoveAttachmentBtn = document.getElementById('chatRemoveAttachmentBtn');
+var pendingAttachment = null; // Có thể là {type: 'image', file: File, preview: string} hoặc {type: 'song', id: string, title: string, cover: string}
 
 // Xử lý hiển thị Preview
 function updateAttachmentPreview() {
@@ -447,7 +451,7 @@ chatForm.addEventListener('submit', async function(e) {
 });
 
 // Xử lý Chọn ảnh (Chỉ lưu vào Preview, không gửi ngay)
-const chatImageInput = document.getElementById('chatImageInput');
+var chatImageInput = document.getElementById('chatImageInput');
 if (chatImageInput) {
     chatImageInput.addEventListener('change', function() {
         const file = this.files[0];
@@ -521,12 +525,12 @@ function updateSendButtonState() {
 }
 
 // === CHAT SHARE MUSIC MODAL LOGIC ===
-const chatShareMusicModalEl = document.getElementById('chatShareMusicModal');
-const chatMusicSearchInput = document.getElementById('chatMusicSearchInput');
-const chatShareMusicResults = document.getElementById('chatShareMusicResults');
-const chatShareMusicTitle = document.getElementById('chatShareMusicTitle');
+var chatShareMusicModalEl = document.getElementById('chatShareMusicModal');
+var chatMusicSearchInput = document.getElementById('chatMusicSearchInput');
+var chatShareMusicResults = document.getElementById('chatShareMusicResults');
+var chatShareMusicTitle = document.getElementById('chatShareMusicTitle');
 
-let musicSearchDebounce = null;
+var musicSearchDebounce = null;
 
 if (chatShareMusicModalEl) {
     

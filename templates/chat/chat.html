@@ -9,37 +9,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
-    <link href="{% static 'css/chat.css' %}" rel="stylesheet">
-    <style>
-        .chat-page-container { display: flex; height: calc(100vh - var(--player-height, 90px) - 70px); overflow: hidden; }
-        .conv-list-panel { width: 300px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; background: var(--bg-card, #1a1a2e); }
-        .conv-list-panel .panel-header { padding: 20px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-        .conv-list-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
-        .conv-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; border-radius: 12px; margin: 2px 8px; transition: background 0.15s; }
-        .conv-item:hover, .conv-item.active { background: rgba(255,255,255,0.06); }
-        .conv-item .conv-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .conv-item .conv-info { flex: 1; overflow: hidden; }
-        .conv-item .conv-name { font-weight: 600; font-size: 0.9rem; color: #fff; }
-        .conv-item .conv-preview { font-size: 0.78rem; color: rgba(255,255,255,0.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .conv-item .conv-time { font-size: 0.72rem; color: rgba(255,255,255,0.35); flex-shrink: 0; }
-        .chat-main-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .chat-main-header { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .chat-main-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .chat-main-messages { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
-        .chat-main-footer { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.07); }
-        .chat-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; font-size: 0.9rem; line-height: 1.4; word-break: break-word; }
-        .chat-bubble.mine { background: var(--accent-color, #6c5ce7); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .chat-bubble.theirs { background: rgba(255,255,255,0.08); color: #e0e0e0; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-input-area { display: flex; align-items: flex-end; gap: 10px; }
-        .chat-input-area textarea { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; color: #fff; padding: 10px 16px; resize: none; outline: none; font-size: 0.9rem; }
-        .chat-input-area textarea::placeholder { color: rgba(255,255,255,0.35); }
-        .chat-input-area textarea:focus { border-color: rgba(255,255,255,0.25); }
-        .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); gap: 12px; }
-        .empty-state i { font-size: 3rem; }
-        .shared-post-bubble { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; margin-top: 6px; background: rgba(255,255,255,0.05); max-width: 280px; }
-        .shared-post-bubble .post-img { border-radius: 8px; width: 100%; object-fit: cover; max-height: 140px; margin-bottom: 8px; }
-        .shared-post-bubble .avatar-img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-    </style>
+    <link href="{% static 'css/chat.css' %}?v=1.2" rel="stylesheet">
+
 </head>
 <body>
 <div class="app-container">
@@ -63,15 +34,15 @@
                 <div class="chat-main-panel" id="chatMainPanel">
                     <div class="empty-state" id="chatEmptyState">
                         <i class="bi bi-chat-square-text"></i>
-                        <p class="mb-0 fw-semibold" style="font-size:1rem;">Chọn cuộc trò chuyện để bắt đầu</p>
+                        <p class="mb-1">Chọn cuộc trò chuyện để bắt đầu</p>
                         <small>Tin nhắn của bạn sẽ hiển thị ở đây</small>
                     </div>
-                    <div id="chatActivePanel" class="d-none" style="flex-direction:column; flex:1; overflow:hidden;">
+                    <div id="chatActivePanel" class="d-none" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
                         <div class="chat-main-header">
-                            <img id="chatMainAvatar" src="https://ui-avatars.com/api/?name=U" alt="Avatar">
+                            <img id="chatMainAvatar" src="https://ui-avatars.com/api/?name=U" alt="Avatar" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.08);">
                             <div>
-                                <div id="chatMainName" class="fw-bold text-white" style="font-size:0.95rem;">...</div>
-                                <small class="text-muted-custom" style="font-size:0.75rem;">Đang hoạt động</small>
+                                <div id="chatMainName" class="chat-partner-name">...</div>
+                                <div class="chat-partner-status">Đang hoạt động</div>
                             </div>
                         </div>
                         <div class="chat-main-messages" id="chatMainMessages"></div>
@@ -92,7 +63,7 @@
                                     <i class="bi bi-music-note-beamed" style="font-size: 1.2rem;"></i>
                                 </button>
                                 <textarea id="chatMainInput" placeholder="Aa" rows="1"></textarea>
-                                <button type="button" id="chatMainSendBtn" class="btn btn-link p-1 m-0" style="color:var(--accent-color);" disabled>
+                                <button type="button" id="chatMainSendBtn" class="btn-send" style="opacity:0.5;" disabled>
                                     <i class="bi bi-send-fill" style="font-size:1.3rem;"></i>
                                 </button>
                             </div>
@@ -111,8 +82,8 @@
 <!-- Modal Chọn Nhạc để Gửi cho Chat Chính -->
 <div class="modal fade" id="chatMainShareMusicModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content text-white" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
-            <div class="modal-header border-bottom-0 pb-0">
+        <div class="modal-content text-white" style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
                 <h6 class="modal-title fw-bold">Chia sẻ Nhạc</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

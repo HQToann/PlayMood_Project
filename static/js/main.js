@@ -37,6 +37,16 @@ window.goToPage = function(url) {
         window.location.href = url;
     }
 };
+
+// Global reload wrapper
+window.pmReload = function() {
+    if (window.pmNavigate) {
+        window.pmNavigate(window.location.pathname + window.location.search, false);
+    } else {
+        window.location.reload();
+    }
+};
+
 // main.js
 // Common JS code for PlayMood
 

@@ -57,6 +57,7 @@ body {
     flex: 1;
     overflow: hidden;
     height: calc(100vh - var(--player-height));
+    min-height: 0;
 }
 
 /* Left Sidebar */
@@ -66,6 +67,33 @@ body {
     display: flex;
     flex-direction: column;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* Thanh cuộn tuỳ chỉnh - áp dụng cho sidebar trái */
+.custom-scrollbar {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    min-height: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 .brand-logo {
@@ -323,7 +351,7 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    z-index: 1060;
+    z-index: 1040;
 }
 
 .player-info {

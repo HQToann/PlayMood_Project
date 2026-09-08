@@ -380,7 +380,10 @@
                 });
 
                 // Collect body scripts in DOCUMENT ORDER, skip shell scripts
-                var bodyScripts = Array.from(doc.querySelectorAll("body > script"));
+                // Filter out scripts inside <main> because they were already handled above
+                var bodyScripts = Array.from(doc.querySelectorAll("body script")).filter(function(s) {
+                    return !s.closest("main.main-content");
+                });
 
                 // Build sequential chain (continue from main scripts chain)
                 bodyScripts.forEach(function (script) {

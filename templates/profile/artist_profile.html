@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -14,6 +14,7 @@
     <link href="{% static 'css/style.css' %}?v=7" rel="stylesheet">
     <link href="{% static 'css/home.css' %}" rel="stylesheet">
     <link href="{% static 'css/profile.css' %}?v=7" rel="stylesheet">
+    <link href="{% static 'css/posts.css' %}?v=2.0" rel="stylesheet">
 </head>
 
 <body>
@@ -246,6 +247,7 @@
                     <!-- Profile Tabs -->
                     <div class="profile-tabs">
                         <div class="profile-tab active" data-tab="overview">Tổng quan</div>
+                        <div class="profile-tab" data-tab="posts">Bài viết</div>
                         <div class="profile-tab" data-tab="albums">Album</div>
                         <div class="profile-tab" data-tab="playlists">Playlist</div>
                         {% if is_own_profile %}
@@ -298,6 +300,23 @@
                             </div>
                         </div>
                         {% endif %}
+                    </div>
+
+                    <!-- TAB: Bài viết -->
+                    <div id="tab-posts" class="tab-section" style="display:none;">
+                        <div class="home-section mb-5" style="max-width: 800px; margin: 0 auto;">
+                            <!-- Container for posts -->
+                            <div id="profilePostsContainer" class="d-flex flex-column gap-4">
+                                <div class="d-flex justify-content-center py-4">
+                                    <div class="spinner-border text-secondary" role="status"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Nút tải thêm bài viết -->
+                            <div class="text-center mt-3 d-none" id="loadMoreProfilePostsContainer">
+                                <button class="btn btn-outline-secondary rounded-pill px-4" id="btnLoadMoreProfilePosts">Tải thêm</button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- TAB: Album -->
@@ -358,9 +377,7 @@
 
         </div>
 
-        <!-- PLAYER BAR -->
-        {% include 'includes/player_bar.html' %}
-    </div>
+        
 
     <!-- Mobile Offcanvas Menu -->
     <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
@@ -750,9 +767,14 @@
 
     <script>
         window.TARGET_USER_ID = "{{ target_user.id|default:request.user.id }}";
+        window.CURRENT_USER_ID = "{{ request.user.id|default:'' }}";
     </script>
+    <script src="{% static 'js/posts.js' %}?v=2.6"></script>
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
     <script src="{% static 'js/profile.js' %}?v=2.4"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </div> <!-- closes app-container -->
+    <!-- PLAYER BAR -->
+    {% include 'includes/player_bar.html' %}
 </body>
 </html>

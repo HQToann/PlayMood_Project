@@ -11,7 +11,7 @@
                             <!-- Avatar with relative positioning -->
                             <div class="position-relative">
                                 {% if request.user.avatar %}
-                                <img src="{{ request.user.avatar.url }}" alt="avatar" class="rounded-circle shadow-sm" id="headerUserAvatar" style="width: 48px; height: 48px; object-fit: cover;">
+                                <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.username|default:'U' }}{% endif %}" alt="avatar" class="rounded-circle shadow-sm" id="headerUserAvatar" style="width: 48px; height: 48px; object-fit: cover;">
                                 {% else %}
                                 <img src="https://ui-avatars.com/api/?name={{ request.user.get_display_name|urlencode }}&background=random" alt="avatar" class="rounded-circle shadow-sm" id="headerUserAvatar" style="width: 48px; height: 48px; object-fit: cover;">
                                 {% endif %}

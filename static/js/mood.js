@@ -546,10 +546,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-let currentSearchQuery = '';
-let currentSearchPage = 1;
-let isSearchLoading = false;
-let hasMoreSearchResults = true;
+var currentSearchQuery = '';
+var currentSearchPage = 1;
+var isSearchLoading = false;
+var hasMoreSearchResults = true;
 
 async function fetchSongs(query, page = 1, append = false) {
     if (isSearchLoading || (!hasMoreSearchResults && page > 1)) return;

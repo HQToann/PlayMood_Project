@@ -233,7 +233,9 @@ def list_friends(user, page=1, page_size=50, search_query="") -> dict:
         from django.db.models import Q
         qs = qs.filter(
             Q(username__icontains=search_query) |
-            Q(email__icontains=search_query)
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
         )
         
     qs = qs.select_related('mood', 'mood__song', 'mood__song__artist').order_by('username')
