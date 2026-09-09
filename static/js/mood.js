@@ -405,32 +405,44 @@ async function loadMoodData() {
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     loadMoodData();
-
-    // Event delegation for expires hours
-    const expiresDropdownMenu = document.getElementById('expiresDropdownMenu');
-    if (expiresDropdownMenu) {
-        expiresDropdownMenu.addEventListener('click', (e) => {
-            const item = e.target.closest('.custom-dropdown-item');
-            if (item) {
-                e.preventDefault();
-                const val = item.dataset.val;
-                const text = item.dataset.text;
-                
-                const input = document.getElementById('expires_hours_input');
-                if (input) input.value = val;
-                
-                const textEl = document.getElementById('selectedExpiresText');
-                if (textEl) textEl.textContent = text;
-
-                // Update active state
-                const items = expiresDropdownMenu.querySelectorAll('.custom-dropdown-item');
-                items.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-            }
-        });
-    }
 });
-// Event delegation for select expires hours handled in DOMContentLoaded
+
+// Fix dropdown chọn thời gian tự xóa:
+// Dùng 'mousedown' thay vì 'click' vì Bootstrap xử lý 'click' để đóng dropdown TRƯỚC khi event bubble lên
+// Dùng document-level delegation để hoạt động sau SPA navigation
+document.addEventListener('mousedown', function (e) {
+    const item = e.target.closest('#expiresDropdownMenu .custom-dropdown-item');
+    if (!item) return;
+
+    e.preventDefault(); // ngăn Bootstrap đóng dropdown
+    e.stopPropagation();
+
+    const val = item.dataset.val;
+    const text = item.dataset.text;
+
+    const input = document.getElementById('expires_hours_input');
+    if (input) input.value = val;
+
+    const textEl = document.getElementById('selectedExpiresText');
+    if (textEl) textEl.textContent = text;
+
+    // Cập nhật active state
+    const menu = document.getElementById('expiresDropdownMenu');
+    if (menu) {
+        menu.querySelectorAll('.custom-dropdown-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+    }
+
+    // Đóng dropdown sau khi chọn xong
+    setTimeout(() => {
+        const toggle = document.querySelector('[data-bs-toggle="dropdown"][aria-expanded="true"]');
+        if (toggle) {
+            const bsDropdown = bootstrap.Dropdown.getInstance(toggle);
+            if (bsDropdown) bsDropdown.hide();
+        }
+    }, 10);
+});
+
 
 // Handle form submit
 window.handlePostMood = async function(event) {
