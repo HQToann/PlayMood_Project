@@ -414,8 +414,8 @@ document.addEventListener('mousedown', function (e) {
     const item = e.target.closest('#expiresDropdownMenu .custom-dropdown-item');
     if (!item) return;
 
-    e.preventDefault(); // ngăn Bootstrap đóng dropdown
-    e.stopPropagation();
+    // KHÔNG dùng stopPropagation - tránh chặn sự kiện khác trên trang
+    // KHÔNG dùng preventDefault trên mousedown vì sẽ chặn focus
 
     const val = item.dataset.val;
     const text = item.dataset.text;
@@ -433,7 +433,7 @@ document.addEventListener('mousedown', function (e) {
         item.classList.add('active');
     }
 
-    // Đóng dropdown sau khi chọn xong
+    // Đóng dropdown sau khi chọn xong (delay nhỏ để DOM cập nhật trước)
     setTimeout(() => {
         const toggle = document.querySelector('[data-bs-toggle="dropdown"][aria-expanded="true"]');
         if (toggle) {

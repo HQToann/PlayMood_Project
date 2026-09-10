@@ -162,7 +162,7 @@ def list_feed(user, page=1, page_size=20) -> dict:
         .filter(user_id__in=following_ids)
         .exclude(user_id__in=blocked_ids)
         .exclude(activity_type='mood', user__show_mood=False)
-        .select_related('user', 'song', 'song__artist') # tối ưu N+1, JOIN 1 lần
+        .select_related('user', 'user__artist_profile', 'song', 'song__artist', 'song__artist__artist_profile') # tối ưu N+1, JOIN 1 lần
         .order_by('-created_at')
     )
 
@@ -187,7 +187,7 @@ def list_my_activities(user, page=1, page_size=20) -> dict:
     qs = (
         FriendActivity.objects
         .filter(user=user)
-        .select_related('user', 'song', 'song__artist')
+        .select_related('user', 'user__artist_profile', 'song', 'song__artist', 'song__artist__artist_profile')
         .order_by('-created_at')
     )
     total = qs.count()
@@ -238,7 +238,7 @@ def list_friends(user, page=1, page_size=50, search_query="") -> dict:
             Q(last_name__icontains=search_query)
         )
         
-    qs = qs.select_related('mood', 'mood__song', 'mood__song__artist').order_by('username')
+    qs = qs.select_related('artist_profile', 'mood', 'mood__song', 'mood__song__artist').order_by('username')
     total = qs.count()
     start = (page - 1) * page_size
     items = []

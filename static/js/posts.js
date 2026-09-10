@@ -446,8 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('shared_song_id', postSharedSongId.value);
             }
             // Gửi danh sách người được tag (nếu có)
-            if (typeof taggedFriends !== 'undefined' && taggedFriends.length > 0) {
-                taggedFriends.forEach(f => formData.append('tagged_user_ids', f.id));
+            if (window.taggedFriends && window.taggedFriends.length > 0) {
+                window.taggedFriends.forEach(f => formData.append('tagged_user_ids', f.id));
             }
 
             btnSubmitPost.disabled = true;
@@ -989,7 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Lấy thông tin bài viết để làm preview
                 const postCard = document.querySelector(`.post-card[data-post-id="${sharePostId}"]`);
-                const authorName = postCard.querySelector('.fw-bold.text-white.text-decoration-none').innerText;
+                const authorName = postCard.querySelector('.post-author-name').innerText;
                 document.getElementById('previewSharePostContent').innerHTML = `
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <i class="bi bi-reply-fill text-muted-custom"></i>

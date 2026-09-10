@@ -1,6 +1,9 @@
 // === TAG BẠN BÈ FEATURE ===
+// BUG FIX: Khi SPA router chạy lại script này qua fetchAndRun, nó wrap code vào
+// (function(){...})() nên 'var taggedFriends' trở thành biến CỤC BỘ, không accessible
+// từ posts.js. Fix: dùng window.taggedFriends để đảm bảo luôn là biến TOÀN CỤC.
 
-var taggedFriends = []; // [{ id, display_name, avatar }]
+window.taggedFriends = []; // [{ id, display_name, avatar }] - PHẢI là window để posts.js đọc được
 var tagFriendSearchDebounce = null;
 
 // Mở modal tag bạn bè
@@ -33,7 +36,7 @@ async function loadTagFriendList(query = '') {
 
         listEl.innerHTML = '';
         friends.forEach(friend => {
-            const isSelected = taggedFriends.some(f => f.id === friend.id);
+            const isSelected = window.taggedFriends.some(f => f.id === friend.id);
             const avatar = friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.display_name)}&background=random`;
 
             const item = document.createElement('div');
@@ -55,12 +58,12 @@ async function loadTagFriendList(query = '') {
             if (isSelected) item.style.backgroundColor = 'rgba(13,110,253,0.12)';
 
             item.addEventListener('mouseenter', () => {
-                if (!taggedFriends.some(f => f.id === friend.id)) {
+                if (!window.taggedFriends.some(f => f.id === friend.id)) {
                     item.style.backgroundColor = 'rgba(255,255,255,0.07)';
                 }
             });
             item.addEventListener('mouseleave', () => {
-                if (!taggedFriends.some(f => f.id === friend.id)) {
+                if (!window.taggedFriends.some(f => f.id === friend.id)) {
                     item.style.backgroundColor = 'transparent';
                 }
             });
@@ -75,20 +78,20 @@ async function loadTagFriendList(query = '') {
 
 // Toggle chọn/bỏ chọn bạn bè
 function toggleTagFriend(friend, itemEl) {
-    const idx = taggedFriends.findIndex(f => f.id === friend.id);
+    const idx = window.taggedFriends.findIndex(f => f.id === friend.id);
     const checkIcon = itemEl.querySelector('.tag-check-icon');
     const uncheckIcon = itemEl.querySelector('.tag-uncheck-icon');
 
     if (idx === -1) {
         // Thêm vào
-        taggedFriends.push(friend);
+        window.taggedFriends.push(friend);
         itemEl.style.backgroundColor = 'rgba(13,110,253,0.12)';
         checkIcon.classList.remove('d-none');
         checkIcon.style.display = 'flex';
         uncheckIcon.classList.add('d-none');
     } else {
         // Bỏ chọn
-        taggedFriends.splice(idx, 1);
+        window.taggedFriends.splice(idx, 1);
         itemEl.style.backgroundColor = 'transparent';
         checkIcon.classList.add('d-none');
         uncheckIcon.classList.remove('d-none');
@@ -102,31 +105,29 @@ function updateTagSelectedChips() {
     const chipsEl = document.getElementById('tagSelectedChips');
     if (!chipsEl) return;
 
-    if (!taggedFriends.length) {
+    if (!window.taggedFriends.length) {
         chipsEl.classList.add('d-none');
-        chipsEl.innerHTML = '';
         return;
     }
 
-    chipsEl.classList.remove('d-none');
-    chipsEl.innerHTML = taggedFriends.map(f => {
+    chipsEl.innerHTML = window.taggedFriends.map(f => {
         const avatar = f.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(f.display_name)}&background=random`;
         return `
-            <span class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill"
-                style="background:rgba(13,110,253,0.25); font-size:0.82rem; cursor:pointer;"
-                onclick="removeTaggedFriend('${f.id}')">
-                <img src="${avatar}" width="20" height="20" class="rounded-circle" style="object-fit:cover;">
+            <div class="d-flex align-items-center gap-1 px-2 py-1 rounded-pill" style="background:rgba(13,110,253,0.18);font-size:0.78rem;">
+                <img src="${avatar}" class="rounded-circle" width="20" height="20" style="object-fit:cover;">
                 <span class="text-white">${f.display_name}</span>
-                <i class="bi bi-x text-muted"></i>
-            </span>
+                <button type="button" onclick="window.removeTagFromChips('${f.id}')" class="btn btn-link p-0 text-danger ms-1" style="font-size:0.7rem;line-height:1;"><i class="bi bi-x"></i></button>
+            </div>
         `;
     }).join('');
+    chipsEl.classList.remove('d-none');
 }
 
-// Xóa một người khỏi danh sách tag (từ chip)
-window.removeTaggedFriend = function(friendId) {
-    taggedFriends = taggedFriends.filter(f => f.id !== friendId);
+// Xóa một tag từ chips
+window.removeTagFromChips = function(friendId) {
+    window.taggedFriends = window.taggedFriends.filter(f => f.id !== friendId);
     updateTagSelectedChips();
+    applyTaggedFriendsToPost();
     // Cập nhật lại check icon trong danh sách
     const item = document.querySelector(`.tag-friend-item[data-friend-id="${friendId}"]`);
     if (item) {
@@ -143,7 +144,7 @@ function applyTaggedFriendsToPost() {
     const textEl = document.getElementById('postTaggedFriendsText');
     if (!badge || !textEl) return;
 
-    if (!taggedFriends.length) {
+    if (!window.taggedFriends.length) {
         badge.classList.add('d-none');
         badge.classList.remove('d-inline-flex');
         return;
@@ -151,12 +152,12 @@ function applyTaggedFriendsToPost() {
 
     // Hiện tên: "An" hoặc "An và 2 người khác"
     let displayText = '';
-    if (taggedFriends.length === 1) {
-        displayText = taggedFriends[0].display_name;
-    } else if (taggedFriends.length === 2) {
-        displayText = `${taggedFriends[0].display_name} và ${taggedFriends[1].display_name}`;
+    if (window.taggedFriends.length === 1) {
+        displayText = window.taggedFriends[0].display_name;
+    } else if (window.taggedFriends.length === 2) {
+        displayText = `${window.taggedFriends[0].display_name} và ${window.taggedFriends[1].display_name}`;
     } else {
-        displayText = `${taggedFriends[0].display_name} và ${taggedFriends.length - 1} người khác`;
+        displayText = `${window.taggedFriends[0].display_name} và ${window.taggedFriends.length - 1} người khác`;
     }
 
     textEl.textContent = displayText;
@@ -168,20 +169,26 @@ function applyTaggedFriendsToPost() {
 document.addEventListener('DOMContentLoaded', () => {
     const tagModalEl = document.getElementById('postTagFriendsModal');
     if (tagModalEl) {
-        // Khi modal mở: load danh sách bạn bè
+        // Khi modal mở: load danh sách bạn bè + reset search input
         tagModalEl.addEventListener('shown.bs.modal', () => {
             const searchInput = document.getElementById('tagFriendSearchInput');
             if (searchInput) {
                 searchInput.value = '';
                 searchInput.focus();
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(tagFriendSearchDebounce);
-                    tagFriendSearchDebounce = setTimeout(() => loadTagFriendList(this.value.trim()), 350);
-                });
             }
             loadTagFriendList();
             updateTagSelectedChips();
         });
+
+        // BUG FIX: Bind input listener MỘT LẦN duy nhất trong DOMContentLoaded,
+        // KHÔNG bind bên trong shown.bs.modal (sẽ gây duplicate listener mỗi lần mở modal)
+        const searchInput = document.getElementById('tagFriendSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(tagFriendSearchDebounce);
+                tagFriendSearchDebounce = setTimeout(() => loadTagFriendList(this.value.trim()), 350);
+            });
+        }
     }
 
     // Nút xác nhận trong tag modal
@@ -194,8 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Sau khi modal đóng, mở lại createPostModal nếu chưa mở
             const createModalEl = document.getElementById('createPostModal');
-            const existingModal = bootstrap.Modal.getInstance(createModalEl);
-            if (!createModalEl.classList.contains('show')) {
+            if (createModalEl && !createModalEl.classList.contains('show')) {
                 tagModalEl.addEventListener('hidden.bs.modal', function openCreate() {
                     tagModalEl.removeEventListener('hidden.bs.modal', openCreate);
                     bootstrap.Modal.getOrCreateInstance(createModalEl).show();
@@ -208,16 +214,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeTagBtn = document.getElementById('removeTaggedFriendsBtn');
     if (removeTagBtn) {
         removeTagBtn.addEventListener('click', () => {
-            taggedFriends = [];
+            window.taggedFriends = [];
             applyTaggedFriendsToPost();
         });
     }
 
-    // Reset khi createPostModal đóng
+    // Reset khi createPostModal đóng thực sự (không phải do mở tag modal đè lên)
     const createModalEl = document.getElementById('createPostModal');
     if (createModalEl) {
         createModalEl.addEventListener('hidden.bs.modal', () => {
-            taggedFriends = [];
+            // Không clear nếu tag modal đang mở (bootstrap chưa đóng createPostModal xong)
+            const tagModal = document.getElementById('postTagFriendsModal');
+            if (tagModal && tagModal.classList.contains('show')) return;
+            // Không clear nếu feeling modal đang mở
+            const feelingModal = document.getElementById('postFeelingModal');
+            if (feelingModal && feelingModal.classList.contains('show')) return;
+
+            window.taggedFriends = [];
             applyTaggedFriendsToPost();
         });
     }

@@ -277,38 +277,48 @@ window.switchToTab = function (tabName) {
 };
 
 // Dùng event delegation trên document để hoạt động sau SPA navigation
+// Guard: chỉ xử lý khi đang ở trang profile (có .profile-tab trong DOM)
 document.addEventListener('click', function (e) {
-        // Tab switching
-        var tab = e.target.closest('.profile-tab');
-        if (tab) {
-            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
-            tab.classList.add('active');
-            var targetId = 'tab-' + tab.dataset.tab;
-            var section = document.getElementById(targetId);
-            if (section) section.style.display = 'block';
+    // Tab switching - chỉ xử lý khi có .profile-tab trong DOM
+    var tab = e.target.closest('.profile-tab');
+    if (tab) {
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
+        tab.classList.add('active');
+        var targetId = 'tab-' + tab.dataset.tab;
+        var section = document.getElementById(targetId);
+        if (section) section.style.display = 'block';
 
-            // Load posts tab lazily
-            if (tab.dataset.tab === 'posts' && !window.profilePostsLoaded) {
-                window.profilePostsLoaded = true;
-                if (typeof loadProfilePosts === 'function') loadProfilePosts();
-            }
+        // Load posts tab lazily
+        if (tab.dataset.tab === 'posts' && !window.profilePostsLoaded) {
+            window.profilePostsLoaded = true;
+            if (typeof loadProfilePosts === 'function') loadProfilePosts();
         }
+    }
 
-        // Load more posts button
-        var loadMoreBtn = e.target.closest('#btnLoadMoreProfilePosts');
-        if (loadMoreBtn && window.hasNextProfilePostPage) {
-            window.currentProfilePostPage = (window.currentProfilePostPage || 1) + 1;
-            var originalText = loadMoreBtn.innerText;
-            loadMoreBtn.innerText = 'Đang tải...';
-            loadMoreBtn.disabled = true;
-            if (typeof loadProfilePosts === 'function') {
-                loadProfilePosts(true).finally(() => {
-                    loadMoreBtn.innerText = originalText;
-                    loadMoreBtn.disabled = false;
-                });
-            }
+    // Load more posts button
+    var loadMoreBtn = e.target.closest('#btnLoadMoreProfilePosts');
+    if (loadMoreBtn && window.hasNextProfilePostPage) {
+        window.currentProfilePostPage = (window.currentProfilePostPage || 1) + 1;
+        var originalText = loadMoreBtn.innerText;
+        loadMoreBtn.innerText = 'Đang tải...';
+        loadMoreBtn.disabled = true;
+        if (typeof loadProfilePosts === 'function') {
+            loadProfilePosts(true).finally(() => {
+                loadMoreBtn.innerText = originalText;
+                loadMoreBtn.disabled = false;
+            });
         }
+    }
+});
+
+// Reset trạng thái khi SPA navigate rời trang profile
+// Đảm bảo khi quay lại profile, bài viết được tải lại từ đầu
+document.addEventListener('DOMContentLoaded', function () {
+    // Reset profilePostsLoaded mỗi lần trang profile được khởi tạo
+    window.profilePostsLoaded = false;
+    window.currentProfilePostPage = 1;
+    window.hasNextProfilePostPage = true;
 });
 document.addEventListener('DOMContentLoaded', () => {
     const avatarInput = document.getElementById('avatarInput');

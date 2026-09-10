@@ -69,7 +69,7 @@ function renderFeelingList(filter = '') {
     });
 }
 
-function selectFeeling(emoji, label) {
+window.selectFeeling = function(emoji, label) {
     currentFeeling = { emoji, label };
 
     // Đóng feeling modal
@@ -96,7 +96,7 @@ function selectFeeling(emoji, label) {
     }
 }
 
-function applyFeelingToPost() {
+window.applyFeelingToPost = function() {
     if (!currentFeeling) return;
     const badge = document.getElementById('postFeelingBadge');
     const textEl = document.getElementById('postFeelingText');

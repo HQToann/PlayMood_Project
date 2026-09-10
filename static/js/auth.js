@@ -186,3 +186,13 @@ function toggleAuth(isRegister) {
                 errorDiv.style.display = 'block';
             }
         });
+
+// Tự động mở modal quên mật khẩu nếu redirect từ trang reset_password
+document.addEventListener('DOMContentLoaded', function () {
+    if (sessionStorage.getItem('openForgot') === '1') {
+        sessionStorage.removeItem('openForgot');
+        setTimeout(function () {
+            if (typeof openForgotPassword === 'function') openForgotPassword();
+        }, 300);
+    }
+});
