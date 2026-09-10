@@ -319,16 +319,18 @@
                 
                 // Swap Modals and Offcanvas (excluding global ones)
                 var globalIds = ["playlistFormModal", "logoutConfirmModal", "addFriendModal", "mobileMenuOffcanvas", "leftSidebar"];
-                var oldOverlays = Array.from(document.querySelectorAll("body > .modal, body > .offcanvas"));
+                var oldOverlays = Array.from(document.querySelectorAll("body > .modal, body > .offcanvas, .app-container > .modal, .app-container > .offcanvas"));
                 oldOverlays.forEach(function (m) {
                     if (m.id && globalIds.indexOf(m.id) === -1) {
                         m.remove();
                     }
                 });
-                var newOverlays = Array.from(doc.querySelectorAll("body > .modal, body > .offcanvas"));
+                var newOverlays = Array.from(doc.querySelectorAll("body > .modal, body > .offcanvas, .app-container > .modal, .app-container > .offcanvas"));
                 newOverlays.forEach(function (m) {
                     if (m.id && globalIds.indexOf(m.id) === -1) {
-                        document.body.appendChild(m);
+                        // Append inside app-container if possible, else body
+                        var appContainer = document.querySelector(".app-container");
+                        (appContainer || document.body).appendChild(m);
                     }
                 });
 

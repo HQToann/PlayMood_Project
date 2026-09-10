@@ -38,7 +38,7 @@ var FEELINGS_DATA = [
     { emoji: '🏋️', label: 'đang tập gym' },
 ];
 
-var currentFeeling = null; // { emoji, label }
+window.currentFeeling = null; // { emoji, label }
 
 function renderFeelingList(filter = '') {
     const list = document.getElementById('feelingList');
@@ -70,7 +70,7 @@ function renderFeelingList(filter = '') {
 }
 
 window.selectFeeling = function(emoji, label) {
-    currentFeeling = { emoji, label };
+    window.currentFeeling = { emoji, label };
 
     // Đóng feeling modal
     const feelingModalEl = document.getElementById('postFeelingModal');
@@ -97,11 +97,11 @@ window.selectFeeling = function(emoji, label) {
 }
 
 window.applyFeelingToPost = function() {
-    if (!currentFeeling) return;
+    if (!window.currentFeeling) return;
     const badge = document.getElementById('postFeelingBadge');
     const textEl = document.getElementById('postFeelingText');
     if (badge && textEl) {
-        textEl.textContent = `${currentFeeling.emoji} ${currentFeeling.label}`;
+        textEl.textContent = `${window.currentFeeling.emoji} ${window.currentFeeling.label}`;
         badge.classList.remove('d-none');
         badge.classList.add('d-inline-flex');
     }
@@ -133,19 +133,25 @@ document.addEventListener('DOMContentLoaded', () => {
             renderFeelingList();
             const inp = document.getElementById('feelingSearchInput');
             if (inp) {
+                inp.value = '';
                 inp.focus();
-                inp.addEventListener('input', function() {
-                    renderFeelingList(this.value.trim());
-                });
             }
         });
+
+        // BUG FIX: Bind input listener ONCE
+        const inp = document.getElementById('feelingSearchInput');
+        if (inp) {
+            inp.addEventListener('input', function() {
+                renderFeelingList(this.value.trim());
+            });
+        }
     }
 
     // Nút xóa cảm xúc trong createPostModal
     const removeFeelingBtn = document.getElementById('removeFeelingBtn');
     if (removeFeelingBtn) {
         removeFeelingBtn.addEventListener('click', () => {
-            currentFeeling = null;
+            window.currentFeeling = null;
             const badge = document.getElementById('postFeelingBadge');
             if (badge) {
                 badge.classList.add('d-none');
@@ -158,7 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const createModalEl = document.getElementById('createPostModal');
     if (createModalEl) {
         createModalEl.addEventListener('hidden.bs.modal', () => {
-            currentFeeling = null;
+            // Không clear nếu feeling modal đang mở (bootstrap chưa đóng createPostModal xong)
+            const feelingModal = document.getElementById('postFeelingModal');
+            if (feelingModal && feelingModal.classList.contains('show')) return;
+            // Không clear nếu tag modal đang mở
+            const tagModal = document.getElementById('postTagFriendsModal');
+            if (tagModal && tagModal.classList.contains('show')) return;
+
+            window.currentFeeling = null;
             const badge = document.getElementById('postFeelingBadge');
             if (badge) {
                 badge.classList.add('d-none');

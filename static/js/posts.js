@@ -428,8 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmitPost.addEventListener('click', async () => {
             const rawContent = document.getElementById('postContentInput').value;
             // Gắn cảm xúc vào nội dung nếu có
-            const feeling = (typeof currentFeeling !== 'undefined' && currentFeeling)
-                ? ` — đang ${currentFeeling.emoji} ${currentFeeling.label}` : '';
+            const feeling = (window.currentFeeling)
+                ? ` — đang ${window.currentFeeling.emoji} ${window.currentFeeling.label}` : '';
             const content = rawContent + feeling;
             const visibility = document.getElementById('postVisibility').value;
 
