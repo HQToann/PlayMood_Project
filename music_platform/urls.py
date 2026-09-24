@@ -17,6 +17,8 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 
+from accounts.views import health_check
+
 LOGIN_URL = '/auth/login/'
 
 def login_required_view(template_name):
@@ -155,34 +157,20 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API v1 - toàn bộ logic backend
-
-    # Tuần 1 - accounts
     path('api/v1/auth/', include('accounts.auth_urls')),
     path('api/v1/accounts/', include('accounts.urls')),
-
-    # Tuần 2 - musics
     path("api/v1/music/", include('music.urls')),
-
-    # Tuần 3 - playlists
     path('api/v1/playlists/', include('playlists.urls')),
-    
-    # Tuần 3 - actists
     path('api/v1/artists/', include('artists.urls')),
-
-    # Tuần 4 - social
     path('api/v1/social/', include('social.urls')),
     path('api/v1/chat/', include('chat.urls')),
     path('api/v1/posts/', include('posts.urls')),
-
-    #tuần 5 - notification
     path('api/v1/notifications/', include('notifications.urls')),
-
-    # tuần 5 - search
     path('api/v1/search/', include('search.urls')),
-
-    # recommendations
     path('api/v1/recommendations/', include('recommendations.urls')),
 
+    # K8s check
+    path('health/', health_check, name='health-check'),
 ]
 
 # Phục vụ media files trong môi trường development

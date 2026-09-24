@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: playmood_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: playmood_db
+      POSTGRES_USER: playmood_user
+      POSTGRES_PASSWORD: playmood_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Expose để dev tools (DBeaver, etc.) kết nối
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U playmood_user -d playmood_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # Redis (Cache + Channel Layer)
+  redis:
+    image: redis:7-alpine
+    container_name: playmood_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  
+  # Django + Daphne
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: playmood_django
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Override các env vars cho Docker
+      DATABASE_URL: postgresql://playmood_user:playmood_pass@postgres:5432/playmood_db
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "TRUE"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,0.0.0.0"
+    env_file:
+      - .env  # Load biến còn lại từ .env (SECRET_KEY, Cloudinary, etc.)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app  # Dev: mount code dể hot-reload (bỏ khi production)
+    command: >
+      sh -c "
+        python manage.py migrate --noinput &&
+        daphne -b 0.0.0.0 -p 8000 music_platform.asgi:application
+      "
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,46 +1,89 @@
-# Cơ sở dữ liệu (Database) PostgreSQL
-psycopg2-binary==2.9.9
-psycopg[binary]
+# 1. CORE DJANGO & DATABASE
+Django==5.2.17
+psycopg2-binary==2.9.12
 dj-database-url==3.1.2
+sqlparse==0.6.0
+asgiref==3.12.1
 
-# Biến môi trường (Ẩn các mã bảo mật khỏi mã nguồn)
-python-decouple==3.8
-
-# CORS - Xử lý chia sẻ tài nguyên chéo nguồn (Cho phép Frontend gọi API Backend)
-django-cors-headers==4.4.0
-
-# Lưu trữ đám mây Cloudinary (Dùng để chứa Audio, ảnh bìa, avatar)
-cloudinary==1.40.0
-django-cloudinary-storage==0.3.0
-
-# Bảo mật - Làm sạch dữ liệu nhập vào, chống tấn công mã độc XSS
-bleach==6.1.0
-
-# Bảo mật - Giới hạn tần suất thao tác, chống tấn công dò mật khẩu (Brute force)
-django-ratelimit==4.1.0
-
-# Công cụ tạo dữ liệu giả lập cho Kiểm thử (Testing)
-factory-boy==3.3.0
-
-# Xử lý hình ảnh (Dùng khi xác thực hoặc cắt ghép ảnh người dùng tải lên)
-Pillow==10.4.0
-
-# Công cụ trích xuất siêu dữ liệu (metadata) từ các file âm thanh (MP3, WAV...)
-mutagen==1.47.0
-
-# Dịch vụ tích hợp gửi Email tự động
-django-anymail==15.1
-resend==2.42.0
-
-# Máy chủ Web và Quản lý file tĩnh dành cho môi trường Production (khi chạy thực tế)
-gunicorn==26.2.0
-whitenoise==6.12.0
-
-# Giao diện cho trang Quản trị (Admin Dashboard) đẹp mắt hơn
-django-jazzmin==3.0.5
-django-unfold==0.91.0
-
-# WebSockets - Nền tảng thời gian thực (Dành riêng cho tính năng Nhắn tin Chat realtime)
+# 2. WEBSOCKETS, CHANNELS & ASYNC
+# Hỗ trợ tính năng Chat realtime và Notifications
 channels==4.0.0
 channels-redis==4.1.0
 daphne==4.0.0
+Twisted==26.4.0
+autobahn==26.7.1
+anyio==4.14.2
+async-timeout==5.0.1
+Automat==25.4.16
+constantly==23.10.4
+hyperlink==21.0.0
+Incremental==24.11.0
+txaio==26.6.1
+zope.interface==8.6
+msgpack==1.2.1
+cbor2==6.1.4
+
+# 3. CACHE (REDIS)
+redis==8.1.0
+
+# 4. MEDIA, FILES & CLOUDINARY
+# Xử lý ảnh, âm thanh và lưu trữ đám mây
+cloudinary==1.40.0
+django-cloudinary-storage==0.3.0
+pillow==10.4.0
+mutagen==1.47.0
+
+# 5. ENVIRONMENT & SECURITY
+# Quản lý biến môi trường, chống XSS, Rate limit
+python-decouple==3.8
+django-cors-headers==4.4.0
+django-ratelimit==4.1.0
+bleach==6.1.0
+cryptography==50.0.0
+pyOpenSSL==26.4.0
+webencodings==0.5.1
+service-identity==26.1.0
+
+# 6. ADMIN UI & EMAIL
+# Giao diện Admin đẹp và gửi email
+django-jazzmin==3.0.5
+django-unfold==0.91.0
+django-anymail==15.1
+
+# 7. SERVER & PRODUCTION
+# Web server và phục vụ file tĩnh khi deploy
+gunicorn==26.0.0
+whitenoise==6.12.0
+
+# 8. NETWORK, API & WEBHOOKS
+# Call API ngoài (Resend, Cloudinary, etc.)
+requests==2.34.2
+urllib3==2.7.0
+certifi==2026.7.22
+idna==3.18
+charset-normalizer==3.5.0
+httpx==0.28.1
+httpcore==1.0.9
+h11==0.16.0
+pydantic==2.13.4
+pydantic_core==2.46.4
+ujson==5.13.0
+svix==1.99.1
+standardwebhooks==1.1.0
+
+# 9. TESTING & UTILS
+# Tạo dữ liệu giả và các thư viện tiện ích nền tảng
+factory-boy==3.3.0
+Faker==40.23.0
+python-dateutil==2.9.0.post0
+tzdata==2026.3
+packaging==26.3
+six==1.17.0
+wrapt==2.3.0
+attrs==26.1.0
+cffi==2.1.1
+pycparser==3.0
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+Deprecated==1.3.1
+annotated-types==0.8.0

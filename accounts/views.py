@@ -21,6 +21,9 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie, csrf_exempt
 
+from django.db import connection
+from django.core.cache import cache
+
 from accounts.decorators import require_auth, require_admin
 from accounts.validators import (
     validate_register,
@@ -589,3 +592,37 @@ class AdminVerificationRejectView(View):
             })
         except Exception as e:
             return _handle_exception(e)
+
+# Kiểm tra tình trạng qua K8s
+def health_check(request):
+    """
+    Endpoint cho K8s readiness và liveness probe
+    """
+    checks = {}
+    is_healthy = True
+
+    # Kiểm tra database
+    try:
+        connection.ensure_connection()
+        checks['database'] = 'ok'
+    except Exception as e:
+        checks['database'] = f'error: {str(e)}'
+        is_healthy = False
+
+    # Kiểm tra Redis cache
+    try:
+        cache.set('k8s_health', '1', timeout=3)
+        val = cache.get('_k8s_health')
+        checks['cache'] = 'ok' if val == '1' else 'miss'
+    except Exception as e:
+        checks['cache'] = f'error: {str(e)}'
+        # Cache fail không block (app vẫn chạy được)
+    
+    status = 200 if is_healthy else 503
+    return JsonResponse(
+        {
+            'status': 'healthy'if is_healthy else 'unhealhy',
+            'checks': checks,
+        },
+        status=status
+    )
