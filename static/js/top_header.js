@@ -121,11 +121,12 @@
                         
                         if (items.length > 0) {
                             items.forEach(item => {
-                                if (item.stage_name !== undefined || item.role !== undefined) {
+                                if (item.result_type === 'artist' || item.result_type === 'user') {
                                     // Đây là nghệ sĩ hoặc người dùng
                                     const avatar = item.avatar || (item.user && item.user.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80';
                                     const name = item.stage_name || item.display_name || item.username || 'Người dùng';
-                                    const isArtist = (item.stage_name !== undefined) || (item.role === 'artist');
+                                    // D7: dùng result_type thay duck-typing
+                                    const isArtist = item.result_type === 'artist' || item.role === 'artist';
                                     const subtitle = isArtist ? 'Nghệ sĩ' : 'Người dùng';
                                     const profileLink = item.user ? `/profile/${item.user.id}` : `/profile/${item.id}`;
                                     const userId = item.user ? item.user.id : item.id;
@@ -156,7 +157,7 @@
                                             </button>
                                         </div>
                                     `;
-                                } else if (item.song_count !== undefined) {
+                                } else if (item.result_type === 'album') {
                                     // Đây là album
                                     const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                                     const artist = item.artist ? (item.artist.display_name || item.artist.username) : 'Nghệ sĩ';
@@ -176,7 +177,7 @@
                                             </button>
                                         </div>
                                     `;
-                                } else if (item.is_public !== undefined) {
+                                } else if (item.result_type === 'playlist') {
                                     // Đây là playlist
                                     const img = item.cover_image || 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80';
                                     const owner = item.owner ? (item.owner.display_name || item.owner.username) : 'Người dùng';

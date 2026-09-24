@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchItems();
         }
     }, {
-        root: document.getElementById('mainContent'),
+        root: null, // viewport — an toàn hơn trong SPA khi scroll container thay đổi
         rootMargin: '100px',
         threshold: 0.1
     });

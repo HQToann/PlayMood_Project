@@ -89,6 +89,7 @@ function buildNotificationEl(notif) {
                    data-sender-id="${notif.sender.id}"
                    data-sender-name="${notif.sender.display_name || notif.sender.username}"
                    data-sender-avatar="${notif.sender.avatar || ''}"
+                   data-follow-request-id="${notif.follow_request_id || ''}"
                    style="width:32px;height:32px; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); background: transparent;" title="Xử lý yêu cầu kết bạn">
                <i class="bi bi-person-check-fill"></i>
            </button>`;
@@ -274,6 +275,7 @@ function openFrModal(btn) {
     const senderId = btn.dataset.senderId;
     const senderName = btn.dataset.senderName;
     const senderAvatar = btn.dataset.senderAvatar;
+    const followRequestId = btn.dataset.followRequestId || '';
 
     const modalEl = document.getElementById('followRequestActionModal');
     if (!modalEl) return;
@@ -283,15 +285,17 @@ function openFrModal(btn) {
     if (senderAvatar) {
         avatarEl.src = senderAvatar;
     } else {
-        avatarEl.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'; // Default
+        avatarEl.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';
     }
     document.getElementById('frModalSenderId').value = senderId;
+    // Lưu follow_request_id vào hidden input để handleFrAction dùng trực tiếp
+    const frRequestIdInput = document.getElementById('frModalRequestId');
+    if (frRequestIdInput) frRequestIdInput.value = followRequestId;
+
     currentFrActionBtn = btn;
 
     if (!frActionModalInstance) {
         frActionModalInstance = new bootstrap.Modal(modalEl);
-
-        // Setup event listeners for Accept/Reject buttons ONCE
         document.getElementById('frModalAccept').addEventListener('click', () => handleFrAction('accept'));
         document.getElementById('frModalReject').addEventListener('click', () => handleFrAction('reject'));
     }
@@ -303,24 +307,26 @@ async function handleFrAction(action) {
     const senderId = document.getElementById('frModalSenderId').value;
     if (!senderId) return;
 
-    try {
-        // Fetch received requests to get the exact request_id
-        const resList = await fetch('/api/v1/social/follow-requests/received/');
-        if (!resList.ok) throw new Error('Cannot fetch requests');
-        const data = await resList.json();
-        const requestItem = data.data.items.find(r => r.sender.id === senderId);
+    // Ưu tiên dùng follow_request_id được truyền sẵn từ notification payload
+    const frRequestIdInput = document.getElementById('frModalRequestId');
+    let requestId = frRequestIdInput ? frRequestIdInput.value : '';
 
-        if (!requestItem) {
-            alert('Yêu cầu kết bạn không tồn tại hoặc đã bị hủy!');
-            frActionModalInstance.hide();
-            if (currentFrActionBtn) {
-                currentFrActionBtn.remove();
+    try {
+        // Nếu không có requestId (notification cũ trước khi fix), fallback: gọi API tìm kiếm
+        if (!requestId) {
+            const resList = await fetch('/api/v1/social/follow-requests/received/');
+            if (!resList.ok) throw new Error('Cannot fetch requests');
+            const data = await resList.json();
+            const requestItem = data.data.items.find(r => r.sender.id === senderId);
+            if (!requestItem) {
+                alert('Yêu cầu kết bạn không tồn tại hoặc đã bị hủy!');
+                frActionModalInstance.hide();
+                if (currentFrActionBtn) currentFrActionBtn.remove();
+                return;
             }
-            return;
+            requestId = requestItem.id;
         }
 
-        const requestId = requestItem.id;
-        // Call accept or reject
         const resAction = await fetch(`/api/v1/social/follow-requests/${requestId}/${action}/`, {
             method: 'POST',
             headers: { 'X-CSRFToken': typeof getCookie === 'function' ? getCookie('csrftoken') : '', 'Content-Type': 'application/json' }
@@ -328,7 +334,6 @@ async function handleFrAction(action) {
 
         if (resAction.ok) {
             frActionModalInstance.hide();
-            // Xóa luôn thông báo khỏi giao diện và CSDL để không hiện lại khi tải lại trang
             if (currentFrActionBtn) {
                 const notifEl = currentFrActionBtn.closest('.notification-item');
                 if (notifEl) {

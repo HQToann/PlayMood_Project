@@ -1,7 +1,7 @@
 # Cơ sở dữ liệu (Database) PostgreSQL
 psycopg2-binary==2.9.9
 psycopg[binary]
-dj-database-url
+dj-database-url==3.1.2
 
 # Biến môi trường (Ẩn các mã bảo mật khỏi mã nguồn)
 python-decouple==3.8
@@ -29,18 +29,18 @@ Pillow==10.4.0
 mutagen==1.47.0
 
 # Dịch vụ tích hợp gửi Email tự động
-django-anymail
-resend
+django-anymail==15.1
+resend==2.42.0
 
 # Máy chủ Web và Quản lý file tĩnh dành cho môi trường Production (khi chạy thực tế)
-gunicorn
-whitenoise
+gunicorn==26.2.0
+whitenoise==6.12.0
 
 # Giao diện cho trang Quản trị (Admin Dashboard) đẹp mắt hơn
 django-jazzmin==3.0.5
 django-unfold==0.91.0
 
 # WebSockets - Nền tảng thời gian thực (Dành riêng cho tính năng Nhắn tin Chat realtime)
-channels>=4.0.0
-channels-redis>=4.1.0
-daphne>=4.0.0
+channels==4.0.0
+channels-redis==4.1.0
+daphne==4.0.0

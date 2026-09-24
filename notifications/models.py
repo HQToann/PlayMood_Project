@@ -26,11 +26,13 @@ class Notification(models.Model):
     TARGET_PLAYLIST = 'playlist'
     TARGET_COMMENT = 'comment'
     TARGET_USER = 'user'
+    TARGET_FOLLOW_REQUEST = 'follow_req'  # 10 chars max — dùng cho notif follow_request
     TARGET_CHOICES = [
         (TARGET_SONG, 'Bài hát'),
         (TARGET_PLAYLIST, 'Playlist'),
         (TARGET_COMMENT, 'Bình luận'),
         (TARGET_USER, 'Người dùng'),
+        (TARGET_FOLLOW_REQUEST, 'Yêu cầu kết bạn'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -104,7 +106,7 @@ class Notification(models.Model):
         return f'{self.recipient.username}: {self.notif_type} ({state})'
     
     def to_dict(self):
-        return {
+        d = {
             'id': str(self.id),
             'sender': {
                 'id': str(self.sender_id),
@@ -120,5 +122,9 @@ class Notification(models.Model):
             'is_read': self.is_read,
             'created_at': self.created_at.isoformat(),
         }
+        # Expose follow_request_id trực tiếp cho frontend xử lý yêu cầu kết bạn
+        if self.notif_type == self.TYPE_FOLLOW_REQUEST and self.target_id:
+            d['follow_request_id'] = str(self.target_id)
+        return d
 
 

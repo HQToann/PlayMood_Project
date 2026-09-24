@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return '<a href="/profile/' + artist.id + '/" class="artist-card">' +
             '<img src="' + esc(avatar) + '" alt="' + esc(artist.display_name) + '" class="artist-avatar" loading="lazy">' +
             '<div class="artist-name">' + esc(artist.display_name) + '</div>' +
-            '<div class="artist-role">Nghe si</div>' +
+            '<div class="artist-role">Nghệ sĩ</div>' +
+
             '</a>';
     }
 

@@ -318,7 +318,14 @@
                 // currMain.innerHTML = newMain.innerHTML;
                 
                 // Swap Modals and Offcanvas (excluding global ones)
-                var globalIds = ["playlistFormModal", "logoutConfirmModal", "addFriendModal", "mobileMenuOffcanvas", "leftSidebar"];
+                var globalIds = [
+                    "playlistFormModal", "logoutConfirmModal", "addFriendModal",
+                    "mobileMenuOffcanvas", "leftSidebar",
+                    // Modal đăng bài — phải giữ lại khi SPA điều hướng
+                    "createPostModal", "postFeelingModal", "postTagFriendsModal",
+                    "postShareMusicModal", "commentPostModal",
+                    "editPostModal", "deletePostModal"
+                ];
                 var oldOverlays = Array.from(document.querySelectorAll("body > .modal, body > .offcanvas, .app-container > .modal, .app-container > .offcanvas"));
                 oldOverlays.forEach(function (m) {
                     if (m.id && globalIds.indexOf(m.id) === -1) {

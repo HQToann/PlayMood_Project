@@ -41,8 +41,11 @@ def search_songs(q='', genre='', artist_id='', ordering='-play_count',
     total = qs.count()
     start = (page - 1) * page_size
 
-    #include_stats=False
-    items = [s.to_dict(viewer=viewer, include_stats=False, include_viewer_state=False) for s in qs[start:start + page_size]]
+    items = []
+    for s in qs[start:start + page_size]:
+        d = s.to_dict(viewer=viewer, include_stats=False, include_viewer_state=False)
+        d['result_type'] = 'song'  # D7: explicit type field — không cần duck-typing trên frontend
+        items.append(d)
 
     return {
         'items': items,
@@ -78,6 +81,7 @@ def search_artists(q='', viewer=None, page=1, page_size=20) -> dict:
     items = []
     for a in qs[start:start + page_size]:
         a_dict = a.to_dict(viewer=viewer)
+        a_dict['result_type'] = 'artist'  # D7: explicit type field
         if viewer_is_auth:
             if a.user_id in following_ids:
                 a_dict['follow_status'] = 'following'
@@ -107,7 +111,11 @@ def search_playlists(q='', viewer=None, page=1, page_size=20) -> dict:
     start = (page - 1) * page_size
 
     #include_song_count=False
-    items = [p.to_dict(viewer=viewer, include_song_count=False) for p in qs[start:start + page_size]]
+    items = []
+    for p in qs[start:start + page_size]:
+        d = p.to_dict(viewer=viewer, include_song_count=False)
+        d['result_type'] = 'playlist'  # D7: explicit type field
+        items.append(d)
 
     return {
         'items': items,
@@ -152,6 +160,7 @@ def search_users(q='', requester=None, page=1, page_size=20) -> dict:
     items = []
     for u in qs[start:start + page_size]:
         u_dict = u.to_dict(include_private=False)
+        u_dict['result_type'] = 'user'  # D7: explicit type field
         # Gắn follow_status: none / requested / following
         if requester_is_auth:
             if u.id in following_ids:
@@ -178,7 +187,11 @@ def search_albums(q='', viewer=None, page=1, page_size=20) -> dict:
     qs = qs.order_by('-created_at')
     total = qs.count()
     start = (page - 1) * page_size
-    items = [a.to_dict(viewer=viewer) for a in qs[start:start + page_size]]
+    items = []
+    for a in qs[start:start + page_size]:
+        d = a.to_dict(viewer=viewer)
+        d['result_type'] = 'album'  # D7: explicit type field
+        items.append(d)
     return {'items': items, 'pagination': _pagination(page, page_size, total)}
 
 def search_all(q, viewer=None, limit=5) -> dict:
@@ -186,14 +199,13 @@ def search_all(q, viewer=None, limit=5) -> dict:
     songs = search_songs(q=q, viewer=viewer, page=1, page_size=limit)['items']
     artists = search_artists(q=q, viewer=viewer, page=1, page_size=limit)['items']
     playlists = search_playlists(q=q, viewer=viewer, page=1, page_size=limit)['items']
-    albums = search_albums(q=q, viewer=viewer, page=1, page_size=limit)['items']
+    albums = search_albums(q=q, viewer=viewer, page=1, page_size=limit)['items']  # Fix: chỉ gọi 1 lần
     users = search_users(q=q, requester=viewer, page=1, page_size=limit)['items']
 
     return {
-        'songs': songs, 
-        'artists': artists, 
-        'playlists': playlists, 
-        'albums': search_albums(q=q, viewer=viewer, page=1, page_size=limit)['items'],
+        'songs': songs,
+        'artists': artists,
+        'playlists': playlists,
         'albums': albums,
         'users': users
     }

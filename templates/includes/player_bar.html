@@ -225,6 +225,7 @@
         <div style="display:none;">{% csrf_token %}</div>
         
         <!-- Create Playlist Modal -->
+        {% include 'includes/post_modals.html' %}
         {% include 'includes/create_playlist_modal.html' %}
         <script>
             window.CURRENT_USER_AUTHENTICATED = "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";

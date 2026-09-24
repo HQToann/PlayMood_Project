@@ -404,12 +404,13 @@
                         if (coverFile) formData.append('cover_image', coverFile);
                         
                         const res = await fetch(`/api/v1/music/songs/${currentActionSongId}/`, {
-                            method: 'POST', // Use POST for multipart form data, SongDetailView.post calls self.patch
+                            method: 'PATCH', // Dùng PATCH đúng nghĩa — backend SongDetailView hỗ trợ multipart PATCH
                             headers: {
                                 'X-CSRFToken': getCookie('csrftoken')
                             },
                             body: formData
                         });
+
                         
                         const data = await res.json();
                         if (data.success) {

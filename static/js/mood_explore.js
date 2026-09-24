@@ -128,8 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchItems();
         }
     }, {
-        root: document.getElementById('mainContent'), // Adjust based on scroll container
-        rootMargin: '100px', // Load a bit earlier before actually reaching it
+        root: null, // viewport — an toàn hơn trong SPA khi scroll container thay đổi
+        rootMargin: '100px', // Load sớm trước khi đến cuối
         threshold: 0.1
     });
 

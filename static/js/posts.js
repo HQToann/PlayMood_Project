@@ -32,21 +32,7 @@ window.loadFeed = async function (url = '/api/v1/posts/?page=1&page_size=10', co
     }
 }
 
-function timeSince(dateString) {
-    const date = new Date(dateString);
-    const seconds = Math.floor((new Date() - date) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " năm";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " tháng";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " ngày";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " giờ";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " phút";
-    return Math.floor(seconds) + " giây";
-}
+// timeSince() đã được xóa — dùng window.timeAgo() từ main.js (tránh trùng lặp)
 
 window.renderFeed = function (posts, containerId = 'postsFeedContainer') {
     const feedContainer = document.getElementById(containerId);
@@ -146,7 +132,7 @@ window.renderFeed = function (posts, containerId = 'postsFeedContainer') {
                                 `).join('')}
                             ` : ''}
                         </h6>
-                        <div class="post-meta">${timeSince(post.created_at)} trước</div>
+                        <div class="post-meta">${window.timeAgo ? window.timeAgo(post.created_at) : post.created_at} trước</div>
                     </div>
                 </div>
                 <div class="dropdown">
@@ -465,6 +451,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     modal.hide();
                     document.getElementById('postContentInput').value = '';
                     resetPreview();
+                    // Reset trạng thái tag bạn bè và cảm xúc sau khi đăng bài thành công
+                    window.taggedFriends = [];
+                    window.currentFeeling = null;
+                    const tagDisplay = document.getElementById('taggedFriendsDisplay');
+                    if (tagDisplay) tagDisplay.innerHTML = '';
+                    const feelingDisplay = document.getElementById('feelingDisplay');
+                    if (feelingDisplay) feelingDisplay.style.display = 'none';
                     loadFeed(); // Reload feed
                 } else {
                     alert(data.error.message || 'Lỗi khi đăng bài');
@@ -479,7 +472,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -- EVENT DELEGATION: Tương tác ngầm --
-    document.body.addEventListener('click', async (e) => {
+    // Guard: chỉ gắn listener 1 lần, tránh nhân đôi khi SPA điều hướng
+    if (!window.__postBodyListenerBound) {
+        window.__postBodyListenerBound = true;
+        document.body.addEventListener('click', async (e) => {
 
         // --- 1. THẢ CẢM XÚC ---
         const reactBtn = e.target.closest('.react-icon');
@@ -517,12 +513,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const postCard = commentBtn.closest('.post-card');
             window.currentCommentPostId = postCard.dataset.postId;
 
-            const commentModal = new bootstrap.Modal(document.getElementById('commentPostModal'));
+            const commentModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('commentPostModal'));
             commentModal.show();
 
             loadComments(window.currentCommentPostId);
         }
     });
+    } // end if !window.__postBodyListenerBound
 
 
 
@@ -755,7 +752,7 @@ async function loadComments(postId, silent = false) {
                         </div>
                     </div>
                     <span class="cursor-pointer fw-bold comment-reply-btn" data-comment-id="${comment.id}" data-author-name="${comment.author.display_name}">Phản hồi</span>
-                    <span>${timeSince(comment.created_at)}</span>
+                    <span>${window.timeAgo ? window.timeAgo(comment.created_at) : comment.created_at}</span>
                     <span class="comment-like-count">${likeCountText}</span>
                 </div>
             </div>

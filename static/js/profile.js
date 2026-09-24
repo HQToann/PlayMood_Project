@@ -7,8 +7,16 @@ function formatNumber(num) {
 async function loadStats() {
     try {
         const targetUserId = window.TARGET_USER_ID;
-        const res = await fetch(`/api/v1/social/users/${targetUserId}/follow-status/`);
-        const data = await res.json();
+
+        // Gọi song song 2 API thay vì tuần tự — giảm thời gian tải
+        const [followRes, statsRes] = await Promise.all([
+            fetch(`/api/v1/social/users/${targetUserId}/follow-status/`),
+            document.getElementById('totalLikesCount')
+                ? fetch(`/api/v1/artists/${targetUserId}/stats/`)
+                : Promise.resolve(null)
+        ]);
+
+        const data = await followRes.json();
         if (data.success) {
             const followersEl = document.getElementById('followersCount');
             const followingEl = document.getElementById('followingCount');
@@ -17,8 +25,7 @@ async function loadStats() {
         }
 
         const likesEl = document.getElementById('totalLikesCount');
-        if (likesEl) {
-            const statsRes = await fetch(`/api/v1/artists/${targetUserId}/stats/`);
+        if (likesEl && statsRes) {
             if (statsRes.ok) {
                 const statsData = await statsRes.json();
                 if (statsData.success) {

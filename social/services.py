@@ -163,8 +163,8 @@ def _send_follow_request_notification(sender: User, recipient: User, request_id)
             sender=sender,
             notif_type=Notification.TYPE_FOLLOW_REQUEST,
             message=f'{sender.get_display_name()} muốn kết bạn với bạn.',
-            target_type='user',
-            target_id=sender.id,
+            target_type=Notification.TARGET_FOLLOW_REQUEST,  # 'follow_req'
+            target_id=request_id,  # Lưu request_id để frontend dùng trực tiếp
         )
     except Exception as e:
         logger.debug('Notification skipped on follow request: %s', e)

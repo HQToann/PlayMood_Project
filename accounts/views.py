@@ -201,7 +201,7 @@ class LoginView(View):
             )
         except Exception as e:
             return _handle_exception(e)
-@method_decorator([csrf_exempt, require_auth], name='dispatch')
+@method_decorator([csrf_protect, require_auth], name='dispatch')
 class LogoutView(View):
     """POST /api/v1/auth/logout/ - Đăng xuất."""
 

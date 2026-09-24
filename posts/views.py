@@ -74,15 +74,19 @@ class PostListView(View):
                     k for k, v in sorted(reaction_counts.items(), key=lambda item: item[1], reverse=True)
                 ][:3]
                     
+                # Dùng list() để tận dụng prefetch cache, tránh gọi DB mới
+                _reactions = list(post.reactions.all())
+                _comments = list(post.comments.all())
+
                 post_data = {
                     'id': str(post.id),
                     'author': post.author.to_dict(),
                     'content': post.content,
                     'created_at': post.created_at.isoformat(),
-                    'reactions_count': len(post.reactions.all()), # Avoid extra query by using len() instead of count()
+                    'reactions_count': len(_reactions),
                     'top_reactions': top_reaction_types,
                     'current_user_reaction': current_user_reaction,
-                    'comments_count': len(post.comments.all()), # Avoid extra query
+                    'comments_count': len(_comments),
                     'shared_song': shared_song_data,
                     'is_pinned': post.is_pinned,
                     'media': [
@@ -131,19 +135,20 @@ class PostListView(View):
                     path = default_storage.save(filename, img)
                     media_urls.append(default_storage.url(path))
             
-            post = services.create_post(
-                user=request.user, 
-                data={'content': content, 'visibility': visibility}, 
-                media_urls=media_urls,
-                shared_song_id=shared_song_id
-            )
-            
-            # Gán tagged_users sau khi post đã được tạo
-            if tagged_user_ids:
-                from accounts.models import User as UserModel
-                tagged = UserModel.objects.filter(id__in=tagged_user_ids, is_active=True)
-                post.tagged_users.set(tagged)
-            
+            from django.db import transaction
+            with transaction.atomic():
+                post = services.create_post(
+                    user=request.user,
+                    data={'content': content, 'visibility': visibility},
+                    media_urls=media_urls,
+                    shared_song_id=shared_song_id
+                )
+                # Gán tagged_users trong cùng transaction với việc tạo post
+                if tagged_user_ids:
+                    from accounts.models import User as UserModel
+                    tagged = UserModel.objects.filter(id__in=tagged_user_ids, is_active=True)
+                    post.tagged_users.set(tagged)
+
             return JsonResponse({'success': True, 'data': {'id': str(post.id)}})
         except Exception as e:
             return handle_exception(e)

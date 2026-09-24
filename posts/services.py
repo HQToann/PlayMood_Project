@@ -74,8 +74,10 @@ def toggle_reaction(user: User, post_id: str, reaction_type: str) -> dict:
     from asgiref.sync import async_to_sync
     channel_layer = get_channel_layer()
     if channel_layer:
-        # Tính toán lại số đếm
+        # Refresh post để lấy dữ liệu mới nhất, tránh stale cache
+        post.refresh_from_db()
         reaction_counts = {}
+
         for r in post.reactions.all():
             reaction_counts[r.reaction_type] = reaction_counts.get(r.reaction_type, 0) + 1
         
@@ -151,12 +153,20 @@ def create_comment(user: User, post_id: str, content: str, parent_id: str = None
     channel_layer = get_channel_layer()
     if channel_layer:
         # Chuẩn bị dữ liệu comment
+        song_obj = getattr(post, 'song', getattr(post, 'shared_song', None))
+        song_id_val = getattr(post, 'song_id', getattr(post, 'shared_song_id', None))
         c_data = {
             'id': str(comment.id),
             'post_id': str(post.id),
             'author': comment.author.to_dict(),
             'content': comment.content,
             'created_at': comment.created_at.isoformat(),
+            'song': {
+                'id': str(song_id_val),
+                'title': song_obj.title if song_obj else None,
+                'artist_display_name': song_obj.artist.get_display_name() if song_obj and hasattr(song_obj, 'artist') and song_obj.artist else 'Nghệ sĩ',
+                'cover_image': song_obj.cover_image.url if song_obj and hasattr(song_obj, 'cover_image') and song_obj.cover_image else None,
+            } if song_id_val else None,
             'parent_id': str(comment.parent_id) if comment.parent_id else None,
             'reactions_count': 0,
             'top_reactions': [],

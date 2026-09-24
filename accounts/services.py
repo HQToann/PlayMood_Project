@@ -90,7 +90,7 @@ def login_user(request, data: dict) -> User:
     user = get_user_by_email(data['email'])
     if user is None:
         # Vẫn chạy authenticate() để tránh timing attack
-        raise AuthenticationError('Email hoặc mật khẩu không dúng')
+        raise AuthenticationError('Email hoặc mật khẩu không đúng')
     
     if not user.is_active:
         raise AccountInactive()
@@ -107,7 +107,7 @@ def login_user(request, data: dict) -> User:
     
     # Tạo session
     login(request, authenticate_user)
-    logger.info('User logger in: %s', authenticate_user.username)
+    logger.info('User logged in: %s', authenticate_user.username)
     return authenticate_user
 
 def logout_user(request) -> None:
@@ -118,7 +118,7 @@ def logout_user(request) -> None:
     """
     username = request.user.username
     logout(request)
-    logger.info('User logger out: %s', username)
+    logger.info('User logged out: %s', username)
 
 # Profile management
 def update_profile(user: User, data: dict) -> User:

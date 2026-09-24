@@ -1,18 +1,5 @@
-// Helper for getting CSRF Token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+// getCookie() đã được định nghĩa trong main.js (global)
+// Dùng window.getCookie hoặc getCookie từ global scope
 
 window.togglePlaylistVisibility = function(btn) {
     const statusInput = document.getElementById('playlistStatus');

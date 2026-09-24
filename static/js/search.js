@@ -133,8 +133,10 @@ function renderTopResult(songs, uniqueUsers, playlists, albums = []) {
         if (topType === 'artist') {
             const avatar = topItem.avatar || (topItem.user && topItem.user.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80';
             const name = topItem.display_name || topItem.username || 'Người dùng';
-            const isArtist = (topItem.stage_name !== undefined) || (topItem.role === 'artist');
+            // D7: Dùng result_type từ backend thay vì duck-typing stage_name
+            const isArtist = topItem.result_type === 'artist' || topItem.role === 'artist';
             const subtitle = isArtist ? 'Nghệ sĩ' : 'Người dùng';
+
             const profileLink = topItem.user ? `/profile/${topItem.user.id}` : `/profile/${topItem.id}`;
             const userId = topItem.user ? topItem.user.id : topItem.id;
             
@@ -252,7 +254,7 @@ function renderList(items, type) {
             } else if (type === 'artist') {
                 const avatar = item.avatar || (item.user && item.user.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80';
                 const name = item.display_name || item.username || 'Người dùng';
-                const isArtist = (item.stage_name !== undefined) || (item.role === 'artist');
+                const isArtist = item.result_type === 'artist' || item.role === 'artist'; // D7: dùng result_type thay duck-typing
                 const subtitle = isArtist ? 'Nghệ sĩ' : 'Người dùng';
                 const profileLink = item.user ? `/profile/${item.user.id}` : `/profile/${item.id}`;
                 const userId = item.user ? item.user.id : item.id;

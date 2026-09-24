@@ -317,7 +317,7 @@ class Mood(models.Model):
             'song': {
                 'id': str(self.song_id),
                 'title': self.song.title,
-                'artist_display_name': self.song.artist.get_display_name(),
+                'artist_display_name': self.song.artist.get_display_name() if self.song.artist_id and hasattr(self.song, 'artist') and self.song.artist else 'Nghệ sĩ',
                 'cover_image': optimize_cloudinary_url(self.song.cover_image.url, 'image') if self.song.cover_image else None,
             } if self.song_id else None,
             'theme': self.theme.to_dict() if self.theme_id else None,

@@ -17,7 +17,7 @@ var FEELINGS_DATA = [
     { emoji: '😢', label: 'buồn bã' },
     { emoji: '😭', label: 'rất buồn' },
     { emoji: '😣', label: 'bực bội' },
-    { emoji: '😤', label: 'tức giận' },
+    { emoji: '😠', label: 'tức giận' },
     { emoji: '🤔', label: 'đang suy nghĩ' },
     { emoji: '🤒', label: 'đang ốm' },
     { emoji: '😰', label: 'lo lắng' },

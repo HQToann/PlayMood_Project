@@ -174,14 +174,13 @@ def publish_song(song: Song, artist) -> Song:
         song.released_at = timezone.now()
     song.save()
     
-    # Gửi thông báo cho người theo dõi
+    # Gửi thông báo cho người theo dõi bằng bulk_create để tránh timeout
     from notifications.services import create_notification
     from notifications.models import Notification
-    
-    # Lấy danh sách người theo dõi
+
     followers = artist.followers.select_related('follower').all()
-    for follow in followers:
-        create_notification(
+    notifications_to_create = [
+        Notification(
             recipient=follow.follower,
             notif_type=Notification.TYPE_NEW_SONG,
             message=f"{artist.get_display_name()} vừa ra mắt bài hát mới: {song.title}",
@@ -189,6 +188,10 @@ def publish_song(song: Song, artist) -> Song:
             target_type=Notification.TARGET_SONG,
             target_id=song.id
         )
+        for follow in followers
+    ]
+    if notifications_to_create:
+        Notification.objects.bulk_create(notifications_to_create, ignore_conflicts=True)
 
     logger.info('Song published: %s', song.title)
     return song
@@ -229,8 +232,8 @@ def record_play(user, song: Song) -> int:
     user_is_auth = getattr(user, 'is_authenticated', False) and getattr(user, 'id', None)
 
     if user_is_auth:
-        # Kiểm tra đã nghe trong 1 phút chưa để tránh tính trùng (rút ngắn để dễ test)
-        cutoff = timezone.now() - timedelta(minutes=1)
+        # Kiểm tra đã nghe trong 5 phút chưa để tránh tính trùng
+        cutoff = timezone.now() - timedelta(minutes=5)
         already_played = ListenHistory.objects.filter(
             user=user,
             song=song,

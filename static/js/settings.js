@@ -1,23 +1,6 @@
-// Helper: get CSRF cookie
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    // Fallback: try hidden CSRF input in the page
-    if (!cookieValue) {
-        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (csrfInput) cookieValue = csrfInput.value;
-    }
-    return cookieValue;
-}
+// getCookie() đã được định nghĩa trong main.js (global).
+// Nếu cần fallback CSRF input, main.js cũng đã xử lý.
+
 
 // Image preview logic
         const _idCardImage = document.getElementById('id_card_image');
