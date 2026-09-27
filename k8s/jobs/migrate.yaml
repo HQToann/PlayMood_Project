@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: django-migrate
+  namespace: playmood
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z postgres-svc 5432; do echo waiting for postgres; sleep 3; done; echo postgres ready']
+      containers:
+      - name: migrate
+        image: playmood:dev         # Dùng image đã build ở Giai đoạn 1
+        imagePullPolicy: Never      # QUAN TRỌNG: dùng local image trong Minikube
+        command: ["python", "manage.py", "migrate", "--noinput"]
+        envFrom:
+        - configMapRef:
+            name: django-config
+        - secretRef:
+            name: django-secret
