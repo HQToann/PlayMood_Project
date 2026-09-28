@@ -311,3 +311,7 @@ UNFOLD = {
         },
     },
 }
+
+# 13. Cấu hình máy chủ Kafka
+KAFKA_BOOTSTRAP_SERVERS = config('KAFKA_BOOTSTRAP_SERVERS', default="localhost:9092")
+KAFKA_ENABLED = config('KAFKA_ENABLED', default=False, cast=bool)

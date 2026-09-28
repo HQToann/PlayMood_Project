@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-worker
+  namespace: playmood
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker
+        image: playmood:dev
+        imagePullPolicy: Never
+        command: ["python", "-u", "manage.py", "shell", "-c", "from music_platform.kafka.consumer import start_consumer; start_consumer()"]
+        envFrom:
+        - configMapRef:
+            name: django-config

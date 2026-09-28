@@ -1,8 +1,13 @@
 import logging
 import uuid as uuid_lib
+
 from datetime import timedelta
 from django.db.models import F
 from django.utils import timezone
+
+from music_platform.kafka.producer import emit_event
+from music_platform.kafka.topics import TOPIC_SONG_PUBLISHED
+
 from music.models import (
     Genre,
     Song,
@@ -107,6 +112,15 @@ def create_song(artist, data: dict, files: dict) -> Song:
 
     song.save()
     logger.info('Song created: %s (artist=%s)', song.title, artist.username)
+
+    emit_event(
+        TOPIC_SONG_PUBLISHED, 
+        key=song.id, 
+        payload={
+            "artist": song.artist.username,
+            "title": song.title
+        },
+    )
 
     return song
 

@@ -11,3 +11,5 @@ data:
   CSRF_TRUSTED_ORIGINS: "http://playmood.local,http://localhost:8000,http://localhost"
   SESSION_COOKIE_SECURE: "False"
   CSRF_COOKIE_SECURE: "False"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-svc:9092"
+  KAFKA_ENABLED: "True"

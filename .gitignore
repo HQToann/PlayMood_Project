@@ -4,9 +4,6 @@ Pipfile.lock
 
 # Biến môi trường — chứa secret keys, KHÔNG commit
 .env
-.env_TN
-.envHT
-
 
 # Python cache
 __pycache__/
@@ -30,16 +27,6 @@ Thumbs.db
 
 # Logs
 *.log
-
-settings.TN.py
-
-# RoadMap
-New_App_Message/
-New_App_Posts/
-
-# Kafka
-Kafka/
-Kubernetes/
 
 # Document
 Document/
