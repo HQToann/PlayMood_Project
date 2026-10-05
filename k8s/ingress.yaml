@@ -4,16 +4,19 @@ metadata:
   name: playmood-ingress
   namespace: playmood
   annotations:
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/affinity: "cookie"
-    nginx.ingress.kubernetes.io/session-cookie-name: "route"
-    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    # Traefik annotations (thay nginx, vì K3s dùng Traefik làm Ingress mặc định)
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+
+    # Timeout cho WebSocket (Django Channels/Daphne) — giữ kết nối ws:// lâu
+    traefik.ingress.kubernetes.io/request-timeout: "3600"
+
+    # Lấy IP thật của User qua Cloudflare
+    traefik.ingress.kubernetes.io/pass-host-header: "true"
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
-  - http:
+  - host: nhangalaptrinh.id.vn
+    http:
       paths:
       - path: /
         pathType: Prefix

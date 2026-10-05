@@ -28,6 +28,7 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 ALLOWED_HOSTS.append('trainghiemthuhtq.id.vn')
+ALLOWED_HOSTS.append('nhangalaptrinh.id.vn')
 if 'testserver' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('testserver')
 
@@ -223,6 +224,7 @@ CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 CSRF_TRUSTED_ORIGINS.append('https://trainghiemthuhtq.id.vn')
+CSRF_TRUSTED_ORIGINS.append('https://nhangalaptrinh.id.vn')
 
 
 # 10. DỊCH VỤ BÊN NGOÀI & CHÍNH SÁCH TRUY CẬP (EXTERNAL API & CORS)

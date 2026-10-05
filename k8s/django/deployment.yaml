@@ -1,44 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: django
+  name: playmood-app
   namespace: playmood
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: django
+      app: playmood
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0
+      maxUnavailable: 0     # Không bao giờ tắt Pod cũ trước khi Pod mới sẵn sàng
   template:
     metadata:
       labels:
-        app: django
+        app: playmood
     spec:
-      initContainers:
-      - name: wait-for-postgres
-        image: busybox:1.28
-        command: ['sh', '-c', 'until nc -z postgres-svc 5432; do sleep 2; done']
-      - name: wait-for-redis
-        image: busybox:1.28
-        command: ['sh', '-c', 'until nc -z redis-svc 6379; do sleep 2; done']
-      
       containers:
-      - name: django
-        image: playmood:dev
-        imagePullPolicy: Never      # Local image
+      - name: playmood
+        image: ghcr.io/hqtoann/playmood-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
-        
+
+        # Đọc toàn bộ biến môi trường từ Secret playmood-env (tạo ở Phase 2)
         envFrom:
-        - configMapRef:
-            name: django-config
         - secretRef:
-            name: django-secret
-        
+            name: playmood-env
+
         resources:
           requests:
             memory: "256Mi"
@@ -46,19 +37,26 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "1000m"
-        
+
+        # Probe gửi header Host để Django không trả 400 DisallowedHost
         readinessProbe:
           httpGet:
             path: /health/
             port: 8000
+            httpHeaders:
+            - name: Host
+              value: nhangalaptrinh.id.vn
           initialDelaySeconds: 20
           periodSeconds: 10
           failureThreshold: 3
-        
+
         livenessProbe:
           httpGet:
             path: /health/
             port: 8000
+            httpHeaders:
+            - name: Host
+              value: nhangalaptrinh.id.vn
           initialDelaySeconds: 40
           periodSeconds: 15
           failureThreshold: 3
@@ -70,7 +68,7 @@ metadata:
   namespace: playmood
 spec:
   selector:
-    app: django
+    app: playmood
   ports:
   - port: 80
     targetPort: 8000
