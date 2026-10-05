@@ -1,0 +1,137 @@
+/* ==========================================================================
+   SETTINGS PAGE STYLES (PREMIUM DARK MODE)
+   ========================================================================== */
+
+/* Main Container */
+.settings-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+}
+
+.settings-header {
+    max-width: 800px;
+    margin: 0 auto;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.settings-header h1 {
+    font-size: 2.5rem;
+    letter-spacing: -0.5px;
+    color: #fff;
+}
+
+/* Sections */
+.settings-section-title {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+}
+
+/* Glassmorphism Cards */
+.settings-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.settings-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Items */
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s ease;
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-item:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Modal Inputs (Match Auth Inputs) */
+.custom-modal .form-control {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 12px 15px !important;
+    color: white !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease;
+    outline: none !important;
+}
+
+.custom-modal .form-control:focus {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Item Typography */
+.settings-item-info {
+    flex-grow: 1;
+    padding-right: 1.5rem;
+}
+
+.settings-item-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.settings-item-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Actions */
+.settings-item-action {
+    flex-shrink: 0;
+}
+
+/* Form Select */
+.settings-item-action .form-select {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Premium Buttons */
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
+}
+
+

@@ -1,0 +1,75 @@
+{% extends 'unfold/layouts/base.html' %}
+{% load i18n unfold %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block title %}
+    {% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="kpi-card">
+            <div class="kpi-icon users">
+                <span class="material-symbols-outlined">group</span>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Tổng User</div>
+                <div class="kpi-value">{{ total_users }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon songs">
+                <span class="material-symbols-outlined">music_note</span>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Tổng Bài Hát</div>
+                <div class="kpi-value">{{ total_songs }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon playlists">
+                <span class="material-symbols-outlined">queue_music</span>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Tổng Playlist</div>
+                <div class="kpi-value">{{ total_playlists }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon listens">
+                <span class="material-symbols-outlined">headphones</span>
+            </div>
+            <div class="kpi-content">
+                <div class="kpi-label">Lượt Nghe</div>
+                <div class="kpi-value">{{ total_listens }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2">
+            <h2 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">Tốc độ tăng trưởng (30 ngày)</h2>
+            {% component "unfold/components/chart/line.html" with data=line_chart_data height=300 %}
+            {% endcomponent %}
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-md shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">Thể loại nhạc phổ biến</h2>
+            {% component "unfold/components/chart/bar.html" with data=doughnut_chart_data height=300 %}
+            {% endcomponent %}
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row lg:gap-8">
+        <div class="grow">
+            {% include "unfold/helpers/app_list_default.html" %}
+        </div>
+        {% include "unfold/helpers/history.html" %}
+    </div>
+{% endblock %}

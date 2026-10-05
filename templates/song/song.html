@@ -1,0 +1,485 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Song Detail</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}?v=7" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <style>
+        /* Song Detail specific styles */
+        .song-header {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(to bottom, rgba(30, 50, 90, 0.8), var(--bg-app));
+        }
+
+        .song-cover {
+            width: 232px;
+            height: 232px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .song-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .song-type {
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .song-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0 0 1rem 0;
+            line-height: 1.1;
+        }
+
+        .song-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .song-meta .artist-img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .song-meta .creator {
+            color: var(--text-primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .song-meta .creator:hover {
+            text-decoration: underline;
+        }
+
+        .song-controls {
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-play-large {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-play-large:hover {
+            transform: scale(1.05);
+            background-color: #1ed760;
+            /* Lighter green */
+        }
+
+        .action-icon {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .action-icon:hover {
+            color: var(--text-primary);
+        }
+
+        .action-icon.active {
+            color: var(--accent-color);
+        }
+
+        /* Lyrics section */
+        .lyrics-container {
+            background-color: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 0 2rem 3rem 2rem;
+        }
+
+        .lyrics-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .lyrics-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: var(--text-secondary);
+            white-space: pre-line;
+        }
+
+        .lyrics-text .active-line {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        /* Artists info */
+        .artist-card-horizontal {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .artist-card-horizontal:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .artist-card-horizontal img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            {% include 'includes/left_sidebar.html' %}
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                {% include 'includes/top_header.html' %}
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll pb-5">
+
+                    <!-- Song Header -->
+                    <div class="song-header">
+                        <img id="detail-cover"
+                            src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5f924?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                            alt="Cover" class="song-cover">
+                        <div class="song-info">
+                            <div class="song-type">Bài Hát</div>
+                            <h1 class="song-title" id="detail-title">Đang tải...</h1>
+                            <div class="song-meta">
+                                <img id="detail-artist-img"
+                                    src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80"
+                                    alt="Artist" class="artist-img">
+                                <a href="#" class="creator" id="detail-artist-name">...</a>
+                                <span>•</span>
+                                <span id="detail-year">...</span>
+                                <span>•</span>
+                                <span id="detail-duration">...</span>
+                                <span>•</span>
+                                <span id="detail-plays">... lượt nghe</span>
+                                <span>•</span>
+                                <span id="detail-likes"><i class="bi bi-heart-fill" style="font-size:0.75rem;"></i>
+                                    ...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Song Controls -->
+                    <div class="song-controls">
+                        <button class="btn-play-large">
+                            <i id="detail-play-icon" class="bi bi-play-fill" style="margin-left: 2px;"></i>
+                        </button>
+                        <i id="detail-like-btn" class="bi bi-heart action-icon" title="Yêu thích"></i>
+                        <div class="position-relative d-inline-block">
+                            <i class="bi bi-plus-circle action-icon" id="btn-add-to-playlist" title="Thêm vào playlist" style="cursor: pointer;"></i>
+                            <ul class="custom-dropdown-menu dropdown-menu-dark shadow" id="playlist-dropdown-menu" style="display: none; position: absolute; left: 0; top: 100%; list-style: none; padding: 0.5rem 0; margin: 0; min-width: 220px; background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; z-index: 1050; max-height: 300px; overflow-y: auto;">
+                                <li class="text-center py-3 text-secondary small"><div class="spinner-border spinner-border-sm" role="status"></div></li>
+                            </ul>
+                        </div>
+                        <i id="detail-download-btn" class="bi bi-arrow-down-circle action-icon" title="Tải xuống"></i>
+                        <div class="dropdown d-inline-block">
+                            <i class="bi bi-three-dots action-icon" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;"></i>
+                            <ul class="custom-dropdown-menu dropdown-menu dropdown-menu-dark shadow" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.375rem; margin-top: 10px; min-width: 200px;">
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 text-white text-decoration-none" href="#" onclick="if(!window.CURRENT_USER_ID) { alert('Bạn cần đăng nhập để báo cáo bài hát.'); event.preventDefault(); event.stopPropagation(); return false; }" data-bs-toggle="modal" data-bs-target="#reportSongModal">
+                                        <i class="bi bi-flag"></i> Báo cáo bài hát
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Lyrics Section -->
+                    <div class="lyrics-container">
+                        <div class="lyrics-title">Lời bài hát</div>
+                        <div class="lyrics-text" id="detail-lyrics"
+                            style="white-space: pre-wrap; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">
+                            Đang tải lời bài hát...
+                        </div>
+                        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 text-secondary"
+                            style="font-size: 0.8rem;">
+                            Cung cấp bởi PlayMood
+                        </div>
+                    </div>
+
+                    <!-- Artist Section -->
+                    <div class="px-4 mb-5">
+                        <a href="#" id="detail-artist-link" class="artist-card-horizontal text-decoration-none">
+                            <img id="detail-artist-avatar"
+                                src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                                alt="Artist">
+                            <div>
+                                <div class="text-uppercase text-secondary"
+                                    style="font-size: 0.75rem; letter-spacing: 1px; font-weight: 600;">Nghệ sĩ</div>
+                                <div class="fw-bold fs-4 text-white" id="detail-artist-name-2">...</div>
+                                <div class="text-secondary" style="font-size: 0.9rem;" id="detail-artist-followers">...
+                                    người nghe hàng tháng</div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Recommended Songs -->
+                    <div class="px-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold mb-0">Có thể bạn sẽ thích</h4>
+                            <a href="javascript:void(0)" onclick="showAllRecommendations()" id="btnViewAllRecommendations" class="text-secondary text-decoration-none hover-text-white"
+                                style="font-size: 0.875rem; font-weight: 600;">XEM TẤT CẢ</a>
+                        </div>
+                        
+                        <!-- Overview (5 items) -->
+                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px;" id="overviewRecommendations">
+                            <div class="d-flex justify-content-center align-items-center w-100 py-4" style="grid-column: 1/-1;">
+                                <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- All items (infinite scroll) -->
+                        <div class="d-grid mb-5" style="grid-template-columns: repeat(5, 1fr); gap: 15px; display: none;" id="allRecommendations">
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="px-4 mt-5 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0">Bình luận <span class="text-secondary fs-6 fw-normal" id="commentCountDisplay">(0)</span>
+                            </h4>
+                        </div>
+
+                        <!-- Comment Input -->
+                        <div class="d-flex gap-3 mb-4 align-items-center">
+                            <img src="{% if user.is_authenticated and user.avatar %}{{ user.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|default:'U' }}&background=random{% endif %}"
+                                alt="User Avatar" class="rounded-circle object-fit-cover"
+                                style="width: 40px; height: 40px;">
+                            <div class="flex-grow-1 d-flex gap-2">
+                                <style>
+                                    #commentInput::placeholder {
+                                        color: rgba(255, 255, 255, 0.6) !important;
+                                    }
+                                </style>
+                                <input type="text" id="commentInput"
+                                    class="form-control bg-transparent text-white border-secondary border-opacity-50"
+                                    placeholder="Viết bình luận của bạn..." style="border-radius: 20px;">
+                                <button id="commentSubmitBtn" class="btn btn-sm rounded-pill px-4 fw-bold text-dark flex-shrink-0"
+                                    style="background-color: var(--accent-color); border: none;">Bình luận</button>
+                            </div>
+                        </div>
+
+                        <!-- Comment List Container -->
+                        <div id="commentsListContainer" class="d-flex flex-column gap-4">
+                            <div class="text-center text-secondary py-3">Đang tải bình luận...</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            {% include 'includes/right_sidebar.html' %}
+
+        </div>
+
+        <!-- PLAYER BAR removed here to avoid duplicate IDs -->
+    </div>
+    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
+        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+                PlayMood
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+                <a href="#" class="nav-link-custom active"><i class="bi bi-house-door"></i> Trang chủ</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-emoji-smile"></i> Tâm trạng</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
+            </div>
+
+            <!-- Friends Activity (Mobile only) -->
+            <div class="px-3 py-3 flex-grow-1 overflow-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom"
+                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
+                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')"
+                            title="Thêm bạn bè"></i>
+                    </div>
+                </div>
+
+                <div class="search-bar mb-4 w-100"
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Linh Đan</div>
+                        <div class="friend-song">Đang nghe: Waiting For You</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Hải Nam</div>
+                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
+                        <div class="friend-time">1 giờ trước</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Song Modal -->
+    <div class="modal fade" id="reportSongModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Báo cáo bài hát</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    <form id="reportSongForm">
+                        <div class="mb-3">
+                            <label class="form-label text-white">Lý do báo cáo</label>
+                            <div class="dropdown w-100">
+                                <button class="form-select text-white text-start d-flex justify-content-between align-items-center w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                                    <span id="reportReasonText">Chọn lý do...</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark w-100 custom-report-dropdown shadow" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1);">
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportReason').value='copyright'; document.getElementById('reportReasonText').innerText='Vi phạm bản quyền'; return false;">Vi phạm bản quyền</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportReason').value='spam'; document.getElementById('reportReasonText').innerText='Spam / Rác'; return false;">Spam / Rác</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportReason').value='offensive'; document.getElementById('reportReasonText').innerText='Nội dung phản cảm'; return false;">Nội dung phản cảm</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="document.getElementById('reportReason').value='other'; document.getElementById('reportReasonText').innerText='Khác'; return false;">Khác</a></li>
+                                </ul>
+                            </div>
+                            <input type="hidden" id="reportReason" value="" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white">Mô tả chi tiết (Tùy chọn)</label>
+                            <textarea class="form-control text-white custom-placeholder" id="reportDescription" rows="3" placeholder="Nhập thêm thông tin chi tiết..." style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="submitReportBtn">Gửi báo cáo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Đăng xuất</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình không?
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="handleLogout(event)">Đăng
+                        xuất</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'includes/player_bar.html' %}
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script>
+        window.CURRENT_USER_ID = '{{ user.id|default_if_none:"" }}';
+    </script>
+    <script src="{% static 'js/song.js' %}?v=2.3"></script>
+</body>
+
+</html>

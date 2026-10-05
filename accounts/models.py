@@ -1,0 +1,392 @@
+"""
+accounts/models.py
+
+Models cho app accounts:
+  - User: kế thừa AbstractUser, dùng UUID làm PK, thêm role/is_private/avatar
+  - ArtistVerification: yêu cầu xác thực trở thành nghệ sĩ
+  - BlockList: danh sách người dùng bị chặn
+
+Tất cả PK là UUIDField theo quy ước chung của hệ thống (§12.1).
+"""
+
+import uuid
+import secrets
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from music_platform.utils import optimize_cloudinary_url
+from datetime import timedelta
+
+class User(AbstractUser):
+    """
+    Custom User model thay thế User mặc định của Django.
+
+    Lý do kế thừa AbstractUser thay vì AbstractBaseUser:
+    - Giữ nguyên toàn bộ hệ thống quyền Django (is_staff, is_superuser)
+    - Giữ groups, permissions cho Django Admin
+    - Chỉ cần override những gì cần thiết
+
+    Trường email là định danh đăng nhập (USERNAME_FIELD = 'email').
+    Trường username vẫn giữ để hiển thị (unique handle).
+    """
+
+    # Phân loại role
+    ROLE_USER = 'user'
+    ROLE_ARTIST = 'artist'
+    ROLE_ADMIN = 'admin'
+    ROLE_CHOICES = [
+        (ROLE_USER, 'Người dùng'),
+        (ROLE_ARTIST, 'Nghệ sĩ'),
+        (ROLE_ADMIN, 'Quản trị viên'),
+    ]
+
+    # Override PK: dùng UUID thay BigAutoInt
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name='ID',
+    )
+
+    # Email là định danh đăng nhập
+    email = models.EmailField(
+        unique=True,
+        verbose_name='Email',
+    )
+
+    # Username bây giờ là tên hiển thị (không unique)
+    username = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name='Tên hiển thị',
+    )
+
+
+
+    # Avatar lưu trên Cloudinary
+    avatar = models.ImageField(
+        upload_to='avatars/users/',
+        blank=True,
+        null=True,
+        verbose_name='Ảnh đại diện',
+    )
+
+    # Cover lưu trên Cloudinary
+    cover = models.ImageField(
+        upload_to='covers/users/',
+        blank=True,
+        null=True,
+        verbose_name='Ảnh bìa',
+    )
+
+    # Giới thiệu bản thân
+    bio = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Giới thiệu',
+    )
+
+    # Phân quyền nghiệp vụ
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        default=ROLE_USER,
+        verbose_name='Vai trò',
+        db_index=True,
+    )
+
+    # Chế độ riêng tư
+    is_private = models.BooleanField(
+        default=False,
+        verbose_name='Chế độ riêng tư',
+    )
+    show_playlists = models.BooleanField(
+        default=True,
+        verbose_name='Hiển thị Playlist cá nhân',
+    )
+    show_mood = models.BooleanField(
+        default=True,
+        verbose_name='Hiển thị cảm xúc',
+    )
+
+    # Cài đặt thông báo
+    new_song_notification = models.BooleanField(
+        default=True,
+        verbose_name='Thông báo bài hát mới',
+    )
+    mood_email_notification = models.BooleanField(
+        default=False,
+        verbose_name='Email gợi ý nhạc',
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    updated_at = models.DateTimeField(auto_now= True, verbose_name='Cập nhật lần cuối')
+
+    # Dùng email làm field đăng nhập chính
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username'] # Bắt buộc khi dùng createsuperuser
+
+    class Meta:
+        db_table = 'accounts_user'
+        verbose_name = 'Người dùng'
+        verbose_name_plural = 'Người dùng'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f'{self.username} ({self.email})'
+
+    @property
+    def is_admin(self) -> bool:
+        """True nếu là quản trị viên (role='admin' hoặc is_superuser)."""
+        return self.role == self.ROLE_ADMIN or self.is_superuser
+
+    def save(self, *args, **kwargs):
+        """
+        Đồng bộ role='admin' ↔ is_superuser + is_staff (2 chiều):
+          - role='admin'      → is_superuser=True, is_staff=True
+          - is_superuser=True → role='admin',      is_staff=True
+        Đảm bảo Django Admin panel và hệ thống nghiệp vụ luôn nhất quán.
+        """
+        if self.role == self.ROLE_ADMIN:
+            self.is_superuser = True
+            self.is_staff = True
+        elif self.is_superuser:
+            self.role = self.ROLE_ADMIN
+            self.is_staff = True
+        super().save(*args, **kwargs)
+
+    def get_display_name(self):
+        """Trả tên hiển thị. Nếu là artist trả stage_name, fallback về username."""
+        if self.role == self.ROLE_ARTIST:
+            try:
+                if hasattr(self, 'artist_profile') and self.artist_profile.stage_name:
+                    return self.artist_profile.stage_name
+            except Exception:
+                pass
+        return self.username
+
+    
+    def to_dict(self, include_private=False):
+        """
+        Serialize User thành dict — dùng trong views khi trả JsonResponse.
+
+        Args:
+            include_private: nếu True, bao gồm cả email và các trường nhạy cảm 
+            (chỉ dùng khi trả cho chính user đó hoặc admin)
+        """
+
+        data = {
+            'id': str(self.id),
+            'username': self.username,
+            'display_name': self.get_display_name(),
+            'avatar': optimize_cloudinary_url(self.avatar.url, 'image') if self.avatar else None,
+            'bio': self.bio,
+            'role': self.role,
+            'is_private': self.is_private,
+            'show_playlists': self.show_playlists,
+            'show_mood': self.show_mood,
+            'new_song_notification': self.new_song_notification,
+            'mood_email_notification': self.mood_email_notification,
+            'created_at': self.created_at.isoformat(),
+        }
+        if include_private:
+            data['email'] = self.email
+        return data
+
+class ArtistVerification(models.Model):
+    """
+    Yêu cầu xác thực tài khoản nghệ sĩ.
+
+    User nộp yêu cầu kèm ảnh . Admin duyệt/từ chối.
+    Khi approved, user.role tự động chuyển thành 'artist'.
+
+    Lưu ý bảo mật: file phải lưu private (không public URL).
+    Trong Cloudinary: dùng signed URL hoặc private delivery.
+    """
+
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Chờ duyệt'),
+        (STATUS_APPROVED, 'Đã duyệt'),
+        (STATUS_REJECTED, 'Từ chối'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='verifications',
+        verbose_name='Người dùng',
+    )
+    real_name = models.CharField(
+        max_length=100,
+        verbose_name='Tên thật'
+    )
+
+    # Ảnh minh chứng - lưu private trên Cloudinary
+    # Đường dẫn: verifications/<uuid>.<ext>
+    id_card_image = models.ImageField(
+        upload_to='verifications/',
+        verbose_name='Ảnh minh chứng',
+    )
+
+    note = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Ghi chú'
+    )
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        verbose_name='Trạng thái',
+        db_index=True,
+    )
+
+    # Thông tin duyệt
+    reviewed_by = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_verifications',
+        verbose_name='Admin duyệt',
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Thời điểm duyệt'
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày tạo'
+    )
+
+    class Meta:
+        db_table = 'accounts_artist_verification'
+        verbose_name = 'Yêu cầu xác thự nghệ sĩ'
+        verbose_name_plural = 'Yêu cầu xác thực nghệ sĩ'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Verification({self.user.username}, {self.status})'
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'user': {'id': str(self.user_id), 'username': self.user.username},
+            'real_name': self.real_name,
+            'note': self.note,
+            'status': self.status,
+            'reviewed_by': str(self.reviewed_by_id) if self.reviewed_by_id else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'created_at': self.created_at.isoformat(),
+        }
+
+class BlockList(models.Model):
+    """
+    Danh sách block: blocker chặn blocked.
+
+    Áp dụng policy:
+    - Người bị chặn xem profile blocker → 404
+    - Người bị chặn xem bài hát blocker → ẩn khỏi danh sách / 404 trực tiếp
+    - Người bị chặn follow blocker → 403 BLOCKED
+    - Người bị chặn comment bài hát blocker → 403 BLOCKED
+    - Blocker không nhận notification từ người bị chặn
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    blocker = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='blocking',
+        verbose_name='Người chặn',
+    )
+    
+    blocked = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='blocked_by',
+        verbose_name='Người bị chặn',
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày chặn'
+    )
+
+    class Meta:
+        db_table = 'accounts_block_list'
+        verbose_name = 'Danh sách chặn'
+        unique_together = [('blocker', 'blocked')]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.blocker.username} -> block -> {self.blocked.username}'
+
+class PasswordResetToken(models.Model):
+    """
+    Token đặt lại mật khẩu qua email.
+
+    Flow:
+    1. User gửi POST /api/v1/auth/password/reset/request/ với email
+    2. Hệ thống tạo token ngẫu nhiên, lưu vào bảng này, gửi link qua email
+    3. User click link → POST /api/v1/auth/password/reset/confirm/ với token + new_password
+    4. Token bị xóa sau khi dùng hoặc hết hạn
+
+    Bảo mật:
+    - Token dài 64 ký tự hex (256-bit entropy)
+    - Hết hạn sau EXPIRE_HOURS giờ
+    - Mỗi user chỉ có 1 token active (tạo mới sẽ xóa cũ)
+    """
+
+    EXPIRE_HOURS = 1  # Token hết hạn sau 1 giờ
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.OneToOneField(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='password_reset_token',
+        verbose_name='Người dùng',
+    )
+
+    token = models.CharField(
+        max_length=128,
+        unique=True,
+        verbose_name='Token',
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Ngày tạo',
+    )
+
+    class Meta:
+        db_table = 'accounts_password_reset_token'
+        verbose_name = 'Token đặt lại mật khẩu'
+        verbose_name_plural = 'Token đặt lại mật khẩu'
+
+    def __str__(self):
+        return f'ResetToken({self.user.email})'
+
+    @classmethod
+    def generate_for(cls, user: 'User') -> 'PasswordResetToken':
+        """Tạo (hoặc thay thế) token cho user."""
+        cls.objects.filter(user=user).delete()
+        token_str = secrets.token_hex(32)  # 64 ký tự hex
+        return cls.objects.create(user=user, token=token_str)
+
+    def is_expired(self) -> bool:
+        """Kiểm tra token đã hết hạn chưa."""
+        expiry = self.created_at + timedelta(hours=self.EXPIRE_HOURS)
+        return timezone.now() > expiry

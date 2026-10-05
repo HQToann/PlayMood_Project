@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: playmood-ingress
+  namespace: playmood
+  annotations:
+    # Traefik annotations (thay nginx, vì K3s dùng Traefik làm Ingress mặc định)
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+
+    # Timeout cho WebSocket (Django Channels/Daphne) — giữ kết nối ws:// lâu
+    traefik.ingress.kubernetes.io/request-timeout: "3600"
+
+    # Lấy IP thật của User qua Cloudflare
+    traefik.ingress.kubernetes.io/pass-host-header: "true"
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: nhangalaptrinh.id.vn
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: django-svc
+            port:
+              number: 80

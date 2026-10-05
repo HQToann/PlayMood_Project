@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playmood-app
+  namespace: playmood
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: playmood
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0     # Không bao giờ tắt Pod cũ trước khi Pod mới sẵn sàng
+  template:
+    metadata:
+      labels:
+        app: playmood
+    spec:
+      containers:
+      - name: playmood
+        image: ghcr.io/hqtoann/develop_playmood:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+
+        # Đọc toàn bộ biến môi trường từ Secret playmood-env (tạo ở Phase 2)
+        envFrom:
+        - secretRef:
+            name: playmood-env
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+
+        # Probe gửi header Host để Django không trả 400 DisallowedHost
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+            httpHeaders:
+            - name: Host
+              value: nhangalaptrinh.id.vn
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 3
+
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+            httpHeaders:
+            - name: Host
+              value: nhangalaptrinh.id.vn
+          initialDelaySeconds: 40
+          periodSeconds: 15
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-svc
+  namespace: playmood
+spec:
+  selector:
+    app: playmood
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: ClusterIP

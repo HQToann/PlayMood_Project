@@ -1,0 +1,88 @@
+{% load static %}
+<!-- Hidden trigger for playlist modal -->
+<button id="triggerPlaylistModal" data-bs-toggle="modal" data-bs-target="#playlistFormModal" style="display:none;" aria-hidden="true"></button>
+
+<!-- Playlist Form Modal (Tạo & Sửa) -->
+<div class="modal fade pm-modal" id="playlistFormModal" tabindex="-1" aria-labelledby="playlistFormModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:470px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="playlistFormModalLabel">Tạo Playlist mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="playlistForm">
+                    <input type="hidden" id="editPlaylistId" value="">
+                    
+                    <!-- Cover -->
+                    <div class="mb-4">
+                        <label class="pm-label">Ảnh bìa (tùy chọn)</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="cover-preview-box" style="cursor: pointer;" onclick="document.getElementById('playlistCover').click();">
+                                <img id="playlistCoverPreview" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                <i class="bi bi-image" id="playlistCoverPlaceholder"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <label for="playlistCover" class="btn btn-outline-light btn-sm mb-1 px-3 text-white" style="border-radius: 8px; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05);">
+                                    <i class="bi bi-folder2-open me-1"></i> Chọn tệp
+                                </label>
+                                <div id="playlistCoverName" class="text-secondary mb-2" style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 250px;">Chưa có tệp nào được chọn</div>
+                                <input type="file" class="d-none" id="playlistCover" accept="image/*" onchange="
+                                    const file = this.files[0];
+                                    const nameDisplay = document.getElementById('playlistCoverName');
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = function(e) {
+                                            document.getElementById('playlistCoverPreview').src = e.target.result;
+                                            document.getElementById('playlistCoverPreview').style.display = 'block';
+                                            document.getElementById('playlistCoverPlaceholder').style.display = 'none';
+                                        }
+                                        reader.readAsDataURL(file);
+                                        nameDisplay.textContent = file.name;
+                                        nameDisplay.classList.add('text-light');
+                                        nameDisplay.classList.remove('text-secondary');
+                                    } else {
+                                        nameDisplay.textContent = 'Chưa có tệp nào được chọn';
+                                        nameDisplay.classList.remove('text-light');
+                                        nameDisplay.classList.add('text-secondary');
+                                    }
+                                ">
+                                <small class="text-secondary d-block" style="font-size:.72rem;">
+                                    JPG, PNG, WEBP · khuyến nghị 500×500 px
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label for="playlistName" class="pm-label">
+                            Tên Playlist <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="pm-input" id="playlistName" placeholder="Nhập tên playlist của bạn..." required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-1">
+                        <label for="playlistDesc" class="pm-label">Mô tả (tùy chọn)</label>
+                        <textarea class="pm-input" id="playlistDesc" rows="3" placeholder="Thêm mô tả cho playlist..."></textarea>
+                    </div>
+
+                    <!-- Hidden status -->
+                    <input type="hidden" id="playlistStatus" value="public">
+                </form>
+            </div>
+            <div class="modal-footer justify-content-between gap-2">
+                <div>
+                    <button type="button" id="btnTogglePlaylistVisibility" class="btn-save-album" style="background: rgba(140,225,178,.15); color: var(--accent-color); border: 1px solid rgba(140,225,178,.3);" onclick="togglePlaylistVisibility(this)">Công khai</button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn-pm-outline" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" id="btnSavePlaylist" class="btn-save-album">Tạo mới</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

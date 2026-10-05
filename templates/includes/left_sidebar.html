@@ -1,0 +1,67 @@
+{% load static %}
+<!-- LEFT SIDEBAR -->
+<aside class="sidebar-left py-3 d-none d-lg-flex">
+    <div class="px-3 mb-4 flex-shrink-0">
+        <a href="javascript:void(0)" onclick="window.goToPage('/')" class="brand-logo">
+            <div class="brand-icon"><i class="bi bi-music-note"></i></div>
+            PlayMood
+        </a>
+    </div>
+
+    <div class="flex-grow-1 overflow-auto custom-scrollbar">
+        <div class="nav-section px-2">
+            <a href="/" class="nav-link-custom {% if active_page == 'home' %}active{% endif %}">
+                <i class="bi bi-house-door"></i> Trang chủ
+            </a>
+            <a href="{% url 'explore_page' %}" class="nav-link-custom {% if active_page == 'explore' %}active{% endif %}">
+                <i class="bi bi-search"></i> Khám phá
+            </a>
+            <a href="{% url 'mood_page' %}" class="nav-link-custom {% if active_page == 'mood' %}active{% endif %}">
+                <i class="bi bi-emoji-smile"></i> Tâm trạng
+            </a>
+            <a href="{% url 'news_feed_page' %}" class="nav-link-custom {% if active_page == 'feed' %}active{% endif %}">
+                <i class="bi bi-newspaper"></i> Bảng tin
+            </a>
+            <a href="{% url 'chat_page' %}" class="nav-link-custom {% if active_page == 'chat' %}active{% endif %}">
+                <i class="bi bi-chat-dots"></i> Nhắn tin
+            </a>
+
+            {% if request.user.role == 'artist' %}
+            <a href="{% url 'artist_manage_page' %}" class="nav-link-custom {% if active_page == 'artist_manage' %}active{% endif %}">
+                <i class="bi bi-kanban"></i> Quản lý bài hát
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="nav-section-title mt-4">THƯ VIỆN</div>
+        <div class="nav-section px-2">
+            <a href="/library/favorites/" class="nav-link-custom {% if request.path == '/library/favorites/' %}active{% endif %}">
+                <i class="bi bi-heart"></i> Yêu thích
+            </a>
+            <a href="/library/recent/" class="nav-link-custom {% if request.path == '/library/recent/' %}active{% endif %}">
+                <i class="bi bi-clock-history"></i> Nghe gần đây
+            </a>
+            {% if request.user.role == 'artist' %}
+            <a href="/library/albums/" class="nav-link-custom {% if request.path == '/library/albums/' %}active{% endif %}">
+                <i class="bi bi-vinyl"></i> Album
+            </a>
+            {% endif %}
+            <a href="{% url 'playlist_page' %}" class="nav-link-custom {% if active_page == 'playlist' %}active{% endif %}">
+                <i class="bi bi-music-note-list"></i> Playlist
+            </a>
+        </div>
+
+        <div class="nav-section-title mt-4">PLAYLIST CỦA BẠN</div>
+        <div class="nav-section px-2 pb-4">
+            <a href="#" class="nav-link-custom text-white" onclick="openCreatePlaylistModal(event)">
+                <i class="bi bi-plus-lg text-secondary"></i> Tạo playlist mới
+            </a>
+
+            <div id="sidebarPlaylistsContainer">
+                <div class="text-secondary text-center py-2" style="font-size: 0.8rem;">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<script src="{% static 'js/sidebar.js' %}?v=2.2"></script>

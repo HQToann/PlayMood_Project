@@ -1,0 +1,437 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Dark Theme</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}?v=5" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/explore.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            {% include 'includes/left_sidebar.html' with active_page='mood' %}
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                {% include 'includes/top_header.html' %}
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll">
+                    <div style="padding: 0 32px 140px 32px;">
+
+                        <!-- HERO HEADER -->
+                        <div class="mb-1" style="position: relative; margin-top: -24px;">
+                            <!-- Removed radial gradient to match homepage -->
+                            <p class="mb-1"
+                                style="color: rgba(255,255,255,0.45); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 600;">
+                                PLAYMOOD</p>
+                            <h1 class="fw-bold mb-1"
+                                style="font-size: 2.4rem; letter-spacing: -1px; background: linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.5)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                Bạn đang cảm thấy thế nào?</h1>
+                            <p style="color: rgba(255,255,255,0.45); font-size: 0.95rem; margin-top: 6px;">Chọn một cảm
+                                xúc, chia sẻ khoảnh khắc với bạn bè của bạn.</p>
+                        </div>
+
+                        <div id="moodTypeGrid" class="mb-4" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <!-- Skeletons - sẽ bị thay bởi JS -->
+                            <div
+                                style="width: 80px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite;">
+                            </div>
+                            <div
+                                style="width: 120px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .1s;">
+                            </div>
+                            <div
+                                style="width: 90px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .2s;">
+                            </div>
+                            <div
+                                style="width: 100px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .3s;">
+                            </div>
+                            <div
+                                style="width: 110px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.04); animation: skeleton-pulse 1.5s infinite; animation-delay: .4s;">
+                            </div>
+                        </div>
+
+                        <!-- POST MOOD FORM -->
+                        <div
+                            style="border-radius: 20px; background: rgba(255,255,255,0.03); border: none; padding: 16px;">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div
+                                    style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                                    <i class="bi bi-chat-fill"></i>
+                                </div>
+                                <div>
+                                    <div style="color: #fff; font-weight: 700; font-size: 1rem; line-height: 1.2;">Chia
+                                        sẻ khoảnh khắc</div>
+                                    <div id="selectedMoodLabel"
+                                        style="color: rgba(255,255,255,0.4); font-size: 0.82rem;">Chưa chọn cảm xúc
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form id="postMoodForm" onsubmit="handlePostMood(event)">
+                                <input type="hidden" name="mood_type_id" id="mood_type_id" value="">
+
+                                <textarea id="status_text" name="status_text" rows="2" maxlength="200"
+                                    placeholder="Viết gì đó về cảm xúc của bạn... (tuỳ chọn)"
+                                    style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; padding: 12px 14px; font-size: 0.92rem; resize: none; outline: none; transition: border-color 0.2s, background 0.2s; font-family: inherit; line-height: 1.5;"
+                                    onfocus="this.style.borderColor='#667eea'; this.style.background='rgba(0,0,0,0.4)';"
+                                    onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"
+                                    oninput="document.getElementById('charCount').textContent=this.value.length;"></textarea>
+                                <div
+                                    style="text-align:right; color: rgba(255,255,255,0.3); font-size: 0.78rem; margin-top: 6px;">
+                                    <span id="charCount">0</span>/200
+                                </div>
+
+                                <!-- Divider -->
+                                <div style="border-top: 1px solid rgba(255,255,255,0.06); margin: 12px 0;"></div>
+
+                                <!-- Theme Color Picker -->
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">Màu chủ đề:</div>
+                                    <div class="d-flex align-items-center gap-2" id="themeColorPicker">
+                                        <!-- Render by JS -->
+                                    </div>
+                                    <input type="hidden" id="theme_id_input" name="theme_id" value="">
+                                </div>
+
+                                <!-- Attached Song Preview -->
+                                <div id="songAttachmentArea" class="d-flex align-items-center gap-2 mb-3">
+                                    <div
+                                        style="width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 1.1rem; flex-shrink: 0;">
+                                        🎵</div>
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="color: rgba(255,255,255,0.5); font-size: 0.88rem;">Chưa đính kèm bài
+                                            hát</div>
+                                        <div style="color: rgba(255,255,255,0.25); font-size: 0.78rem;">Bài hát sẽ hiển
+                                            thị cùng tâm trạng của bạn</div>
+                                    </div>
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#searchMusicModal"
+                                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 50px; padding: 7px 18px; font-size: 0.82rem; cursor: pointer; transition: all .2s; white-space: nowrap;"
+                                        onmouseover="this.style.background='linear-gradient(135deg, #667eea, #764ba2)'; this.style.borderColor='transparent'; this.style.color='#fff';"
+                                        onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='rgba(255,255,255,0.6)';">
+                                        <i class="bi bi-search me-1"></i> Tìm nhạc
+                                    </button>
+                                </div>
+                                <input type="hidden" id="attached_song_id" name="song_id" value="">
+
+                                <!-- Footer Controls -->
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <!-- Custom Premium Dropdown -->
+                                    <div class="dropdown">
+                                        <div class="d-flex align-items-center gap-2 dropdown-toggle"
+                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                            data-bs-auto-close="outside"
+                                            style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.07); border-radius: 50px; padding: 6px 12px; cursor: pointer; user-select: none;">
+                                            <span id="selectedExpiresText"
+                                                style="color: rgba(255,255,255,0.7); font-size: 0.88rem;">Tự xóa sau 24
+                                                giờ (Mặc định)</span>
+                                            <i class="bi bi-chevron-down ms-1"
+                                                style="color:rgba(255,255,255,0.3); font-size:0.7rem;"></i>
+                                        </div>
+                                        <ul class="dropdown-menu custom-dropdown-menu" id="expiresDropdownMenu">
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#" data-val="1" data-text="Tự xóa sau 1 giờ">Tự xóa sau 1 giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#" data-val="4" data-text="Tự xóa sau 4 giờ">Tự xóa sau 4 giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item" href="#" data-val="12" data-text="Tự xóa sau 12 giờ">Tự xóa sau 12 giờ</a></li>
+                                            <li><a class="dropdown-item custom-dropdown-item active" href="#" data-val="24" data-text="Tự xóa sau 24 giờ (Mặc định)">Tự xóa sau 24 giờ (Mặc định)</a></li>
+                                        </ul>
+                                        <input type="hidden" name="expires_hours" id="expires_hours_input" value="24">
+                                    </div>
+
+                                    <button type="submit" id="submitBtn"
+                                        style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: #fff; border-radius: 50px; padding: 10px 24px; font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: all .25s; box-shadow: 0 4px 14px rgba(102,126,234,0.35); letter-spacing: 0.2px;"
+                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102,126,234,0.5)';"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(102,126,234,0.45)';">
+                                        Đăng Tâm Trạng
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Mood Recommendation Section -->
+                        <div id="moodRecoSection" style="margin-top: 2.5rem;">
+
+                            <!-- Bài Hát Theo Tâm Trạng -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                      <div>
+                                          <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
+                                          <h5 class="fw-bold text-white mb-0 mt-1" id="songsSectionTitle">Dành Riêng Cho Bạn</h5>
+                                      </div>
+                                      <a href="#" id="seeAllSongs" class="section-more-btn" style="text-decoration: none;">Xem tất cả</a>
+                                </div>
+                                <div id="moodSongsContainer" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 15px; padding-bottom: 0.75rem;">
+                                    <!-- Sẽ được JS điền vào -->
+                                </div>
+                            </div>
+
+                            <!-- Playlist Theo Tâm Trạng -->
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                      <div>
+                                          <p class="mb-0" style="color: rgba(255,255,255,0.4); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;">GỢI Ý CHO BẠN</p>
+                                          <h5 class="fw-bold text-white mb-0 mt-1" id="playlistSectionTitle">Tuyển Tập Playlist Đặc Biệt</h5>
+                                      </div>
+                                      <a href="#" id="seeAllPlaylists" class="section-more-btn" style="text-decoration: none;">Xem tất cả</a>
+                                </div>
+                                <div id="moodPlaylistsContainer" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 15px; padding-bottom: 0.75rem;">
+                                    <!-- Sẽ được JS điền vào -->
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <style>
+                        @keyframes skeleton-pulse {
+
+                            0%,
+                            100% {
+                                opacity: 0.35;
+                            }
+
+                            50% {
+                                opacity: 0.65;
+                            }
+                        }
+
+                        .mood-card-item {
+                            border-radius: 8px;
+                            padding: 8px 16px;
+                            text-align: center;
+                            cursor: pointer;
+                            position: relative;
+                            overflow: hidden;
+                            transition: all 0.25s ease;
+                            user-select: none;
+                            background: rgba(255, 255, 255, 0.1);
+                            border: none;
+                            color: #fff;
+                        }
+
+                        .mood-card-item:hover {
+                            background: rgba(255, 255, 255, 0.13);
+                            border-color: rgba(255, 255, 255, 0.2);
+                            transform: translateY(-1px);
+                        }
+
+                        .mood-card-item:active {
+                            transform: scale(0.95);
+                        }
+
+                        .mood-card-item.selected {
+                            border: none !important;
+                            font-weight: 600;
+                            transform: translateY(-2px);
+                            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+                        }
+
+                        .mood-card-item .mood-name {
+                            font-size: 0.9rem;
+                            font-weight: 500;
+                            color: #ffffff;
+                            transition: color 0.2s;
+                        }
+
+                        .mood-card-item.selected .mood-name {
+                            font-weight: 700;
+                            color: #ffffff;
+                            text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+                        }
+
+                        .color-swatch {
+                            border: 2px solid transparent;
+                            transition: transform 0.2s;
+                        }
+
+                        .color-swatch:hover {
+                            transform: scale(1.1);
+                        }
+
+                        .color-swatch.selected {
+                            border-color: rgba(255, 255, 255, 0.8);
+                        }
+
+                        /* Custom Dropdown Styling */
+                        .dropdown-toggle::after {
+                            display: none !important;
+                        }
+
+                        .custom-dropdown-menu {
+                            background: #1e2130;
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            border-radius: 12px;
+                            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+                            padding: 8px;
+                            min-width: 200px;
+                        }
+
+                        .custom-dropdown-item {
+                            color: rgba(255, 255, 255, 0.7) !important;
+                            border-radius: 8px;
+                            transition: all 0.2s;
+                            font-size: 0.88rem;
+                            padding: 8px 12px;
+                            margin-bottom: 2px;
+                        }
+
+                        .custom-dropdown-item:last-child {
+                            margin-bottom: 0;
+                        }
+
+                        .custom-dropdown-item:hover {
+                            background: rgba(255, 255, 255, 0.1) !important;
+                            color: #fff !important;
+                        }
+
+                        .custom-dropdown-item.active {
+                            background: rgba(102, 126, 234, 0.15) !important;
+                            color: #a5b4fc !important;
+                            font-weight: 500;
+                        }
+                    </style>
+
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script src="{% static 'js/mood.js' %}?v=2.18"></script>
+
+                </div>
+            </main>
+
+            <!-- RIGHT SIDEBAR (Friends Activity) -->
+            {% include 'includes/right_sidebar.html' %}
+
+        </div>
+
+        <!-- PLAYER BAR -->
+        {% include 'includes/player_bar.html' %}
+    </div>
+
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
+        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+                PlayMood
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+                <a href="#" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
+                <a href="../mood/mood.html" class="nav-link-custom active"><i class="bi bi-emoji-smile"></i> Tâm
+                    trạng</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
+                <!-- Only show if user is Artist -->
+                <!-- <a href="#" class="nav-link-custom"><i class="bi bi-upload"></i> Upload nhạc</a> -->
+            </div>
+
+            <!-- Friends Activity (Mobile only) -->
+            <div class="px-3 py-3 flex-grow-1 overflow-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small">3 online <i class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom"
+                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
+                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')"
+                            title="Thêm bạn bè"></i>
+                    </div>
+                </div>
+
+                <div class="search-bar mb-4 w-100"
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); transform: none !important;">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" placeholder="Tìm kiếm bạn bè..." style="font-size: 0.85rem;">
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Linh Đan</div>
+                        <div class="friend-song">Đang nghe: Waiting For You</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name">Hải Nam</div>
+                        <div class="friend-song">Đang nghe: Có Chắc Yêu Là...</div>
+                    </div>
+                </div>
+
+                <div class="friend-item">
+                    <div class="friend-avatar">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                            alt="Avatar" class="w-100 h-100 rounded-circle object-fit-cover">
+                    </div>
+                    <div class="friend-info">
+                        <div class="friend-name text-muted-custom">Thanh Trúc</div>
+                        <div class="friend-time">1 giờ trước</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Music Modal -->
+
+    <div class="modal fade" id="searchMusicModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-white"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Tìm kiếm bài hát</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body pb-3 pt-0">
+                    <input type="text" id="musicSearchInput" class="form-control text-white mb-3"
+                        placeholder="Nhập tên bài hát hoặc ca sĩ..."
+                        style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; color: #fff;">
+
+                    <!-- Loading -->
+                    <div id="searchLoading" class="text-center py-3" style="display: none;">
+                        <div class="spinner-border text-light spinner-border-sm" role="status"></div>
+                    </div>
+
+                    <!-- Search Results -->
+                    <div id="searchResults" class="d-flex flex-column gap-2" style="max-height: 280px; overflow-y: auto; padding-right: 5px;">
+                        <div class="text-center text-secondary py-4" style="font-size: 0.9rem;">
+                            Nhập từ khóa để tìm kiếm bản nhạc bạn muốn đính kèm.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

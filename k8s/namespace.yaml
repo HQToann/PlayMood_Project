@@ -1,0 +1,9 @@
+# Kubernetes tạo ra phân vùng ảo, mọi cấu hình tiếp theo được đưa vào phân vùng này để quản lý.
+
+apiVersion: v1 # Chỉ định phiên bản api của Kubernetes
+kind: Namespace # Khai báo loại đối tượng muốn tạo ra
+metadata: # Chứa các thông tin "hành chính" dùng để đặt tên và gán nhãn
+  name: playmood
+  labels:
+    app: playmood
+    environment: local

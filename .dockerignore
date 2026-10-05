@@ -1,0 +1,25 @@
+# Chức năng ngăn chặn (bỏ qua) việc copy file hoặc thư mục không cần thiết từ máy tính của bạn vào bên trong Docker Image
+# khi chạy lệnh build. Nó hoạt động tương tự như file .gitignore.
+
+# Tại sau cần .dockerignore?
+# Khi viết COPY .. -> Docker sẽ lấy toàn bộ nội dung trung thư mục gốc -> nhét vào Container
+# 1. Bảo mật: Các Key quan trọng không thể đem lên, hoặc lộ ra ngoài
+# 2. Giảm kích thước Image: Tối ưu môi trường ảo như venv/ -> Tải gói thư viện mới, sạch sẽ phù hợp với môi trường.
+# 3. Tránh xung đột môi trường: Các biên dịch được tạo ra trên môi trường Win mang vào Linux có thể bị lỗi.
+# 4. Bỏ qua file rác cá nhân: Những file không có tác dụng gì khi đem vào container
+
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+*.sqlite3
+media/
+staticfiles/
+.git/
+.gitignore
+.vscode/
+node_modules/

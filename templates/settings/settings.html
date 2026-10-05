@@ -1,0 +1,760 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMood - Dark Theme</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}?v=9" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/auth.css' %}" rel="stylesheet">
+    <link href="{% static 'css/settings.css' %}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+
+            <!-- LEFT SIDEBAR -->
+            {% include 'includes/left_sidebar.html' %}
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                <!-- Header -->
+                {% include 'includes/top_header.html' %}
+
+                <!-- Scrollable Content -->
+                <div class="content-scroll">
+                    <!-- Settings Header -->
+                    <div class="settings-header mt-4 px-4">
+                        <h1 class="fw-bold mb-1 text-white">Cài đặt</h1>
+                        <p class="text-secondary">Quản lý tài khoản, giao diện và các tùy chọn khác.</p>
+                    </div>
+
+                    <div class="settings-container px-4 mt-4 pb-5">
+
+                        <!-- Account Settings -->
+                        <div class="settings-section mb-5">
+                            <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Tài khoản</h4>
+                            <div class="settings-card">
+
+                                <div class="settings-item px-4 opacity-50 user-select-none">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Email</div>
+                                        <div class="settings-item-desc">{{ request.user.email }}</div>
+                                    </div>
+                                    <div class="settings-item-action"></div>
+                                </div>
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Mật khẩu</div>
+                                        <div class="settings-item-desc">Đổi mật khẩu bảo vệ tài khoản của bạn</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <button class="btn btn-outline-light rounded-pill btn-sm px-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Cập nhật</button>
+                                    </div>
+                                </div>
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Tên người dùng</div>
+                                        <div class="settings-item-desc" id="display_name_text">{{ request.user.username }}</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <button class="btn btn-outline-light rounded-pill btn-sm px-3" data-bs-toggle="modal" data-bs-target="#changeDisplayNameModal">Chỉnh sửa</button>
+                                    </div>
+                                </div>
+                                {% if request.user.role == 'artist' %}
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Nghệ danh</div>
+                                        <div class="settings-item-desc" id="stage_name_text">{{ request.user.artist_profile.stage_name|default:request.user.username }}</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <button class="btn btn-outline-light rounded-pill btn-sm px-3" data-bs-toggle="modal" data-bs-target="#changeStageNameModal">Chỉnh sửa</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if request.user.role == 'artist' %}
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Liên kết Mạng xã hội</div>
+                                        <div class="settings-item-desc">Website, Facebook, YouTube hiển thị trên trang Nghệ sĩ</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <button class="btn btn-outline-light rounded-pill btn-sm px-3"
+                                            data-bs-toggle="modal" data-bs-target="#editSocialsModal">Chỉnh sửa</button>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info" id="artist-register-info">
+                                        <div class="settings-item-title">Đăng ký trở thành Nghệ sĩ</div>
+                                        <div class="settings-item-desc">Chia sẻ âm nhạc của bạn và tiếp cận hàng triệu
+                                            thính giả trên PlayMood</div>
+                                    </div>
+                                    <div class="settings-item-action" id="artist-register-action">
+                                        <button class="btn btn-outline-light rounded-pill btn-sm px-3"
+                                            data-bs-toggle="modal" data-bs-target="#artistRegisterModal">Đăng ký
+                                            ngay</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div class="settings-item px-4"
+                                    style="border-top: 1px solid rgba(255, 107, 107, 0.2); background-color: rgba(255, 107, 107, 0.05);">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title text-danger">Đăng xuất</div>
+                                        <div class="settings-item-desc text-danger opacity-75">Đăng xuất khỏi tài khoản
+                                            trên thiết bị này</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <button
+                                            class="btn btn-outline-danger rounded-pill btn-sm px-3 d-flex align-items-center gap-2"
+                                            data-bs-toggle="modal" data-bs-target="#logoutConfirmModal">
+                                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Notifications -->
+                        <div class="settings-section mb-5">
+                            <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Thông báo</h4>
+                            <div class="settings-card">
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Thông báo bài hát mới</div>
+                                        <div class="settings-item-desc">Nhận thông báo khi nghệ sĩ yêu thích ra bài hát
+                                            mới</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <div class="form-check form-switch custom-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="newSongNotifToggle" {% if request.user.new_song_notification %}checked{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Email gợi ý nhạc</div>
+                                        <div class="settings-item-desc">Nhận email gợi ý nhạc dựa trên cảm xúc của bạn
+                                        </div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <div class="form-check form-switch custom-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="moodEmailNotifToggle" {% if request.user.mood_email_notification %}checked{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Privacy -->
+                        <div class="settings-section mb-5">
+                            <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Quyền riêng tư</h4>
+                            <div class="settings-card">
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Hiển thị Playlist cá nhân</div>
+                                        <div class="settings-item-desc">Người khác có thể xem danh sách phát của bạn
+                                            trên trang cá nhân</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <div class="form-check form-switch custom-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="showPlaylistsToggle" {% if request.user.show_playlists %}checked{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Hiển thị cảm xúc</div>
+                                        <div class="settings-item-desc">Hiển thị bong bóng cảm xúc hiện tại của bạn
+                                        </div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <div class="form-check form-switch custom-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="showMoodToggle" {% if request.user.show_mood %}checked{% endif %}>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="settings-item px-4">
+                                    <div class="settings-item-info">
+                                        <div class="settings-item-title">Danh sách chặn</div>
+                                        <div class="settings-item-desc">Quản lý các tài khoản bạn đã chặn</div>
+                                    </div>
+                                    <div class="settings-item-action">
+                                        <button class="btn btn-outline-light rounded-pill btn-sm px-3"
+                                            data-bs-toggle="modal" data-bs-target="#blockedUsersModal">Quản lý</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── Quản lý Bạn bè ─────────────────────────────── -->
+                            <div class="settings-section mb-5">
+                                <h4 class="settings-section-title mb-3 fs-5 fw-bold text-white">Quản lý Bạn bè</h4>
+                                <div class="settings-card">
+                                    <!-- Yêu cầu nhận được -->
+                                    <div class="settings-item px-4">
+                                        <div class="settings-item-info">
+                                            <div class="settings-item-title">
+                                                Yêu cầu kết bạn nhận được
+                                                <span id="receivedRequestsBadge" class="badge rounded-pill ms-2"
+                                                    style="background:var(--accent-color);color:#121929;font-size:0.7rem;display:none;">0</span>
+                                            </div>
+                                            <div class="settings-item-desc">Xem và chấp nhận / từ chối yêu cầu kết bạn
+                                            </div>
+                                        </div>
+                                        <div class="settings-item-action">
+                                            <button class="btn btn-outline-light rounded-pill btn-sm px-3"
+                                                data-bs-toggle="modal" data-bs-target="#receivedRequestsModal">
+                                                Xem yêu cầu
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Yêu cầu đã gửi -->
+                                    <div class="settings-item px-4">
+                                        <div class="settings-item-info">
+                                            <div class="settings-item-title">Yêu cầu kết bạn đã gửi</div>
+                                            <div class="settings-item-desc">Xem các yêu cầu đang chờ và hủy nếu muốn
+                                            </div>
+                                        </div>
+                                        <div class="settings-item-action">
+                                            <button class="btn btn-outline-light rounded-pill btn-sm px-3"
+                                                data-bs-toggle="modal" data-bs-target="#sentRequestsModal">
+                                                Xem đã gửi
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Danh sách bạn bè -->
+                                    <div class="settings-item px-4">
+                                        <div class="settings-item-info">
+                                            <div class="settings-item-title">Danh sách Bạn bè</div>
+                                            <div class="settings-item-desc">Quản lý bạn bè và hủy kết bạn</div>
+                                        </div>
+                                        <div class="settings-item-action">
+                                            <button class="btn btn-outline-light rounded-pill btn-sm px-3"
+                                                data-bs-toggle="modal" data-bs-target="#friendsListModal">
+                                                Xem bạn bè
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+            </main>
+
+            <!-- RIGHT SIDEBAR (Friends Activity) -->
+            {% include 'includes/right_sidebar.html' %}
+
+        </div>
+
+        <!-- PLAYER BAR -->
+        {% include 'includes/player_bar.html' %}
+    </div>
+
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" data-bs-theme="dark" tabindex="-1" id="mobileMenuOffcanvas"
+        style="background-color: var(--bg-app); color: var(--text-primary); width: 300px;">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon"><i class="bi bi-music-note-beamed"></i></div>
+                PlayMood
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="nav-section px-2 py-3 border-bottom border-secondary border-opacity-25">
+                <a href="#" class="nav-link-custom"><i class="bi bi-house-door"></i> Trang chủ</a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-search"></i> Khám phá</a>
+                <a href="{% url 'mood_page' %}" class="nav-link-custom">
+                            <i class="bi bi-emoji-smile"></i> Tâm trạng
+                        </a>
+                <a href="#" class="nav-link-custom"><i class="bi bi-music-note-list"></i> Playlist</a>
+                {% if request.user.role == 'artist' %}
+                <a href="{% url 'artist_manage_page' %}" class="nav-link-custom"><i class="bi bi-kanban"></i> Quản lý
+                    bài hát</a>
+                {% endif %}
+            </div>
+
+            <!-- Friends Activity (Mobile only) -->
+            <div class="px-3 py-3 flex-grow-1 overflow-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">HOẠT ĐỘNG BẠN BÈ</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-accent small" id="mobileOnlineFriendsCount">0 online <i
+                                class="bi bi-people"></i></span>
+                        <i class="bi bi-person-plus-fill text-muted-custom"
+                            style="cursor: pointer; font-size: 1.1rem; transition: color 0.2s;"
+                            onmouseover="this.classList.replace('text-muted-custom', 'text-white')"
+                            onmouseout="this.classList.replace('text-white', 'text-muted-custom')" title="Thêm bạn bè"
+                            data-bs-toggle="modal" data-bs-target="#addFriendModal"></i>
+                    </div>
+                </div>
+
+                <div class="search-bar mb-4 w-100"
+                    style="padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03);">
+                    <i class="bi bi-search text-muted-custom" style="font-size: 0.85rem;"></i>
+                    <input type="text" id="mobileFriendSearchInput" placeholder="Tìm kiếm bạn bè..."
+                        style="font-size: 0.85rem; background: none; border: none; color: white; outline: none; width: 85%;">
+                </div>
+
+                <div id="mobileFriendsActivityContainer">
+                    <div class="text-center text-muted-custom py-4 spinner-border-container">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <span class="ms-2 small">Đang tải...</span>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- CSRF token cho JS -->
+    <input type="hidden" id="settings-csrf-token" value="{{ csrf_token }}">
+
+    <!-- Blocked Users Modal -->
+    <div class="modal fade custom-modal" id="blockedUsersModal" tabindex="-1" aria-labelledby="blockedUsersModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="blockedUsersModalLabel">Danh sách chặn</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="blockedUsersListContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inline Blocked Users Logic (tách riêng để tránh cache) -->
+    <script>
+    (function() {
+        function _getCSRF() {
+            // Từ input Django template
+            const inp = document.getElementById('settings-csrf-token');
+            if (inp && inp.value) return inp.value;
+            // Fallback từ cookie
+            const m = document.cookie.match(/csrftoken=([^;]+)/);
+            if (m) return decodeURIComponent(m[1]);
+            return '';
+        }
+
+        function _renderBlockedList(users) {
+            const container = document.getElementById('blockedUsersListContainer');
+            if (!container) return;
+            if (!users || users.length === 0) {
+                container.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
+                return;
+            }
+            container.innerHTML = users.map(function(user) {
+                const avatar = user.avatar || 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80';
+                return `<div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25" id="blocked-user-${user.id}">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="${avatar}" alt="User" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;">
+                        <div>
+                            <h6 class="mb-0 fw-bold">${user.display_name || user.username}</h6>
+                            <small class="text-secondary">@${user.username}</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-white rounded-pill px-3"
+                        style="border-color:#fff;color:#fff;"
+                        onclick="window._doUnblock(event,'${user.id}')">Bỏ chặn</button>
+                </div>`;
+            }).join('');
+        }
+
+        // Load blocked list khi modal mở
+        document.addEventListener('show.bs.modal', function(e) {
+            if (e.target.id !== 'blockedUsersModal') return;
+            const container = document.getElementById('blockedUsersListContainer');
+            container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-secondary" role="status"></div></div>';
+            fetch('/api/v1/accounts/me/blocks/')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        _renderBlockedList(data.data);
+                    } else {
+                        container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi khi tải danh sách.</div>';
+                    }
+                })
+                .catch(function(err) {
+                    console.error(err);
+                    container.innerHTML = '<div class="text-center py-4 text-danger">Lỗi kết nối.</div>';
+                });
+        });
+
+        // Hàm bỏ chặn - không dùng confirm() nữa, dùng inline confirm
+        window._doUnblock = async function(event, userId) {
+            event.preventDefault();
+            const btn = event.currentTarget;
+            const row = document.getElementById('blocked-user-' + userId);
+            if (!row) return;
+
+            // Thay nút thành thanh xác nhận inline
+            btn.outerHTML = `
+                <div class="d-flex gap-2 align-items-center" id="confirm-unblock-${userId}">
+                    <small class="text-white">Bỏ chặn?</small>
+                    <button class="btn btn-sm fw-bold rounded-pill px-3 py-0"
+                        style="background-color:#8CE1B2;color:#1a1a1a;border:none;"
+                        onclick="window._confirmUnblock(event,'${userId}')">Có</button>
+                    <button class="btn btn-sm rounded-pill px-3 py-0"
+                        style="border:1px solid rgba(255,255,255,0.4);color:#fff;background:transparent;"
+                        onclick="window._cancelUnblock(event,'${userId}')">Không</button>
+                </div>`;
+        };
+
+        window._confirmUnblock = async function(event, userId) {
+            event.preventDefault();
+            const confirmDiv = document.getElementById('confirm-unblock-' + userId);
+            if (confirmDiv) {
+                confirmDiv.innerHTML = '<span class="spinner-border spinner-border-sm text-light"></span>';
+            }
+            try {
+                const csrf = _getCSRF();
+                const res = await fetch('/api/v1/accounts/users/' + userId + '/block/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    const row = document.getElementById('blocked-user-' + userId);
+                    if (row) row.remove();
+                    const c = document.getElementById('blockedUsersListContainer');
+                    if (c && c.children.length === 0) {
+                        c.innerHTML = '<div class="text-center py-4 text-secondary">Bạn chưa chặn ai.</div>';
+                    }
+                    if (window.showToast) window.showToast('Đã bỏ chặn người dùng.', true);
+                } else {
+                    const msg = (data.error && data.error.message) || 'Lỗi khi bỏ chặn.';
+                    if (window.showToast) window.showToast(msg, false);
+                    else alert(msg);
+                    // Khôi phục nút
+                    if (confirmDiv) confirmDiv.outerHTML = `<button class="btn btn-sm rounded-pill px-3" style="border:1px solid #fff;color:#fff;" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
+                }
+            } catch(e) {
+                console.error('[_confirmUnblock] Exception:', e);
+                alert('Lỗi kết nối: ' + e.message);
+                if (confirmDiv) confirmDiv.outerHTML = `<button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
+            }
+        };
+
+        window._cancelUnblock = function(event, userId) {
+            event.preventDefault();
+            const confirmDiv = document.getElementById('confirm-unblock-' + userId);
+            if (confirmDiv) {
+                confirmDiv.outerHTML = `<button class="btn btn-sm rounded-pill px-3" style="border:1px solid #fff;color:#fff;" onclick="window._doUnblock(event,'${userId}')">Bỏ chặn</button>`;
+            }
+        };
+    })();
+    </script>
+
+    <!-- Artist Registration Modal -->
+    <div class="modal fade" id="artistRegisterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-white"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Đăng ký trở thành Nghệ sĩ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-secondary text-start">
+                    <form id="artistRegisterForm">
+                        <div class="mb-3">
+                            <label for="real_name" class="form-label text-white mb-1">Tên thật <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control bg-dark border-secondary text-white" id="real_name"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_card_image" class="form-label text-white mb-1">Ảnh chụp giấy tờ tùy thân (JPG/PNG) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <label class="input-group-text bg-secondary text-white border-secondary" for="id_card_image" style="cursor: pointer;">Chọn tệp</label>
+                                <input type="file" class="d-none" id="id_card_image" accept=".jpg, .jpeg, .png" required onchange="document.getElementById('id_card_filename').value = this.files[0] ? this.files[0].name : ''">
+                                <input type="text" class="form-control bg-dark border-secondary text-white" id="id_card_filename" placeholder="Không có tệp nào được chọn" readonly style="cursor: pointer;" onclick="document.getElementById('id_card_image').click()">
+                            </div>
+                            <div class="mt-2 text-center d-none" id="id_card_preview_container">
+                                <img id="id_card_preview" src="" alt="Image preview"
+                                    class="img-fluid rounded border border-secondary"
+                                    style="max-height: 200px; object-fit: contain;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label text-white mb-1">Ghi chú thêm</label>
+                            <textarea class="form-control bg-dark border-secondary text-white" id="note" rows="3"
+                                placeholder="Điền thêm thông tin giải thích nếu cần..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;" onclick="handleArtistRegistration()">Gửi đăng ký</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <!-- Add Friend Modal -->
+    <div class="modal fade custom-modal" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 450px;">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="addFriendModalLabel">Thêm bạn bè</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 py-3">
+                    <div class="search-bar mb-4 w-100"
+                        style="padding: 10px 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.05);">
+                        <i class="bi bi-search text-muted-custom" style="font-size: 1rem;"></i>
+                        <input type="text" id="globalUserSearchInput"
+                            placeholder="Tìm kiếm theo Tên, Email hoặc Username..."
+                            style="font-size: 0.95rem; background: none; border: none; color: white; outline: none; width: 85%; margin-left: 10px;">
+                    </div>
+
+                    <div id="globalUserSearchResults" class="d-flex flex-column gap-3">
+                        <!-- Kết quả sẽ hiện ở đây -->
+                        <div class="text-center text-muted-custom py-3 small">
+                            Nhập từ khóa để tìm kiếm...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- ═══ MODAL: Yêu cầu kết bạn nhận được ═══ -->
+    <div class="modal fade custom-modal" id="receivedRequestsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:480px;">
+            <div class="modal-content text-light"
+                style="background-color:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Yêu cầu kết bạn nhận được</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 pb-4">
+                    <div id="receivedRequestsList">
+                        <div class="text-center text-muted-custom py-4 small">
+                            <div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2">Đang
+                                tải...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ MODAL: Yêu cầu kết bạn đã gửi ═══ -->
+    <div class="modal fade custom-modal" id="sentRequestsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:480px;">
+            <div class="modal-content text-light"
+                style="background-color:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Yêu cầu đã gửi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 pb-4">
+                    <div id="sentRequestsList">
+                        <div class="text-center text-muted-custom py-4 small">
+                            <div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2">Đang
+                                tải...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ MODAL: Danh sách bạn bè ═══ -->
+    <div class="modal fade custom-modal" id="friendsListModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:480px;">
+            <div class="modal-content text-light"
+                style="background-color:var(--bg-card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Danh sách Bạn bè</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 pb-4">
+                    <div id="friendsListContainer">
+                        <div class="text-center text-muted-custom py-4 small">
+                            <div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2">Đang
+                                tải...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    
+    <!-- Change Password Modal -->
+    <div class="modal fade custom-modal" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Đổi mật khẩu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-2">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small mb-1">Mật khẩu cũ</label>
+                            <div class="auth-form-group mb-0">
+                                <input type="password" class="auth-input" id="old_password" required placeholder="Nhập mật khẩu cũ" style="padding-right: 45px;">
+                                <i class="bi bi-lock"></i>
+                                <i class="bi bi-eye-slash" style="position: absolute; left: auto; right: 15px; cursor: pointer; color: rgba(255,255,255,0.4);" onclick="togglePasswordVisibility('old_password', this)"></i>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small mb-1">Mật khẩu mới</label>
+                            <div class="auth-form-group mb-0">
+                                <input type="password" class="auth-input" id="new_password" required placeholder="Nhập mật khẩu mới" style="padding-right: 45px;">
+                                <i class="bi bi-lock"></i>
+                                <i class="bi bi-eye-slash" style="position: absolute; left: auto; right: 15px; cursor: pointer; color: rgba(255,255,255,0.4);" onclick="togglePasswordVisibility('new_password', this)"></i>
+                            </div>
+                            <div class="form-text text-muted-custom small mt-1">Ít nhất 8 ký tự, 1 chữ hoa, 1 chữ thường và 1 số.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small mb-1">Xác nhận mật khẩu</label>
+                            <div class="auth-form-group mb-0">
+                                <input type="password" class="auth-input" id="confirm_password" required placeholder="Nhập lại mật khẩu mới" style="padding-right: 45px;">
+                                <i class="bi bi-lock"></i>
+                                <i class="bi bi-eye-slash" style="position: absolute; left: auto; right: 15px; cursor: pointer; color: rgba(255,255,255,0.4);" onclick="togglePasswordVisibility('confirm_password', this)"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" id="btnChangePassword" style="background: var(--accent-color); color: #121929; border: none; font-weight: 600;">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Username Modal -->
+    <div class="modal fade custom-modal" id="changeDisplayNameModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Đổi tên người dùng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-2">
+                    <form id="changeDisplayNameForm">
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small mb-1">Tên người dùng mới</label>
+                            <div class="auth-form-group mb-0">
+                                <input type="text" class="auth-input" id="new_username" value="{{ request.user.username }}" required maxlength="20" placeholder="Tối đa 20 ký tự">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" id="btnChangeDisplayName" style="background: var(--accent-color); color: #121929; border: none; font-weight: 600;">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if request.user.role == 'artist' %}
+    <!-- Change Stage Name Modal -->
+    <div class="modal fade custom-modal" id="changeStageNameModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content text-light" style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Đổi nghệ danh</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4 pt-2">
+                    <form id="changeStageNameForm">
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small mb-1">Nghệ danh mới</label>
+                            <div class="auth-form-group mb-0">
+                                <input type="text" class="auth-input" id="new_stage_name" value="{{ request.user.artist_profile.stage_name|default:request.user.username }}" required maxlength="20" placeholder="Tối đa 20 ký tự">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" id="btnChangeStageName" style="background: var(--accent-color); color: #121929; border: none; font-weight: 600;">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Edit Socials Modal -->
+    <div class="modal fade custom-modal" id="editSocialsModal" tabindex="-1" aria-labelledby="editSocialsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-light"
+                style="background-color: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="editSocialsModalLabel">Cập nhật liên kết</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSocialsForm">
+                        <div class="mb-3">
+                            <label for="websiteInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-globe2"></i> Website</label>
+                            <input type="url" class="form-control custom-placeholder text-light shadow-none" id="websiteInput"
+                                value="{{ request.user.artist_profile.website_url|default:'' }}"
+                                placeholder="https://..."
+                                style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        </div>
+                        <div class="mb-3">
+                            <label for="facebookInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-facebook"></i> Facebook</label>
+                            <input type="url" class="form-control custom-placeholder text-light shadow-none" id="facebookInput"
+                                value="{{ request.user.artist_profile.facebook_url|default:'' }}"
+                                placeholder="https://facebook.com/..."
+                                style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        </div>
+                        <div class="mb-3">
+                            <label for="youtubeInput" class="form-label text-secondary fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bi bi-youtube"></i> YouTube</label>
+                            <input type="url" class="form-control custom-placeholder text-light shadow-none" id="youtubeInput"
+                                value="{{ request.user.artist_profile.youtube_url|default:'' }}"
+                                placeholder="https://youtube.com/..."
+                                style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn text-dark fw-bold rounded-pill px-4" style="background-color: #8CE1B2; border: none;"
+                        onclick="saveSocials()" data-bs-dismiss="modal">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="{% static 'js/settings.js' %}?v=2.7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
