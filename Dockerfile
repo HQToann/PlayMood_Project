@@ -45,7 +45,5 @@ USER appuser
 EXPOSE 8000
 
 # Daphne: ASGI server hỗ trợ WebSocket (Django Channels)
-CMD ["daphne", \
-    "-b", "0.0.0.0", \
-    "-p", "8000", \
-    "music_platform.asgi:application"]
+# Tự động migrate khi khởi động và nhận cổng động $PORT từ Render (mặc định 8000 ở local)
+CMD python manage.py migrate --noinput && daphne -b 0.0.0.0 -p ${PORT:-8000} music_platform.asgi:application

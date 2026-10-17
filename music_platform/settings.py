@@ -21,14 +21,25 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Danh sách các domain/IP được phép truy cập vào hệ thống
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+ALLOWED_HOSTS = list(config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0', cast=Csv()))
+CSRF_TRUSTED_ORIGINS = list(config('CSRF_TRUSTED_ORIGINS', default='http://localhost:8000,http://127.0.0.1:8000', cast=Csv()))
 
 # Hỗ trợ tự động thêm hostname khi deploy trên nền tảng Render
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-ALLOWED_HOSTS.append('trainghiemthuhtq.id.vn')
-ALLOWED_HOSTS.append('nhangalaptrinh.id.vn')
+    if RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    csrf_render = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    if csrf_render not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(csrf_render)
+
+for domain in ['trainghiemthuhtq.id.vn', 'nhangalaptrinh.id.vn']:
+    if domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(domain)
+    csrf_domain = f"https://{domain}"
+    if csrf_domain not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(csrf_domain)
+
 if 'testserver' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('testserver')
 
