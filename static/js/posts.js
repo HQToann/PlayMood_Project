@@ -202,7 +202,9 @@ window.renderFeed = function (posts, containerId = 'postsFeedContainer') {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadFeed();
+    if (document.getElementById('postsFeedContainer')) {
+        loadFeed();
+    }
 
     // -- XỬ LÝ PREVIEW ẢNH & NHẠC --
     const postImageInput = document.getElementById('postImageInput');
@@ -213,19 +215,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const removePostPreviewBtn = document.getElementById('removePostPreviewBtn');
 
     function resetPreview() {
-        postPreviewContainer.classList.add('d-none');
-        postImagePreview.classList.add('d-none');
-        postSongPreview.classList.add('d-none');
-        postImagePreview.src = '';
+        if (postPreviewContainer) postPreviewContainer.classList.add('d-none');
+        if (postImagePreview) {
+            postImagePreview.classList.add('d-none');
+            postImagePreview.src = '';
+        }
+        if (postSongPreview) postSongPreview.classList.add('d-none');
         if (postImageInput) postImageInput.value = '';
         if (postSharedSongId) postSharedSongId.value = '';
     }
 
-    if (removePostPreviewBtn) {
+    if (removePostPreviewBtn && !removePostPreviewBtn.dataset.bound) {
+        removePostPreviewBtn.dataset.bound = 'true';
         removePostPreviewBtn.addEventListener('click', resetPreview);
     }
 
-    if (postImageInput) {
+    if (postImageInput && !postImageInput.dataset.bound) {
+        postImageInput.dataset.bound = 'true';
         postImageInput.addEventListener('change', function () {
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
@@ -408,22 +414,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // -- POST BÀI MỚI --
-    const btnSubmitPost = document.getElementById('btnSubmitPost');
-    if (btnSubmitPost) {
-        btnSubmitPost.addEventListener('click', async () => {
-            const rawContent = document.getElementById('postContentInput').value;
+    // -- POST BÀI MỚI (CHỐNG GỬI TRÙNG LẶP / DOUBLE CLICK) --
+    let isSubmittingPost = false;
+    const btnSubmitPostOld = document.getElementById('btnSubmitPost');
+    if (btnSubmitPostOld) {
+        // Thay thế element bằng bản clone sạch (không có listener cũ)
+        const btnSubmitPost = btnSubmitPostOld.cloneNode(true);
+        btnSubmitPostOld.parentNode.replaceChild(btnSubmitPost, btnSubmitPostOld);
+
+        btnSubmitPost.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (isSubmittingPost) return;
+            isSubmittingPost = true;
+
+            const contentInput = document.getElementById('postContentInput');
+            const rawContent = (contentInput ? contentInput.value : '').trim();
             // Gắn cảm xúc vào nội dung nếu có
             const feeling = (window.currentFeeling)
                 ? ` — đang ${window.currentFeeling.emoji} ${window.currentFeeling.label}` : '';
-            const content = rawContent + feeling;
-            const visibility = document.getElementById('postVisibility').value;
+            const content = rawContent ? (rawContent + feeling) : feeling;
+            const visibilityEl = document.getElementById('postVisibility');
+            const visibility = visibilityEl ? visibilityEl.value : 'PUBLIC';
+
+            const postImageInput = document.getElementById('postImageInput');
+            const postSharedSongId = document.getElementById('postSharedSongId');
 
             const formData = new FormData();
             formData.append('content', content);
             formData.append('visibility', visibility);
 
-            if (postImageInput && postImageInput.files.length > 0) {
+            if (postImageInput && postImageInput.files && postImageInput.files.length > 0) {
                 for (let i = 0; i < postImageInput.files.length; i++) {
                     formData.append('images', postImageInput.files[i]);
                 }
@@ -447,9 +467,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const data = await res.json();
                 if (data.success) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('createPostModal'));
-                    modal.hide();
-                    document.getElementById('postContentInput').value = '';
+                    const modalEl = document.getElementById('createPostModal');
+                    if (modalEl) {
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    }
+                    if (contentInput) contentInput.value = '';
                     resetPreview();
                     // Reset trạng thái tag bạn bè và cảm xúc sau khi đăng bài thành công
                     window.taggedFriends = [];
@@ -458,13 +481,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (tagDisplay) tagDisplay.innerHTML = '';
                     const feelingDisplay = document.getElementById('feelingDisplay');
                     if (feelingDisplay) feelingDisplay.style.display = 'none';
-                    loadFeed(); // Reload feed
+
+                    if (document.getElementById('postsFeedContainer')) {
+                        loadFeed(); // Reload feed nếu ở trang bảng tin
+                    }
+                    if (document.getElementById('profilePostsContainer') && typeof loadProfilePosts === 'function') {
+                        loadProfilePosts(); // Reload nếu ở trang cá nhân
+                    }
                 } else {
-                    alert(data.error.message || 'Lỗi khi đăng bài');
+                    alert(data.error?.message || 'Lỗi khi đăng bài');
                 }
             } catch (e) {
                 console.error(e);
+                alert('Có lỗi xảy ra khi đăng bài. Vui lòng thử lại.');
             } finally {
+                isSubmittingPost = false;
                 btnSubmitPost.disabled = false;
                 btnSubmitPost.innerHTML = 'Đăng';
             }
@@ -525,7 +556,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- XỬ LÝ GỬI BÌNH LUẬN ---
     const submitCommentBtn = document.getElementById('submitCommentBtn');
-    if (submitCommentBtn) {
+    if (submitCommentBtn && !submitCommentBtn.dataset.bound) {
+        submitCommentBtn.dataset.bound = 'true';
         submitCommentBtn.addEventListener('click', async () => {
             if (!window.currentCommentPostId) return;
             const input = document.getElementById('commentInput');
@@ -570,17 +602,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Nhấn Enter để gửi
-        document.getElementById('commentInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                submitCommentBtn.click();
-            }
-        });
+        const commentInputEl = document.getElementById('commentInput');
+        if (commentInputEl) {
+            commentInputEl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitCommentBtn.click();
+                }
+            });
+        }
     }
 
     // --- SỰ KIỆN DELEGATION BÌNH LUẬN (THÍCH / PHẢN HỒI) ---
     const commentListContainer = document.getElementById('commentList');
-    if (commentListContainer) {
+    if (commentListContainer && !commentListContainer.dataset.bound) {
+        commentListContainer.dataset.bound = 'true';
         commentListContainer.addEventListener('click', async (e) => {
             // 1. Thả Cảm xúc bình luận (chọn từ Popover)
             if (e.target.closest('.comment-react-icon')) {
@@ -849,8 +885,12 @@ function updateReactionUI(postCard, resultData) {
 
 // --- WEBSOCKET CHO BẢNG TIN (LIVE FEED) ---
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.feedSocket && (window.feedSocket.readyState === WebSocket.OPEN || window.feedSocket.readyState === WebSocket.CONNECTING)) {
+        return;
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    const feedSocket = new WebSocket(protocol + window.location.host + '/ws/feed/');
+    window.feedSocket = new WebSocket(protocol + window.location.host + '/ws/feed/');
+    const feedSocket = window.feedSocket;
 
     feedSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
@@ -915,6 +955,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- GIAI ĐOẠN 6: CHIA SẺ BÀI VIẾT QUA CHAT ---
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.__sharePostModalInitialized) return;
+    window.__sharePostModalInitialized = true;
+
     const sharePostModal = document.getElementById('sharePostModal');
     let shareTargetConversationId = null;
     let sharePostId = null;
@@ -1056,6 +1099,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // === QUẢN LÝ BÀI VIẾT (SỬA, XÓA, GHIM) ===
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.__postManageInitialized) return;
+    window.__postManageInitialized = true;
+
     // Sử dụng event delegation cho các nút hành động trong dropdown của post
     document.body.addEventListener('click', async (e) => {
         // --- XÓA BÀI VIẾT ---

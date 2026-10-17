@@ -118,6 +118,16 @@ class PostListView(View):
             return JsonResponse({'success': False, 'error': {'code': 'AUTH_REQUIRED', 'message': 'Vui lòng đăng nhập'}}, status=401)
             
         try:
+            # Chống đăng trùng lặp do double click hoặc duplicated request
+            from django.core.cache import cache
+            lock_key = f"post_create_lock_{request.user.id}"
+            if cache.get(lock_key):
+                return JsonResponse({
+                    'success': False,
+                    'error': {'code': 'DUPLICATE_SUBMIT', 'message': 'Bài viết đang được xử lý, vui lòng chờ giây lát.'}
+                }, status=429)
+            cache.set(lock_key, True, timeout=2)
+
             # Nhận multipart/form-data
             content = request.POST.get('content', '')
             visibility = request.POST.get('visibility', 'PUBLIC')
